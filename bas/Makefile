@@ -15,3 +15,5 @@ scan.c: scan.l
 
 clean:
 	rm -f *.o scan.c bas
+
+.PHONY: clean

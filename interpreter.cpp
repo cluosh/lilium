@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
+#include <fstream>
 
 // OPCODES
 #define OP_ADD 0
@@ -14,19 +15,28 @@
 #define REG_01 1
 
 // Dispatching macro
-#define DP() goto *token_table[code[pc++][0]]
+#define DP() goto *token_table[code[pc++]]
 
 /**
  * @brief Computed goto test
+ * @param argc Number of arguments
+ * @param argv Arguments as strings
  */
-int main() {	
-	// Demo-opcodes
-	static const std::uint8_t code[][3] = {
-		{ OP_ADD, REG_00, REG_01},
-		{ OP_ADD, REG_01, REG_00},
-		{ OP_MUL, REG_00, REG_01},
-		{ OP_HLT, REG_00, REG_01}
-	};
+int main(int argc, char *argv[]) {
+	// Check if a parameter was given
+	if (argc != 2)
+		return EXIT_FAILURE;
+
+	// Find size of file
+	std::ifstream f(argv[2], std::ifstream::ate | std::ifstream::binary);
+	std::ifstream::pos_type size = 0;
+	if (f.is_open())
+		size = f.tellg();
+	if (size == 0)
+		return EXIT_FAILURE;
+
+	// Allocate code space
+	std::uint8_t *code = new std::uint8_t[3 * size];
 
 	// Registers
 	static std::uint64_t reg[] = { 1, 1 };
@@ -46,13 +56,13 @@ int main() {
 	DP();
 	while (1) {	
 	op_add:
-		reg[code[pc - 1][2]] += reg[code[pc - 1][1]];
+		reg[code[pc - 1 + 2]] += reg[code[pc - 1 + 1]];
 		DP();
 	op_sub:
-		reg[code[pc - 1][2]] -= reg[code[pc - 1][1]];
+		reg[code[pc - 1 + 2]] -= reg[code[pc - 1 + 1]];
 		DP();
 	op_mul:
-		reg[code[pc - 1][2]] *= reg[code[pc - 1][1]];
+		reg[code[pc - 1 + 2]] *= reg[code[pc - 1 + 1]];
 		DP();
 	op_hlt:
 		std::cout << "Interpreter halted\n";

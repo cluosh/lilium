@@ -21,12 +21,14 @@
 #include <fstream>
 
 // OPCODES
-#define OP_ADD 0
-#define OP_SUB 1
-#define OP_MUL 2
-#define OP_HLT 3
-#define OP_LOA 4
-#define OP_STR 5
+#define OP_NOP 0
+#define OP_HLT 1
+#define OP_ADD 2
+#define OP_SUB 3
+#define OP_MUL 4
+#define OP_LOA 5
+#define OP_LOV 6
+#define OP_STR 7
 
 #define REG_00 0
 #define REG_01 1
@@ -81,15 +83,24 @@ int main(int argc, char *argv[]) {
 
   // Jump-table for token threaded code
   static const void *token_table[] = {
+    && op_nop,
+    && op_hlt,
     && op_add,
     && op_sub,
     && op_mul,
-    && op_hlt
+    && op_loa,
+    && op_lov,
+    && op_str
   };
 
   // Main dispatch loop
   DP();
   while (1) {
+  op_nop:
+    DP();
+  op_hlt:
+    std::cout << "Interpreter halted\n";
+    break;
   op_add:
     reg[op1[pc - 1]] += reg[op0[pc - 1]];
     std::cout << "OP_ADD " << reg[0] << " " << reg[1] << "\n";
@@ -102,9 +113,22 @@ int main(int argc, char *argv[]) {
     reg[op1[pc - 1]] *= reg[op0[pc - 1]];
     std::cout << "OP_MUL " << reg[0] << " " << reg[1] << "\n";
     DP();
-  op_hlt:
-    std::cout << "Interpreter halted\n";
-    break;
+  op_loa:
+  op_lov:
+    // TODO(cluosh): Bad code, byte order?
+    reg[op0[pc - 1]] = code[pc + 2];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op1[pc + 1];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op0[pc + 1];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | code[pc + 1];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op1[pc];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op0[pc];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | code[pc];
+    reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op1[pc - 1];
+    std::cout << "OP_LOV " << reg[op0[pc - 1]] << "\n";
+    pc += 2;
+    DP();
+  op_str:
+    DP();
   }
 
   // Cleanup and exit

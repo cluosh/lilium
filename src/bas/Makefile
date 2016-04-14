@@ -3,6 +3,7 @@
 #
 CC=clang
 LEX=flex
+CFLAGS+=-pedantic
 
 bas: scan.o
 	$(CC) -o $@ $(LDFLAGS) $^

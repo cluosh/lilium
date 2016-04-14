@@ -26,9 +26,11 @@
 %{  
   #include <stdlib.h>
   #include <stdio.h>
+  #include <stdint.h>
 	
   /* Function prototypes */
   void yyerror(const char *txt);
+  void lex_number(const char *txt);
 
   /* Global variables */
   int line = 1;  
@@ -37,19 +39,23 @@
 COMMENT		#.*
 LINEFEED	\n
 WHITESPACE	[\t ]|{LINEFEED}
+NUMBER		(0x[0-9a-fA-F]+)|[0-9]+
 
 %%
 {LINEFEED}	line++;
 {COMMENT}	{ }
 {WHITESPACE}+	{ }
-add		(void) printf("%c",0);
-sub		(void) printf("%c",1);
-mul		(void) printf("%c",2);
-halt		(void) printf("%c%c%c",3,0,0);
-load		(void) printf("%c%c%c",4,0,0);
-store		(void) printf("%c%c%c",5,0,0);
-r0		(void) printf("%c",0);
-r1		(void) printf("%c",1);
+{NUMBER}	lex_number(yytext);
+nop		(void) printf("%c%c%c", 0, 0, 0);
+halt		(void) printf("%c%c%c", 1, 0, 0);
+add		(void) printf("%c", 2);
+sub		(void) printf("%c", 3);
+mul		(void) printf("%c", 4);
+load		(void) printf("%c", 5);
+loadv		(void) printf("%c", 6);
+store		(void) printf("%c", 7);
+r0		(void) printf("%c", 0);
+r1		(void) printf("%c", 1);
 .		yyerror(yytext);
 %%
 
@@ -68,6 +74,22 @@ void yyerror(const char *txt)
 {
   (void) fprintf(stderr, "LEXICAL ERROR: Line %d, \"%s\"\n", line, txt);
   exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief Convert number to decimal without leading zeros
+ * @param txt Pointer to matched string
+ */
+void lex_number(const char *txt)
+{
+  char *end = NULL;
+  errno = 0;
+  uint64_t num = strtoll(txt, &end, 0);
+  if (errno != 0 || end == NULL || end == txt)
+    yyerror("Number-Error");
+  (void) fprintf(stderr, "num: %llu\n", num);
+  (void) fwrite(&num, sizeof(uint64_t), 1, stdout);
+  (void) printf("%c%c", 0, 0);
 }
 
 /**

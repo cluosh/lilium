@@ -20,13 +20,20 @@
 #include <cstdint>
 #include <string>
 
+struct Instruction {
+  std::uint8_t opcode;
+  std::uint8_t op1;
+  std::uint8_t op2;
+  std::uint8_t op3;
+}
+
 class BytecodeLoader {
  private:
-  std::uint8_t *code;
+  Instruction *code = nullptr;
 
  public:
   bool load_bytecode(std::string file);
-  std::uint8_t *get_code();
+  Instruction *get_code();
 };
 
 #endif  // VM_BYTECODE_LOADER_H_

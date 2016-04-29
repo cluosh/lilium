@@ -18,16 +18,42 @@
 #ifndef VM_OPCODES_H_
 #define VM_OPCODES_H_
 
-#define OP_NOP 0
-#define OP_HLT 1
-#define OP_ADD 2
-#define OP_SUB 3
-#define OP_MUL 4
-#define OP_LOA 5
-#define OP_LOV 6
-#define OP_STR 7
+/* Machine control instructions */
+#define OP_NOP    0x00 /* nop */
+#define OP_HALT   0x01 /* halt */
 
-#define REG_00 0
-#define REG_01 1
+/* Load/store instructions */
+#define OP_LOAD   0x02 /* load reg reg */
+#define OP_STORE  0x03 /* store reg reg */
+#define OP_LOADI  0x04 /* loadi reg hw */
 
+/* Move instructions */
+#define OP_MOVE   0x05 /* move reg reg */
+#define OP_MOVEW  0x06 /* movew reg reg */
+#define OP_MOEVH  0x07 /* moveh reg reg */
+
+/* Arithmetic instructions */
+#define OP_SHIFTL 0x08 /* shiftl reg reg reg */
+#define OP_SHIFTR 0x09 /* shiftr reg reg reg */
+#define OP_ADD    0x0A /* add reg reg reg */
+#define OP_SUB    0x0B /* sub reg reg reg */
+#define OP_MUL    0x0C /* mul reg reg reg */
+#define OP_DIV    0x0D /* div reg reg reg */
+#define OP_NEG    0x0E /* neg reg reg */
+
+/* Logical instructions */
+#define OP_AND    0x0F /* and reg reg reg */
+#define OP_OR     0x10 /* or reg reg reg */
+#define OP_XOR    0x11 /* xor reg reg reg */
+#define OP_NOT    0x12 /* not reg reg */
+
+/* Comparison instructions */
+#define OP_CMP    0x13 /* cmp reg reg reg */
+#define OP_LT     0x14 /* lt reg reg reg */
+#define OP_LE     0x15 /* le reg reg reg */
+#define OP_GT     0x16 /* gt reg reg reg */
+#define OP_GE     0x17 /* ge reg reg reg */
+
+/* Jump/branch instructions */
+#define OP_JMP    0x18 /* jmp hw */
 #endif  // VM_OPCODES_H_

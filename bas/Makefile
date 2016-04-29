@@ -1,20 +1,22 @@
 #
 # Makefile for bytecode assembler/disassembler
 #
-CC=clang
+CC=clang++
 LEX=flex
-CFLAGS+=-pedantic
+YACC=bison
+YFLAGS=-d
+CFLAGS+=-std=c++11 -O3 -Wall -pedantic -I../
 
-bas: scan.o
-	$(CC) -o $@ $(LDFLAGS) $^
+bas: lex.yy.cpp parser.tab.cpp parser.tab.hpp
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ lex.yy.cpp parser.tab.cpp
 
-%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $^
+parser.tab.cpp parser.tab.hpp: parser.y
+	$(YACC) $(YFLAGS) -o parser.tab.cpp parser.y
 
-scan.c: scan.l
-	$(LEX) -o $@ $^
+lex.yy.cpp: scanner.l parser.tab.hpp
+	$(LEX) -o $@ scanner.l
 
 clean:
-	rm -f *.o scan.c bas
+	rm -f *.o *.yy.cpp *.tab.cpp *.tab.hpp bas
 
 .PHONY: clean

@@ -33,9 +33,6 @@
 
 %parse-param { Scanner &scanner }
 %parse-param { AST::Node &node }
-%initial-action {
-  it = &node;
-}
 
 %code {
   #include <iostream>
@@ -47,8 +44,6 @@
 
   #undef yylex
   #define yylex scanner.yylex
-
-  AST::Node *it;
 }
 
 %define api.value.type variant
@@ -60,25 +55,28 @@
 
 %locations
 
+%type <AST::Node *> Expr FuncDef Params ParamList
+
 %%
 Program:
-  | Program FuncDef { AST::Node *n = new AST::Node(&node, "FuncDef");
-                      n->add(it); node.add(n); it = n; }
-  | Program Expr { AST::Node *n = new AST::Node(&node, "Expr");
-                   n->add(it); node.add(n); it = n; }
+  | Program FuncDef { node.add($2); }
+  | Program Expr { node.add($2); }
   ;
 FuncDef:
-  '(' DEF ID '(' Params ')' Expr ')'
+  '(' DEF ID '(' Params ')' Expr ')' { AST::Node *n = new AST::Node(nullptr, $3);
+                                       n->add($5); n->add($7); $$ = n; }
   ;
 Params:
-  | ParamList
+  { $$ = new AST::Node(nullptr, "nil"); }
+  | ParamList { $$ = $1; }
   ;
 ParamList:
-  ParamList ',' ID
-  | ID
+  ParamList ',' ID { AST::Node *n = new AST::Node(nullptr, $3);
+                     n->add($1); $$ = n; }
+  | ID { $$ = new AST::Node(nullptr, $1); }
   ;
 Expr:
-  ID { it = new AST::Node(it, $1); }
+  ID { $$ = new AST::Node(nullptr, $1); }
   ;
 %%
 

@@ -5,23 +5,31 @@ CC=clang++
 LEX=flex
 YACC=bison
 YFLAGS=-d
-CFLAGS+=-std=c++11 -O3 -pedantic -I../
+CFLAGS+=-std=c++11 -O3 -pedantic -Wall -I../ -fsanitize=leak
+
+OBJ=parser/lex.yy.o parser/parser.tab.o parser/controller.o ast/node.o
 
 all: lcc
 
-lcc: lex.yy.cpp parser.tab.cpp parser.tab.hpp
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ lex.yy.cpp parser.tab.cpp
+#lcc: parser/lex.yy.cpp parser/parser.tab.cpp parser/parser.tab.hpp
+#	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ parser/lex.yy.cpp parser/parser.tab.cpp
 
-parser.tab.cpp parser.tab.hpp: oxout.y
-	$(YACC) $(YFLAGS) -o parser.tab.cpp oxout.y
+lcc: $(OBJ) parser/parser.tab.hpp
+	$(CC) $(LDFLAGS) -o $@ $(OBJ)
 
-lex.yy.cpp: oxout.l parser.tab.hpp
-	$(LEX) -o $@ oxout.l
+%.o: %.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
 
-oxout.y oxout.l: parser.y scanner.l
-	ox parser.y scanner.l
+%.o: %.cc
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+parser/parser.tab.cpp parser/parser.tab.hpp: parser/parser.y
+	$(YACC) $(YFLAGS) -o parser/parser.tab.cpp parser/parser.y
+
+parser/lex.yy.cpp: parser/scanner.l parser/parser.tab.hpp
+	$(LEX) -o $@ parser/scanner.l
 
 clean:
-	rm -f oxout.y oxout.l *.o *.yy.cpp *.tab.cpp *.tab.hpp lcc
+	rm -f ast/*.o parser/*.hh parser/*.o parser/*.yy.cpp parser/*.tab.cpp parser/*.tab.hpp lcc
 
 .PHONY: clean all

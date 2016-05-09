@@ -28,12 +28,11 @@ namespace AST {
  */
 class Node {
  private:
-  Node *parent;
   std::list<Node *> nodes;
   std::string value;
 
  public:
-  Node(Node *parent, std::string value);
+  Node(std::string value);
   ~Node();
 
   void add(Node *child);

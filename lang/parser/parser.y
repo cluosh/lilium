@@ -63,20 +63,20 @@ Program:
   | Program Expr { node.add($2); }
   ;
 FuncDef:
-  '(' DEF ID '(' Params ')' Expr ')' { AST::Node *n = new AST::Node(nullptr, $3);
+  '(' DEF ID '(' Params ')' Expr ')' { AST::Node *n = new AST::Node($3);
                                        n->add($5); n->add($7); $$ = n; }
   ;
 Params:
-  { $$ = new AST::Node(nullptr, "nil"); }
+  { $$ = new AST::Node("nil"); }
   | ParamList { $$ = $1; }
   ;
 ParamList:
-  ParamList ',' ID { AST::Node *n = new AST::Node(nullptr, $3);
+  ParamList ',' ID { AST::Node *n = new AST::Node($3);
                      n->add($1); $$ = n; }
-  | ID { $$ = new AST::Node(nullptr, $1); }
+  | ID { $$ = new AST::Node($1); }
   ;
 Expr:
-  ID { $$ = new AST::Node(nullptr, $1); }
+  ID { $$ = new AST::Node($1); }
   ;
 %%
 

@@ -21,8 +21,7 @@
 
 namespace AST {
 
-Node::Node(Node *parent, std::string value) {
-  this->parent = parent;
+Node::Node(std::string value) {
   this->value = value;
 }
 

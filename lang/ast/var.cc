@@ -15,30 +15,45 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_NODE_H_
-#define LANG_AST_NODE_H_
-
-#include <list>
 #include <string>
+
+#include "lang/ast/var.h"
 
 namespace AST {
 
 /**
- * A node in an abstract syntax tree
+ * @brief Initialize a variable list node
+ * @param name Name of the variable
  */
-class Node {
- private:
-  std::list<Node *> nodes;
-  std::string value;
+Var::Var(std::string name) {
+  this->name = name;
+}
 
- public:
-  Node(std::string value);
-  ~Node();
+/**
+ * @brief Free all variable list nodes
+ */
+Var::~Var() {
+  delete next;
+}
 
-  void add(Node *child);
-  void print(std::string indent);
-};
+/**
+ * @brief Assign pointer to next element
+ * @param next New pointer to next element
+ */
+void Var::set_next(Var *next) {
+  this->next = next;
+}
+
+/**
+ * @brief Create textual representation of variable list
+ * @param indentation Indentation level in tree
+ * @return Variable names + indentation
+ */
+std::string Var::to_string(std::string indentation) {
+  std::string out = indentation + "  - " + name;
+  if (next != nullptr)
+    out += next->to_string(indentation);
+  return out;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_NODE_H_

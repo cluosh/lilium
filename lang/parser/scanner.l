@@ -39,7 +39,8 @@
 COMMENT         #.*
 WHITESPACE      [\t \n]
 LETTER          [a-zA-Z]
-NUMBER          ([0-9]+)|(0x[0-9a-fA-F]+)
+INTEGER         ([0-9]+)|(0x[0-9a-fA-F]+)
+FLOAT           ([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)
 IDENTIFIER      ({LETTER}|_)({LETTER}|[0-9]|_)*
 
 %%
@@ -67,7 +68,12 @@ if              { return Parser::Parser::token::IF; }
 or              { return Parser::Parser::token::OR; }
 and             { return Parser::Parser::token::AND; }
 not             { return Parser::Parser::token::NOT; }
-{NUMBER}        { return Parser::Parser::token::NUM; }
+":: SP"         { return Parser::Parser::token::TSP; }
+":: DP"         { return Parser::Parser::token::TDP; }
+{INTEGER}       { yylval->build<std::uint64_t>(parse_integer(yytext));
+                  return Parser::Parser::token::INT; }
+{FLOAT}         { yylval->build<double>(parse_float(yytext));
+                  return Parser::Parser::token::FLOAT; }
 {IDENTIFIER}    { yylval->build<std::string>(yytext);
                   return Parser::Parser::token::ID; }
 \n		{ loc->lines(); }

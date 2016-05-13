@@ -15,40 +15,32 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_PARSER_SCANNER_H_
-#define LANG_PARSER_SCANNER_H_
+#include <iostream>
+#include <exception>
+#include <string>
 
-#include <cstdint>
-
-#ifndef yyFlexLexerOnce
-#include <FlexLexer.h>
-#endif
-
-#include "lang/parser/parser.tab.hpp"
-#include "lang/parser/location.hh"
+#include "lang/parser/scanner.h"
 
 namespace Parser {
 
-class Scanner : public yyFlexLexer {
- private:
-  Parser::semantic_type *yylval = nullptr;
-  Parser::location_type *loc = nullptr;
+/**
+ * @brief Parse an integer
+ * @param txt Text to be interpreted as integer
+ * @return 64-bit integer
+ */
+std::uint64_t Scanner::parse_integer(const char *txt) {
+  // TODO(cluosh): Exception handling?
+  return stoll(std::string(txt));
+}
 
- public:
-  explicit Scanner(std::istream *in) : yyFlexLexer(in) {
-    loc = new Parser::location_type();
-  }
-
-  // Method body created by flex (scanner.l definitions)
-  using yyFlexLexer::yylex;
-  virtual int yylex(Parser::semantic_type * const lval,
-                    Parser::location_type *location);
-
-  // Safe number conversion
-  std::uint64_t parse_integer(const char *text);
-  double parse_float(const char *text);
-};
+/**
+ * @brief Parse a floating point value
+ * @param txt Text to be interpreted as floating point value
+ * @return Double precision float
+ */
+double Scanner::parse_float(const char *txt) {
+  // TODO(cluosh): Exception handling?
+  return stod(std::string(txt));
+}
 
 }  // namespace Parser
-
-#endif  // LANG_PARSER_SCANNER_H_

@@ -15,31 +15,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_PARSER_CONTROLLER_H_
-#define LANG_PARSER_CONTROLLER_H_
+#ifndef LANG_AST_GLOBAL_EXPR_H_
+#define LANG_AST_GLOBAL_EXPR_H_
 
-#include <istream>
 #include <string>
 
-#include "lang/ast/program.h"
-#include "lang/parser/scanner.h"
-#include "lang/parser/parser.tab.hpp"
+namespace AST {
 
-namespace Parser {
-
-class Controller {
- private:
-  Parser *parser = nullptr;
-  Scanner *scanner = nullptr;
-  AST::Program *ast = nullptr;
-
+/**
+ * @brief A global definition in a program.
+ * @details Either a expression without variables or a
+ *          function definition.
+ */
+class GlobalExpr {
  public:
-  ~Controller();
-
-  bool parse(std::string filename);
-  bool parse(const std::istream &is);
+  virtual ~GlobalExpr() = default;
+  virtual std::string to_string() = 0;
 };
 
-}  // namespace Parser
+}  // namespace AST
 
-#endif  // LANG_PARSER_CONTROLLER_H_
+#endif  // LANG_AST_GLOBAL_EXPR_H_

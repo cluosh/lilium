@@ -15,31 +15,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "lang/ast/node.h"
-
-#include <iostream>
+#ifndef LANG_AST_TYPES_H_
+#define LANG_AST_TYPES_H_
 
 namespace AST {
 
-Node::Node(std::string value) {
-  this->value = value;
-}
-
-Node::~Node() {
-  for (auto const &node : nodes) {
-    delete node;
-  }
-}
-
-void Node::add(Node *child) {
-  nodes.push_back(child);
-}
-
-void Node::print(std::string indent) {
-  std::cout << indent << "- " << value;
-  for (auto const &node : nodes) {
-    node->print(indent + "  ");
-  }
-}
+/**
+ * @brief Enumeration describing all possible types
+ */
+enum Type {
+  TYPE_INT,
+  TYPE_SINGLEP,
+  TYPE_DOUBLEP,
+  TYPE_STRING,
+  TYPE_COUNT
+};
 
 }  // namespace AST
+
+#endif  // LANG_AST_TYPES_H_

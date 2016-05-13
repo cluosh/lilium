@@ -5,14 +5,11 @@ CC=clang++
 LEX=flex
 YACC=bison
 YFLAGS=-d
-CFLAGS+=-std=c++11 -O3 -pedantic -Wall -I../ -fsanitize=leak
+CFLAGS+=-std=c++11 -O3 -pedantic -Wall -I../
 
-OBJ=parser/lex.yy.o parser/parser.tab.o parser/controller.o ast/node.o
+OBJ=parser/lex.yy.o parser/parser.tab.o parser/scanner.o parser/controller.o ast/program.o ast/func_def.o ast/expr.o ast/var.o
 
 all: lcc
-
-#lcc: parser/lex.yy.cpp parser/parser.tab.cpp parser/parser.tab.hpp
-#	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ parser/lex.yy.cpp parser/parser.tab.cpp
 
 lcc: $(OBJ) parser/parser.tab.hpp
 	$(CC) $(LDFLAGS) -o $@ $(OBJ)

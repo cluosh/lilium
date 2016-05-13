@@ -27,19 +27,25 @@
   class Scanner;
   }
   namespace AST {
-  class Node;
+  class Program;
+  class FuncDef;
+  class Expr;
+  class Var;
   }
 }
 
 %parse-param { Scanner &scanner }
-%parse-param { AST::Node &node }
+%parse-param { AST::Program &ast }
 
 %code {
   #include <iostream>
   #include <cstdlib>
   #include <fstream>
 
-  #include "lang/ast/node.h"
+  #include "lang/ast/program.h"
+  #include "lang/ast/func_def.h"
+  #include "lang/ast/expr.h"
+  #include "lang/ast/var.h"
   #include "lang/parser/scanner.h"
 
   #undef yylex
@@ -49,34 +55,39 @@
 %define api.value.type variant
 %define parse.assert
 
-%token LE GE DEF LET IF OR AND NOT NUM
+%token LE GE DEF LET IF OR AND NOT
+%token TSP TDP
 %token ERROR
+%token <std::uint64_t> INT
+%token <double> FLOAT
 %token <std::string> ID
 
 %locations
 
-%type <AST::Node *> Expr FuncDef Params ParamList
+%type <AST::FuncDef *> FuncDef
+%type <AST::Expr *> Expr
+%type <AST::Var *> ParamList Params
 
 %%
 Program:
-  | Program FuncDef { node.add($2); }
-  | Program Expr { node.add($2); }
+  | Program FuncDef { ast.add($2); }
+  | Program Expr { ast.add($2); }
   ;
 FuncDef:
-  '(' DEF ID '(' Params ')' Expr ')' { AST::Node *n = new AST::Node($3);
-                                       n->add($5); n->add($7); $$ = n; }
+'(' DEF ID '(' Params ')' Expr ')' { $$ = new AST::FuncDef($3,$5,$7); }
   ;
 Params:
-  { $$ = new AST::Node("nil"); }
+  { $$ = nullptr; }
   | ParamList { $$ = $1; }
   ;
 ParamList:
-  ParamList ',' ID { AST::Node *n = new AST::Node($3);
-                     n->add($1); $$ = n; }
-  | ID { $$ = new AST::Node($1); }
+  ParamList ID { AST::Var *v = new AST::Var($2);
+                 v->set_next($1);
+		 $$ = v; }
+  | ID { $$ = new AST::Var($1); }
   ;
 Expr:
-  ID { $$ = new AST::Node($1); }
+  ID { $$ = new AST::Expr(AST::TYPE_INT); }
   ;
 %%
 

@@ -15,40 +15,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_PARSER_SCANNER_H_
-#define LANG_PARSER_SCANNER_H_
+#ifndef LANG_AST_PROGRAM_H_
+#define LANG_AST_PROGRAM_H_
 
-#include <cstdint>
+#include <list>
+#include <string>
 
-#ifndef yyFlexLexerOnce
-#include <FlexLexer.h>
-#endif
+#include "lang/ast/global_expr.h"
 
-#include "lang/parser/parser.tab.hpp"
-#include "lang/parser/location.hh"
+namespace AST {
 
-namespace Parser {
-
-class Scanner : public yyFlexLexer {
+/**
+ * @brief The root node of a lilium program.
+ */
+class Program {
  private:
-  Parser::semantic_type *yylval = nullptr;
-  Parser::location_type *loc = nullptr;
+  std::list<GlobalExpr *> expr_list;
 
  public:
-  explicit Scanner(std::istream *in) : yyFlexLexer(in) {
-    loc = new Parser::location_type();
-  }
+  ~Program();
 
-  // Method body created by flex (scanner.l definitions)
-  using yyFlexLexer::yylex;
-  virtual int yylex(Parser::semantic_type * const lval,
-                    Parser::location_type *location);
-
-  // Safe number conversion
-  std::uint64_t parse_integer(const char *text);
-  double parse_float(const char *text);
+  void add(GlobalExpr *expr);
+  std::string to_string();
 };
 
-}  // namespace Parser
+}  // namespace AST
 
-#endif  // LANG_PARSER_SCANNER_H_
+#endif  // LANG_AST_PROGRAM_H_

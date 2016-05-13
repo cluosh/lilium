@@ -56,7 +56,7 @@ bool Controller::parse(const std::istream &is) {
 
   // Allocate AST
   delete(ast);
-  ast = new (std::nothrow) AST::Node("ROOT");
+  ast = new (std::nothrow) AST::Program();
   if (ast == nullptr) {
     std::cerr << "Could not allocate AST structure\n";
     return false;
@@ -85,8 +85,7 @@ bool Controller::parse(const std::istream &is) {
   }
 
   // Print AST
-  ast->print("\n");
-  std::cout << "\n";
+  std::cout << "\n" << ast->to_string();
   return true;
 }
 

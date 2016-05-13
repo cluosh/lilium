@@ -15,31 +15,40 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_PARSER_CONTROLLER_H_
-#define LANG_PARSER_CONTROLLER_H_
-
-#include <istream>
 #include <string>
 
 #include "lang/ast/program.h"
-#include "lang/parser/scanner.h"
-#include "lang/parser/parser.tab.hpp"
 
-namespace Parser {
+namespace AST {
 
-class Controller {
- private:
-  Parser *parser = nullptr;
-  Scanner *scanner = nullptr;
-  AST::Program *ast = nullptr;
+/**
+ * @brief Free all child nodes
+ */
+Program::~Program() {
+  for (auto const &expr : expr_list) {
+    delete expr;
+  }
+}
 
- public:
-  ~Controller();
+/**
+ * @brief Add a new node to the AST
+ * @param expr New global expression
+ */
+void Program::add(GlobalExpr *expr) {
+  expr_list.push_back(expr);
+}
 
-  bool parse(std::string filename);
-  bool parse(const std::istream &is);
-};
+/**
+ * @brief Create a textual representation of the AST
+ * @return Textual representation of the AST
+ */
+std::string Program::to_string() {
+  std::string out = "Program";
+  for (auto const &expr : expr_list) {
+    out += expr->to_string();
+  }
+  out += "\n";
+  return out;
+}
 
-}  // namespace Parser
-
-#endif  // LANG_PARSER_CONTROLLER_H_
+}  // namespace AST

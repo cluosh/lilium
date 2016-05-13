@@ -15,40 +15,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_PARSER_SCANNER_H_
-#define LANG_PARSER_SCANNER_H_
+#ifndef LANG_AST_VAR_H_
+#define LANG_AST_VAR_H_
 
-#include <cstdint>
+#include <string>
 
-#ifndef yyFlexLexerOnce
-#include <FlexLexer.h>
-#endif
+namespace AST {
 
-#include "lang/parser/parser.tab.hpp"
-#include "lang/parser/location.hh"
-
-namespace Parser {
-
-class Scanner : public yyFlexLexer {
+/**
+ * @brief A list of variables/parameters
+ */
+class Var {
  private:
-  Parser::semantic_type *yylval = nullptr;
-  Parser::location_type *loc = nullptr;
+  std::string name;
+  Var *next = nullptr;
 
  public:
-  explicit Scanner(std::istream *in) : yyFlexLexer(in) {
-    loc = new Parser::location_type();
-  }
+  explicit Var(std::string name);
+  ~Var();
 
-  // Method body created by flex (scanner.l definitions)
-  using yyFlexLexer::yylex;
-  virtual int yylex(Parser::semantic_type * const lval,
-                    Parser::location_type *location);
-
-  // Safe number conversion
-  std::uint64_t parse_integer(const char *text);
-  double parse_float(const char *text);
+  void set_next(Var *next);
+  std::string to_string(std::string indentation);
 };
 
-}  // namespace Parser
+}  // namespace AST
 
-#endif  // LANG_PARSER_SCANNER_H_
+#endif  // LANG_AST_VAR_H_

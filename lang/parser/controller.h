@@ -23,7 +23,7 @@
 
 #include "lang/ast/program.h"
 #include "lang/parser/scanner.h"
-#include "lang/parser/parser.tab.hpp"
+#include "lang/parser/parser.tab.hh"
 
 namespace Parser {
 

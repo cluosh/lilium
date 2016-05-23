@@ -15,41 +15,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#ifndef LANG_AST_PLUS_EXPR_H_
+#define LANG_AST_PLUS_EXPR_H_
+
 #include <string>
 
-#include "lang/ast/var.h"
-
-namespace AST {
-
-/**
- * @brief Initialize a variable list node
- * @param name Name of the variable
- * @param next Next var in list
- * @param type Type of the variable
- */
-Var::Var(std::string name, Var *next, Type type) {
-  this->name = name;
-  this->next = next;
-  this->type = type;
-}
+#include "lang/ast/expr.h"
+#include "lang/ast/types.h"
 
 /**
- * @brief Free all variable list nodes
+ * @brief Syntax node corresponding to (+ Expr Expr)
  */
-Var::~Var() {
-  delete next;
-}
+class PlusExpr : public Expr {
+private:
+  Expr *fst;
+  Expr *snd;
 
-/**
- * @brief Create textual representation of variable list
- * @param indentation Indentation level in tree
- * @return Variable names + indentation
- */
-std::string Var::to_string(std::string indentation) {
-  std::string out = indentation + "  - " + name;
-  if (next != nullptr)
-    out += next->to_string(indentation);
-  return out;
-}
+public:
+  PlusExpr(Expr *fst, Expr *snd, Type type);
+  ~PlusExpr();
+};
 
-}  // namespace AST
+#endif  // LANG_AST_PLUS_EXPR_H_

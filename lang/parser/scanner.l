@@ -68,15 +68,15 @@ if              { return Parser::Parser::token::IF; }
 or              { return Parser::Parser::token::OR; }
 and             { return Parser::Parser::token::AND; }
 not             { return Parser::Parser::token::NOT; }
-":: SP"         { return Parser::Parser::token::TSP; }
-":: DP"         { return Parser::Parser::token::TDP; }
+"::SP"          { return Parser::Parser::token::TSP; }
+"::DP"          { return Parser::Parser::token::TDP; }
 {INTEGER}       { yylval->build<std::uint64_t>(parse_integer(yytext));
                   return Parser::Parser::token::INT; }
 {FLOAT}         { yylval->build<double>(parse_float(yytext));
                   return Parser::Parser::token::FLOAT; }
 {IDENTIFIER}    { yylval->build<std::string>(yytext);
                   return Parser::Parser::token::ID; }
-\n		{ loc->lines(); }
+\n		        { loc->lines(); }
 {COMMENT}       { }
 {WHITESPACE}+   { }
 .               { return Parser::Parser::token::ERROR; }

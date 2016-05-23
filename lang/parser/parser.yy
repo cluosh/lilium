@@ -66,7 +66,7 @@
 
 %type <AST::FuncDef *> FuncDef
 %type <AST::Expr *> Expr
-%type <AST::Var *> ParamList Params
+%type <AST::Var *> Params
 
 %%
 Program:
@@ -74,20 +74,18 @@ Program:
   | Program Expr { ast.add($2); }
   ;
 FuncDef:
-'(' DEF ID '(' Params ')' Expr ')' { $$ = new AST::FuncDef($3,$5,$7); }
+ '(' DEF ID '(' Params ')' Expr ')' { $$ = new AST::FuncDef($3,$5,$7); }
   ;
 Params:
   { $$ = nullptr; }
-  | ParamList { $$ = $1; }
-  ;
-ParamList:
-  ParamList ID { AST::Var *v = new AST::Var($2);
-                 v->set_next($1);
-		 $$ = v; }
-  | ID { $$ = new AST::Var($1); }
-  ;
+  | ID Params { $$ = new AST::Var($1, $2, AST::TYPE_INT); }
+  | ID TSP Params { $$ = new AST::Var($1, $3, AST::TYPE_SINGLEP); }
+  | ID TDP Params { $$ = new AST::Var($1, $3, AST::TYPE_DOUBLEP); }
 Expr:
-  ID { $$ = new AST::Expr(AST::TYPE_INT); }
+  ID { $$ = new AST::Expr(); }
+  | INT { $$ = new AST::Expr(AST::TYPE_INT); }
+  | FLOAT { $$ = new AST::Expr(AST::TYPE_SINGLEP); }
+  | '(' '+' Expr Expr ')' { $$ = new AST::Expr(); }
   ;
 %%
 

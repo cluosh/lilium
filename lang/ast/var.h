@@ -20,6 +20,8 @@
 
 #include <string>
 
+#include "lang/ast/types.h"
+
 namespace AST {
 
 /**
@@ -29,12 +31,12 @@ class Var {
  private:
   std::string name;
   Var *next = nullptr;
+  Type type;
 
  public:
-  explicit Var(std::string name);
+  Var(std::string name, Var *next, Type type);
   ~Var();
 
-  void set_next(Var *next);
   std::string to_string(std::string indentation);
 };
 

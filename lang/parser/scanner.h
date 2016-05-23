@@ -24,7 +24,7 @@
 #include <FlexLexer.h>
 #endif
 
-#include "lang/parser/parser.tab.hpp"
+#include "lang/parser/parser.tab.hh"
 #include "lang/parser/location.hh"
 
 namespace Parser {

@@ -27,10 +27,9 @@ namespace AST {
  * @param next Next var in list
  * @param type Type of the variable
  */
-Var::Var(std::string name, Var *next, Type type) {
+Var::Var(std::string name, Var *next, Type type) : Expr(type) {
   this->name = name;
   this->next = next;
-  this->type = type;
 }
 
 /**
@@ -38,18 +37,6 @@ Var::Var(std::string name, Var *next, Type type) {
  */
 Var::~Var() {
   delete next;
-}
-
-/**
- * @brief Create textual representation of variable list
- * @param indentation Indentation level in tree
- * @return Variable names + indentation
- */
-std::string Var::to_string(std::string indentation) {
-  std::string out = indentation + "  - " + name;
-  if (next != nullptr)
-    out += next->to_string(indentation);
-  return out;
 }
 
 }  // namespace AST

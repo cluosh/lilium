@@ -45,8 +45,9 @@ class Scanner : public yyFlexLexer {
                     Parser::location_type *location);
 
   // Safe number conversion
-  std::uint64_t parse_integer(const char *text);
-  double parse_float(const char *text);
+  std::int64_t parse_integer(const char *text);
+  double parse_double(const char *text);
+  float parse_float(const char *text);
 };
 
 }  // namespace Parser

@@ -18,7 +18,6 @@
 #include <string>
 
 #include "lang/ast/func_def.h"
-#include "lang/ast/expr.h"
 
 namespace AST {
 
@@ -40,22 +39,6 @@ FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr_list) {
 FuncDef::~FuncDef() {
   delete var_list;
   delete expr_list;
-}
-
-/**
- * @brief Textual representation of a function definition
- * @return Function name and representation of child nodes
- */
-std::string FuncDef::to_string() {
-  std::string out = "\n  - Function: ";
-  out += name;
-
-  // Add parameter and expression representation
-  out += "\n    - Parameters";
-  if (var_list != nullptr)
-    out += var_list->to_string("\n    ");
-  out += expr_list->to_string("\n  ");
-  return out;
 }
 
 }  // namespace AST

@@ -20,24 +20,21 @@
 
 #include <string>
 
-#include "lang/ast/types.h"
+#include "lang/ast/expr.h"
 
 namespace AST {
 
 /**
  * @brief A list of variables/parameters
  */
-class Var {
+class Var : public Expr {
  private:
   std::string name;
   Var *next = nullptr;
-  Type type;
 
  public:
   Var(std::string name, Var *next, Type type);
   ~Var();
-
-  std::string to_string(std::string indentation);
 };
 
 }  // namespace AST

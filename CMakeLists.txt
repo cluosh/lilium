@@ -18,7 +18,7 @@ set(LCC_SRC_FILES
     lang/ast/func_def.cc
     lang/ast/func_def.h
     lang/ast/global_expr.h
-    lang/ast/plus_expr.h
+        lang/ast/binary_expr.h
     lang/ast/program.cc
     lang/ast/program.h
     lang/ast/types.h
@@ -29,7 +29,7 @@ set(LCC_SRC_FILES
     lang/parser/parser.yy
     lang/parser/scanner.cc
     lang/parser/scanner.h
-    lang/parser/scanner.l)
+    lang/parser/scanner.l lang/ast/binary_expr.cc lang/ast/operators.h)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

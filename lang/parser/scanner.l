@@ -36,11 +36,12 @@
   #define YY_USER_ACTION loc->step(); loc->columns(yyleng);
 %}
 
-COMMENT         #.*
+COMMENT         ;.*
 WHITESPACE      [\t \n]
 LETTER          [a-zA-Z]
 INTEGER         ([0-9]+)|(0x[0-9a-fA-F]+)
-FLOAT           ([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)
+DOUBLE          ([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)
+SINGLE          {DOUBLE}f
 IDENTIFIER      ({LETTER}|_)({LETTER}|[0-9]|_)*
 
 %%
@@ -49,7 +50,6 @@ IDENTIFIER      ({LETTER}|_)({LETTER}|[0-9]|_)*
   yylval = lval;
 %}
 
-","             { return ','; }
 "("             { return '('; }
 ")"             { return ')'; }
 "+"             { return '+'; }
@@ -70,10 +70,12 @@ and             { return Parser::Parser::token::AND; }
 not             { return Parser::Parser::token::NOT; }
 "::SP"          { return Parser::Parser::token::TSP; }
 "::DP"          { return Parser::Parser::token::TDP; }
-{INTEGER}       { yylval->build<std::uint64_t>(parse_integer(yytext));
+{INTEGER}       { yylval->build<std::int64_t>(parse_integer(yytext));
                   return Parser::Parser::token::INT; }
-{FLOAT}         { yylval->build<double>(parse_float(yytext));
-                  return Parser::Parser::token::FLOAT; }
+{SINGLE}        { yylval->build<float>(parse_float(yytext));
+                  return Parser::Parser::token::SINGLEP; }
+{DOUBLE}        { yylval->build<double>(parse_double(yytext));
+                  return Parser::Parser::token::DOUBLEP; }
 {IDENTIFIER}    { yylval->build<std::string>(yytext);
                   return Parser::Parser::token::ID; }
 \n		        { loc->lines(); }

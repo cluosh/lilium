@@ -38,17 +38,4 @@ void Program::add(GlobalExpr *expr) {
   expr_list.push_back(expr);
 }
 
-/**
- * @brief Create a textual representation of the AST
- * @return Textual representation of the AST
- */
-std::string Program::to_string() {
-  std::string out = "Program";
-  for (auto const &expr : expr_list) {
-    out += expr->to_string();
-  }
-  out += "\n";
-  return out;
-}
-
 }  // namespace AST

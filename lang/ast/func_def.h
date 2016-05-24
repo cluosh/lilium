@@ -38,8 +38,6 @@ class FuncDef : public GlobalExpr {
  public:
   FuncDef(std::string name, Var *var_list, Expr *expr_list);
   ~FuncDef();
-
-  std::string to_string();
 };
 
 }  // namespace AST

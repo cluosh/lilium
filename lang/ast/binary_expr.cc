@@ -15,22 +15,32 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_TYPES_H_
-#define LANG_AST_TYPES_H_
+#include "lang/ast/binary_expr.h"
 
 namespace AST {
 
 /**
- * Enumeration describing all possible types.
+ * @brief Initialize a plus expression with two operands
+ * @param fst First operand
+ * @param snd Second operand
+ * @param op Operator for this binary expression node
  */
-enum Type {
-  TYPE_INT,
-  TYPE_SINGLEP,
-  TYPE_DOUBLEP,
-  TYPE_STRING,
-  TYPE_COUNT
-};
+BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op)
+    : Expr(TYPE_COUNT) {
+  this->fst = fst;
+  this->snd = snd;
+  this->op = op;
+
+  // Update type of expression
+  choose_type(fst, snd);
+}
+
+/**
+ * Cleanup allocated expressions.
+ */
+BinaryExpr::~BinaryExpr() {
+  delete fst;
+  delete snd;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_TYPES_H_

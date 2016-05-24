@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include <iostream>
-#include <exception>
 #include <string>
 
 #include "lang/parser/scanner.h"
@@ -28,7 +27,7 @@ namespace Parser {
  * @param txt Text to be interpreted as integer
  * @return 64-bit integer
  */
-std::uint64_t Scanner::parse_integer(const char *txt) {
+std::int64_t Scanner::parse_integer(const char *txt) {
   // TODO(cluosh): Exception handling?
   return stoll(std::string(txt));
 }
@@ -36,9 +35,19 @@ std::uint64_t Scanner::parse_integer(const char *txt) {
 /**
  * @brief Parse a floating point value
  * @param txt Text to be interpreted as floating point value
+ * @return Single precision float
+ */
+float Scanner::parse_float(const char *txt) {
+  // TODO(cluosh): Exception handling?
+  return stof(std::string(txt));
+}
+
+/**
+ * @brief Parse a floating point value with double precision
+ * @param txt Text to be interpreted as floating point value
  * @return Double precision float
  */
-double Scanner::parse_float(const char *txt) {
+double Scanner::parse_double(const char *txt) {
   // TODO(cluosh): Exception handling?
   return stod(std::string(txt));
 }

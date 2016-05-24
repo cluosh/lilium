@@ -36,7 +36,6 @@ class Program {
   ~Program();
 
   void add(GlobalExpr *expr);
-  std::string to_string();
 };
 
 }  // namespace AST

@@ -37,9 +37,7 @@ Controller::~Controller() {
  */
 bool Controller::parse(std::string filename) {
   std::ifstream inp(filename);
-  if (!inp.good())
-    return false;
-  return parse(inp);
+  return inp.good() && parse(inp);
 }
 
 /**
@@ -81,9 +79,6 @@ bool Controller::parse(const std::istream &is) {
     std::cerr << "Parsing failed!\n";
     return false;
   }
-
-  // Print AST
-  std::cout << "\n" << ast->to_string();
   return true;
 }
 
@@ -103,7 +98,7 @@ int main(int argc, char *argv[]) {
 
   // Create parser controller
   Parser::Controller controller;
-  bool error = false;
+  bool error;
   if (argc == 2)
     error = controller.parse(std::string(argv[1]));
   else

@@ -34,9 +34,10 @@ class Expr : public GlobalExpr {
 
  public:
   explicit Expr(Type type = TYPE_COUNT);
+  virtual ~Expr() = default;
 
-  std::string to_string();
-  std::string to_string(std::string indentation);
+ protected:
+  void choose_type(Expr *expr1, Expr *expr2);
 };
 
 }  // namespace AST

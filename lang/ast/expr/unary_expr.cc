@@ -15,23 +15,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_GLOBAL_EXPR_H_
-#define LANG_AST_GLOBAL_EXPR_H_
-
-#include <string>
+#include "lang/ast/expr/unary_expr.h"
 
 namespace AST {
 
 /**
- * @brief A global definition in a program.
- * @details Either a expression without variables or a
- *          function definition.
+ * Initialize an unary expression with an enclosed expression and operator.
+ *
+ * @param expr Enclosed expression
+ * @param op Unary operation
  */
-class GlobalExpr {
- public:
-  virtual ~GlobalExpr() = default;
-};
+UnaryExpr::UnaryExpr(Expr *fst, UnaryOperator op) : Expr() {
+  this->fst = fst;
+  this->op = op;
+
+  // Update type of expression
+  choose_type(fst, nullptr);
+}
+
+/**
+ * Clean up inner expression.
+ */
+UnaryExpr::~UnaryExpr() {
+  delete fst;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_GLOBAL_EXPR_H_

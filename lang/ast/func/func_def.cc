@@ -15,29 +15,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_PROGRAM_H_
-#define LANG_AST_PROGRAM_H_
-
-#include <list>
 #include <string>
 
-#include "lang/ast/expr/global_expr.h"
+#include "lang/ast/func/func_def.h"
 
 namespace AST {
 
 /**
- * @brief The root node of a lilium program.
+ * @brief Initialize a function definition
+ * @param name Function name
+ * @param var_list List of function parameters
+ * @param expr_list Function body/root expression
  */
-class Program {
- private:
-  std::list<GlobalExpr *> expr_list;
+FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr_list) {
+  this->name = name;
+  this->var_list = var_list;
+  this->expr_list = expr_list;
+}
 
- public:
-  ~Program();
-
-  void add(GlobalExpr *expr);
-};
+/**
+ * @brief Free child nodes
+ */
+FuncDef::~FuncDef() {
+  delete var_list;
+  delete expr_list;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_PROGRAM_H_

@@ -15,30 +15,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_BINARY_EXPR_H_
-#define LANG_AST_BINARY_EXPR_H_
+#ifndef LANG_AST_EXPR_EXPR_H_
+#define LANG_AST_EXPR_EXPR_H_
 
 #include <string>
 
-#include "lang/ast/expr.h"
-#include "lang/ast/operators.h"
+#include "lang/ast/expr/global_expr.h"
+#include "lang/ast/common/types.h"
 
 namespace AST {
 
 /**
- * @brief Syntax node corresponding to (+ Expr Expr)
+ * An expression in the AST.
  */
-class BinaryExpr: public Expr {
+class Expr : public GlobalExpr {
  private:
-  Expr *fst = nullptr;
-  Expr *snd = nullptr;
-  BinaryOperator op = BINARY_COUNT;
+  Type type;
 
  public:
-  BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op);
-  ~BinaryExpr();
+  explicit Expr(Type type = TYPE_COUNT);
+  virtual ~Expr() = default;
+
+ protected:
+  void choose_type(Expr *expr1, Expr *expr2);
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_BINARY_EXPR_H_
+#endif  // LANG_AST_EXPR_EXPR_H_

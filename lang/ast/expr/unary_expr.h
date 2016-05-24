@@ -15,30 +15,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_OPERATORS_H_
-#define LANG_AST_OPERATORS_H_
+#ifndef LANG_AST_EXPR_UNARY_EXPR_H_
+#define LANG_AST_EXPR_UNARY_EXPR_H_
+
+#include "lang/ast/expr/expr.h"
+#include "lang/ast/common/operators.h"
 
 namespace AST {
 
 /**
- * Enumeration describing all binary operators.
+ * Syntax node corresponding to all unary expressions.
  */
-enum BinaryOperator {
-  BINARY_ADD,
-  BINARY_SUB,
-  BINARY_MUL,
-  BINARY_DIV,
-  BINARY_AND,
-  BINARY_OR,
-  BINARY_GT,
-  BINARY_LT,
-  BINARY_GE,
-  BINARY_LE,
-  BINARY_EQ,
-  BINARY_NE,
-  BINARY_COUNT
+class UnaryExpr : public Expr {
+ private:
+  Expr *fst = nullptr;
+  UnaryOperator op = UNARY_COUNT;
+
+ public:
+  UnaryExpr(Expr *fst, UnaryOperator op);
+  ~UnaryExpr();
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_OPERATORS_H_
+#endif  // LANG_AST_EXPR_UNARY_EXPR_H_

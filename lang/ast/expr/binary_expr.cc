@@ -15,30 +15,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include <string>
-
-#include "lang/ast/func_def.h"
+#include "lang/ast/expr/binary_expr.h"
 
 namespace AST {
 
 /**
- * @brief Initialize a function definition
- * @param name Function name
- * @param var_list List of function parameters
- * @param expr_list Function body/root expression
+ * @brief Initialize a plus expression with two operands
+ * @param fst First operand
+ * @param snd Second operand
+ * @param op Operator for this binary expression node
  */
-FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr_list) {
-  this->name = name;
-  this->var_list = var_list;
-  this->expr_list = expr_list;
+BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op) : Expr() {
+  this->fst = fst;
+  this->snd = snd;
+  this->op = op;
+
+  // Update type of expression
+  choose_type(fst, snd);
 }
 
 /**
- * @brief Free child nodes
+ * Cleanup allocated expressions.
  */
-FuncDef::~FuncDef() {
-  delete var_list;
-  delete expr_list;
+BinaryExpr::~BinaryExpr() {
+  delete fst;
+  delete snd;
 }
 
 }  // namespace AST

@@ -44,12 +44,13 @@
   #include <fstream>
 
   #include "lang/ast/program.h"
-  #include "lang/ast/func_def.h"
-  #include "lang/ast/expr.h"
-  #include "lang/ast/binary_expr.h"
-  #include "lang/ast/var.h"
-  #include "lang/ast/types.h"
-  #include "lang/ast/operators.h"
+  #include "lang/ast/func/func_def.h"
+  #include "lang/ast/expr/expr.h"
+  #include "lang/ast/expr/binary_expr.h"
+  #include "lang/ast/expr/unary_expr.h"
+  #include "lang/ast/data/var.h"
+  #include "lang/ast/common/types.h"
+  #include "lang/ast/common/operators.h"
   #include "lang/parser/scanner.h"
 
   #undef yylex
@@ -105,6 +106,8 @@ Expr:
   | '(' LE Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_LE); }
   | '(' '=' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_EQ); }
   | '(' '!' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_NE); }
+  | '(' '-' Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NEG); }
+  | '(' NOT Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NOT); }
   ;
 PlusExprList:
   Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD); }

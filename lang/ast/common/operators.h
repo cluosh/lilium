@@ -15,32 +15,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "lang/ast/binary_expr.h"
+#ifndef LANG_AST_COMMON_OPERATORS_H_
+#define LANG_AST_COMMON_OPERATORS_H_
 
 namespace AST {
 
 /**
- * @brief Initialize a plus expression with two operands
- * @param fst First operand
- * @param snd Second operand
- * @param op Operator for this binary expression node
+ * Enumeration describing all binary operators.
  */
-BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op)
-    : Expr(TYPE_COUNT) {
-  this->fst = fst;
-  this->snd = snd;
-  this->op = op;
-
-  // Update type of expression
-  choose_type(fst, snd);
-}
+enum BinaryOperator {
+  BINARY_ADD,
+  BINARY_SUB,
+  BINARY_MUL,
+  BINARY_DIV,
+  BINARY_AND,
+  BINARY_OR,
+  BINARY_GT,
+  BINARY_LT,
+  BINARY_GE,
+  BINARY_LE,
+  BINARY_EQ,
+  BINARY_NE,
+  BINARY_COUNT
+};
 
 /**
- * Cleanup allocated expressions.
+ * Enumeration describing all unary operators.
  */
-BinaryExpr::~BinaryExpr() {
-  delete fst;
-  delete snd;
-}
+enum UnaryOperator {
+  UNARY_NOT,
+  UNARY_NEG,
+  UNARY_COUNT
+};
 
 }  // namespace AST
+
+#endif  // LANG_AST_COMMON_OPERATORS_H_

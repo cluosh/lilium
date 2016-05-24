@@ -15,8 +15,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_TYPES_H_
-#define LANG_AST_TYPES_H_
+#ifndef LANG_AST_COMMON_TYPES_H_
+#define LANG_AST_COMMON_TYPES_H_
 
 namespace AST {
 
@@ -33,4 +33,4 @@ enum Type {
 
 }  // namespace AST
 
-#endif  // LANG_AST_TYPES_H_
+#endif  // LANG_AST_COMMON_TYPES_H_

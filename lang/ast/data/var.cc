@@ -15,31 +15,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_H_
-#define LANG_AST_EXPR_H_
-
 #include <string>
 
-#include "lang/ast/global_expr.h"
-#include "lang/ast/types.h"
+#include "lang/ast/data/var.h"
 
 namespace AST {
 
 /**
- * @brief An expression in the AST.
+ * @brief Initialize a variable list node
+ * @param name Name of the variable
+ * @param next Next var in list
+ * @param type Type of the variable
  */
-class Expr : public GlobalExpr {
- private:
-  Type type;
+Var::Var(std::string name, Var *next, Type type) : Expr(type) {
+  this->name = name;
+  this->next = next;
+}
 
- public:
-  explicit Expr(Type type = TYPE_COUNT);
-  virtual ~Expr() = default;
-
- protected:
-  void choose_type(Expr *expr1, Expr *expr2);
-};
+/**
+ * @brief Free all variable list nodes
+ */
+Var::~Var() {
+  delete next;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_EXPR_H_

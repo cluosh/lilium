@@ -15,29 +15,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_PROGRAM_H_
-#define LANG_AST_PROGRAM_H_
+#ifndef LANG_AST_DATA_VAR_H_
+#define LANG_AST_DATA_VAR_H_
 
-#include <list>
 #include <string>
 
-#include "lang/ast/expr/global_expr.h"
+#include "lang/ast/expr/expr.h"
 
 namespace AST {
 
 /**
- * @brief The root node of a lilium program.
+ * @brief A list of variables/parameters
  */
-class Program {
+class Var : public Expr {
  private:
-  std::list<GlobalExpr *> expr_list;
+  std::string name;
+  Var *next = nullptr;
 
  public:
-  ~Program();
-
-  void add(GlobalExpr *expr);
+  Var(std::string name, Var *next, Type type);
+  ~Var();
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_PROGRAM_H_
+#endif  // LANG_AST_DATA_VAR_H_

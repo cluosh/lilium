@@ -15,31 +15,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_FUNC_DEF_H_
-#define LANG_AST_FUNC_DEF_H_
+#ifndef LANG_AST_EXPR_BINARY_EXPR_H_
+#define LANG_AST_EXPR_BINARY_EXPR_H_
 
 #include <string>
 
-#include "lang/ast/expr.h"
-#include "lang/ast/global_expr.h"
-#include "lang/ast/var.h"
+#include "lang/ast/expr/expr.h"
+#include "lang/ast/common/operators.h"
 
 namespace AST {
 
 /**
- * @brief A function definition node in the AST
+ * Syntax node corresponding to all binary expressions.
  */
-class FuncDef : public GlobalExpr {
+class BinaryExpr: public Expr {
  private:
-  std::string name;
-  Var *var_list = nullptr;
-  Expr *expr_list = nullptr;
+  Expr *fst = nullptr;
+  Expr *snd = nullptr;
+  BinaryOperator op = BINARY_COUNT;
 
  public:
-  FuncDef(std::string name, Var *var_list, Expr *expr_list);
-  ~FuncDef();
+  BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op);
+  ~BinaryExpr();
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_FUNC_DEF_H_
+#endif  // LANG_AST_EXPR_BINARY_EXPR_H_

@@ -13,35 +13,35 @@ set(SOURCE_FILES
     vm/opcodes.h)
 
 set(LCC_SRC_FILES
-    lang/ast/expr.cc
-    lang/ast/expr.h
-    lang/ast/func_def.cc
-    lang/ast/func_def.h
-    lang/ast/global_expr.h
-        lang/ast/binary_expr.h
+        lang/ast/expr/expr.cc
+        lang/ast/expr/expr.h
+        lang/ast/func/func_def.cc
+        lang/ast/func/func_def.h
+        lang/ast/expr/global_expr.h
+        lang/ast/expr/binary_expr.h
     lang/ast/program.cc
     lang/ast/program.h
-    lang/ast/types.h
-    lang/ast/var.cc
-    lang/ast/var.h
+        lang/ast/common/types.h
+        lang/ast/data/var.cc
+        lang/ast/data/var.h
     lang/parser/controller.cc
     lang/parser/controller.h
-    lang/parser/parser.yy
+        lang/parser/grammar/parser.yy
     lang/parser/scanner.cc
     lang/parser/scanner.h
-    lang/parser/scanner.l lang/ast/binary_expr.cc lang/ast/operators.h)
+        lang/parser/grammar/scanner.l lang/ast/expr/binary_expr.cc lang/ast/common/operators.h lang/ast/expr/unary_expr.h lang/ast/expr/unary_expr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
-bison_target(lccParser lang/parser/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
-flex_target(lccLexer lang/parser/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
-add_flex_bison_dependency(lccLexer lccParser)
+bison_target(lcc_parser lang/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
+flex_target(lcc_lexer lang/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
+add_flex_bison_dependency(lcc_lexer lcc_parser)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lang/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(lcc
         ${LCC_SRC_FILES}
-        ${BISON_lccParser_OUTPUTS}
-        ${FLEX_lccLexer_OUTPUTS}
+        ${BISON_lcc_parser_OUTPUTS}
+        ${FLEX_lcc_lexer_OUTPUTS}
 )

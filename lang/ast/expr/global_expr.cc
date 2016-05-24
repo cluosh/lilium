@@ -15,29 +15,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_GLOBAL_EXPR_H_
-#define LANG_AST_EXPR_GLOBAL_EXPR_H_
-
-#include <string>
-
-#include "lang/ast/common/symbol.h"
+#include "lang/ast/expr/global_expr.h"
 
 namespace AST {
 
 /**
- * A global definition in a program, either a expression without variables
- * or a function definition.
+ * Remove and deallocate symbols.
  */
-class GlobalExpr {
- private:
-  SymbolTables *symbol_tables = nullptr;
+void GlobalExpr::remove_symbols() {
+  delete symbol_tables;
+  symbol_tables = nullptr;
+}
 
- public:
-  virtual ~GlobalExpr() = default;
-  void set_symbols(SymbolTables *symbol_tables);
-  void remove_symbols();
-};
+/**
+ * Assign symbols to the global expression.
+ *
+ * @param symbol_tables Stack of symbol tables to be assigned
+ */
+void GlobalExpr::set_symbols(SymbolTables *symbol_tables) {
+  this->symbol_tables = symbol_tables;
+}
 
 }  // namespace AST
-
-#endif  // LANG_AST_EXPR_GLOBAL_EXPR_H_

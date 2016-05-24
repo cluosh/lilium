@@ -15,29 +15,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_GLOBAL_EXPR_H_
-#define LANG_AST_EXPR_GLOBAL_EXPR_H_
+#ifndef LANG_AST_COMMON_SYMBOL_H_
+#define LANG_AST_COMMON_SYMBOL_H_
 
+#include <cstdint>
+#include <stack>
 #include <string>
+#include <unordered_map>
 
-#include "lang/ast/common/symbol.h"
+#include "lang/ast/common/types.h"
 
 namespace AST {
 
 /**
- * A global definition in a program, either a expression without variables
- * or a function definition.
+ * An entry in a symbol table.
  */
-class GlobalExpr {
- private:
-  SymbolTables *symbol_tables = nullptr;
-
- public:
-  virtual ~GlobalExpr() = default;
-  void set_symbols(SymbolTables *symbol_tables);
-  void remove_symbols();
+struct Symbol {
+  std::uint8_t reg;
+  Type type;
 };
+
+typedef std::stack<std::unordered_map<std::string, Symbol>> SymbolTables;
 
 }  // namespace AST
 
-#endif  // LANG_AST_EXPR_GLOBAL_EXPR_H_
+#endif  // LANG_AST_COMMON_SYMBOL_H_

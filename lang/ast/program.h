@@ -26,7 +26,7 @@
 namespace AST {
 
 /**
- * @brief The root node of a lilium program.
+ * The root node of a lilium program.
  */
 class Program {
  private:
@@ -36,6 +36,7 @@ class Program {
   ~Program();
 
   void add(GlobalExpr *expr);
+  void attribute_tree();
 };
 
 }  // namespace AST

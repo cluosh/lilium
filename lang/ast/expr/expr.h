@@ -20,8 +20,8 @@
 
 #include <string>
 
-#include "lang/ast/expr/global_expr.h"
 #include "lang/ast/common/types.h"
+#include "lang/ast/expr/global_expr.h"
 
 namespace AST {
 

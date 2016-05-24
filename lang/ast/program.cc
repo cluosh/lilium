@@ -22,20 +22,30 @@
 namespace AST {
 
 /**
- * @brief Free all child nodes
+ * Free all child nodes.
  */
 Program::~Program() {
   for (auto const &expr : expr_list) {
+    expr->remove_symbols();
     delete expr;
   }
 }
 
 /**
- * @brief Add a new node to the AST
+ * Add a new node to the AST.
+ *
  * @param expr New global expression
  */
 void Program::add(GlobalExpr *expr) {
   expr_list.push_back(expr);
+}
+
+/**
+ * Attribute the AST with symbol tables.
+ */
+void Program::attribute_tree() {
+  for (auto const &expr : expr_list)
+    expr->set_symbols(new SymbolTables());
 }
 
 }  // namespace AST

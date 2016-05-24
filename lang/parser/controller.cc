@@ -31,7 +31,7 @@ Controller::~Controller() {
 }
 
 /**
- * @brief Open a filestream and parse the file
+ * @brief Open a file-stream and parse the file
  * @param filename File to be parsed
  * @return False on error
  */
@@ -51,7 +51,7 @@ bool Controller::parse(const std::istream &is) {
   }
 
   // Allocate AST
-  delete(ast);
+  delete ast;
   ast = new (std::nothrow) AST::Program();
   if (ast == nullptr) {
     std::cerr << "Could not allocate AST structure\n";
@@ -59,7 +59,7 @@ bool Controller::parse(const std::istream &is) {
   }
 
   // Create scanner
-  delete(scanner);
+  delete scanner;
   scanner = new (std::nothrow) Scanner(const_cast<std::istream *>(&is));
   if (scanner == nullptr) {
     std::cerr << "Could not allocate scanner\n";
@@ -67,7 +67,7 @@ bool Controller::parse(const std::istream &is) {
   }
 
   // Create parser
-  delete(parser);
+  delete parser;
   parser = new (std::nothrow) Parser(*scanner, *ast);
   if (parser == nullptr) {
     std::cerr << "Could not allocate parser\n";
@@ -79,6 +79,9 @@ bool Controller::parse(const std::istream &is) {
     std::cerr << "Parsing failed!\n";
     return false;
   }
+
+  // Attribute syntax tree
+  ast->attribute_tree();
   return true;
 }
 

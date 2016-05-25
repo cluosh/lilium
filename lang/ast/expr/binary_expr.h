@@ -37,6 +37,9 @@ class BinaryExpr: public Expr {
  public:
   BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op);
   ~BinaryExpr();
+
+  void attribute() { }
+  void set_symbols(SymbolTables *symbol_tables);
 };
 
 }  // namespace AST

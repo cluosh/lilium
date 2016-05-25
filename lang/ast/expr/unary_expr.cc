@@ -40,4 +40,16 @@ UnaryExpr::~UnaryExpr() {
   delete fst;
 }
 
+/**
+ * Assign symbols to operand and expression.
+ *
+ * @param symbol_tables Symbol tables to be assigned
+ */
+void UnaryExpr::set_symbols(SymbolTables *symbol_tables) {
+  Expr::set_symbols(symbol_tables);
+
+  // Assign symbols to operand
+  fst->set_symbols(symbol_tables);
+}
+
 }  // namespace AST

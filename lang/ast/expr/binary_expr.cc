@@ -42,4 +42,17 @@ BinaryExpr::~BinaryExpr() {
   delete snd;
 }
 
+/**
+ * Assign symbols to this expression and the operands.
+ *
+ * @param symbol_tables Symbol tables to be assigned
+ */
+void BinaryExpr::set_symbols(SymbolTables *symbol_tables) {
+  Expr::set_symbols(symbol_tables);
+
+  // Assign symbols to operands
+  fst->set_symbols(symbol_tables);
+  snd->set_symbols(symbol_tables);
+}
+
 }  // namespace AST

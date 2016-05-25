@@ -36,8 +36,12 @@ class Expr : public GlobalExpr {
   explicit Expr(Type type = TYPE_COUNT);
   virtual ~Expr() = default;
 
+  virtual void attribute() { }
+  virtual void set_symbols(SymbolTables *symbol_tables);
+
  protected:
   void choose_type(Expr *expr1, Expr *expr2);
+  Type get_type();
 };
 
 }  // namespace AST

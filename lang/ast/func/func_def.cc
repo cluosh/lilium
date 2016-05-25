@@ -41,4 +41,30 @@ FuncDef::~FuncDef() {
   delete expr_list;
 }
 
+/**
+ * Attribute a function definition.
+ */
+void FuncDef::attribute() {
+  push_frame();
+
+  // Register variables
+  var_list->register_var();
+
+  pop_frame();
+}
+
+/**
+ * Assign symbols to function definition.
+ *
+ * @param symbol_tables Symbol tables to be assigned
+ */
+void FuncDef::set_symbols(SymbolTables *symbol_tables) {
+  GlobalExpr::set_symbols(symbol_tables);
+
+  // Assign symbols to parameters and expressions
+  if (var_list != nullptr)
+    var_list->set_symbols(symbol_tables);
+  expr_list->set_symbols(symbol_tables);
+}
+
 }  // namespace AST

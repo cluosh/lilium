@@ -34,8 +34,17 @@ class GlobalExpr {
 
  public:
   virtual ~GlobalExpr() = default;
-  void set_symbols(SymbolTables *symbol_tables);
+
+  // Attribution of the expressions
+  virtual void attribute() = 0;
+  virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
+
+ protected:
+  const Symbol *symbol(std::string name);
+  void add_symbol(std::string name, Symbol symbol);
+  void push_frame();
+  void pop_frame();
 };
 
 }  // namespace AST

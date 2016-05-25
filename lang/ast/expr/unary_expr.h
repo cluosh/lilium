@@ -34,6 +34,9 @@ class UnaryExpr : public Expr {
  public:
   UnaryExpr(Expr *fst, UnaryOperator op);
   ~UnaryExpr();
+
+  void attribute() { }
+  void set_symbols(SymbolTables *symbol_tables);
 };
 
 }  // namespace AST

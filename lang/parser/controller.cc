@@ -75,10 +75,7 @@ bool Controller::parse(const std::istream &is) {
   }
 
   // Parse
-  if (parser->parse() != 0) {
-    std::cerr << "Parsing failed!\n";
-    return false;
-  }
+  if (parser->parse() != 0) return false;
 
   // Attribute syntax tree
   ast->attribute_tree();

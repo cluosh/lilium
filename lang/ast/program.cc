@@ -38,6 +38,7 @@ Program::~Program() {
  */
 void Program::add(GlobalExpr *expr) {
   expr_list.push_back(expr);
+  expr->set_symbols(new SymbolTables());
 }
 
 /**
@@ -45,7 +46,7 @@ void Program::add(GlobalExpr *expr) {
  */
 void Program::attribute_tree() {
   for (auto const &expr : expr_list)
-    expr->set_symbols(new SymbolTables());
+    expr->attribute();
 }
 
 }  // namespace AST

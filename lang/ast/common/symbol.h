@@ -19,7 +19,7 @@
 #define LANG_AST_COMMON_SYMBOL_H_
 
 #include <cstdint>
-#include <stack>
+#include <list>
 #include <string>
 #include <unordered_map>
 
@@ -35,7 +35,8 @@ struct Symbol {
   Type type;
 };
 
-typedef std::stack<std::unordered_map<std::string, Symbol>> SymbolTables;
+typedef std::unordered_map<std::string, Symbol> SymbolTable;
+typedef std::list<SymbolTable> SymbolTables;
 
 }  // namespace AST
 

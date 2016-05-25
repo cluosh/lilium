@@ -35,6 +35,10 @@ class Var : public Expr {
  public:
   Var(std::string name, Var *next, Type type);
   ~Var();
+
+  void attribute() { }
+  void set_symbols(SymbolTables *symbol_tables);
+  void register_var();
 };
 
 }  // namespace AST

@@ -36,4 +36,49 @@ void GlobalExpr::set_symbols(SymbolTables *symbol_tables) {
   this->symbol_tables = symbol_tables;
 }
 
+/**
+ * Look for a variable in the symbol tables and return it's symbol. If
+ * the variable is not defined, nullptr is returned.
+ *
+ * @param name Name of the variable
+ * @return Pointer to the symbol or nullptr if not found
+ */
+const Symbol *GlobalExpr::symbol(std::string name) {
+  for (auto const &symbol_table : *symbol_tables) {
+    auto it = symbol_table.find(name);
+    if (it != symbol_table.end())
+      return &it->second;
+  }
+  return nullptr;
+}
+
+/**
+ * Add a symbol to the current top of the symbol table stack.
+ *
+ * @param name Name of the symbol
+ * @param symbol Symbol to be added
+ */
+void GlobalExpr::add_symbol(std::string name, Symbol symbol) {
+  auto symbol_table = &symbol_tables->back();
+  if (symbol_table->find(name) != symbol_table->end()) {
+    // TODO(cluosh): Symbol already defined
+    return;
+  }
+  symbol_table->insert({name, symbol});
+}
+
+/**
+ * Push a new scope frame to the symbol table stack.
+ */
+void GlobalExpr::push_frame() {
+  symbol_tables->push_back(SymbolTable());
+}
+
+/**
+ * Pop the top scope frame from the symbol table stack.
+ */
+void GlobalExpr::pop_frame() {
+  symbol_tables->pop_back();
+}
+
 }  // namespace AST

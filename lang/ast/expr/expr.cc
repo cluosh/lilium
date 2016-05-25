@@ -29,6 +29,15 @@ Expr::Expr(Type type) {
 }
 
 /**
+ * Call global symbol setting if symbols are set.
+ *
+ * @param symbol_tables Symbol tables to be set
+ */
+void Expr::set_symbols(SymbolTables *symbol_tables) {
+  GlobalExpr::set_symbols(symbol_tables);
+}
+
+/**
  * Choose the new type of an expression by comparing two expressions.
  * If the types are incompatible, an error is being thrown.
  * If one of the expression is null, the type of the other expression
@@ -69,6 +78,15 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
   }
 
   // TODO(cluosh): Add checks for other types and errors
+}
+
+/**
+ * Retrieve the type of an expression.
+ *
+ * @return Type of this expression
+ */
+Type Expr::get_type() {
+  return type;
 }
 
 }  // namespace AST

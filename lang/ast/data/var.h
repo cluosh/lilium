@@ -36,7 +36,7 @@ class Var : public Expr {
   Var(std::string name, Var *next, Type type);
   ~Var();
 
-  void attribute() { }
+  void attribute();
   void set_symbols(SymbolTables *symbol_tables);
   void register_var();
 };

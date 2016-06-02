@@ -33,10 +33,10 @@ class FuncDef : public GlobalExpr {
  private:
   std::string name;
   Var *var_list = nullptr;
-  Expr *expr_list = nullptr;
+  Expr *expr = nullptr;
 
  public:
-  FuncDef(std::string name, Var *var_list, Expr *expr_list);
+  FuncDef(std::string name, Var *var_list, Expr *expr);
   ~FuncDef();
 
   void attribute();

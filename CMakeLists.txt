@@ -29,7 +29,7 @@ set(LCC_SRC_FILES
         lang/parser/grammar/parser.yy
     lang/parser/scanner.cc
     lang/parser/scanner.h
-        lang/parser/grammar/scanner.l lang/ast/expr/binary_expr.cc lang/ast/common/operators.h lang/ast/expr/unary_expr.h lang/ast/expr/unary_expr.cc lang/ast/common/symbol.h lang/ast/expr/global_expr.cc)
+        lang/parser/grammar/scanner.l lang/ast/expr/binary_expr.cc lang/ast/common/operators.h lang/ast/expr/unary_expr.h lang/ast/expr/unary_expr.cc lang/ast/common/symbol.h lang/ast/expr/global_expr.cc lang/ast/expr/numeric_expr.h)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

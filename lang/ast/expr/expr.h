@@ -36,7 +36,7 @@ class Expr : public GlobalExpr {
   explicit Expr(Type type = TYPE_COUNT);
   virtual ~Expr() = default;
 
-  virtual void attribute() { }
+  virtual void attribute() = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
 
  protected:

@@ -25,12 +25,12 @@ namespace AST {
  * @brief Initialize a function definition
  * @param name Function name
  * @param var_list List of function parameters
- * @param expr_list Function body/root expression
+ * @param expr Function body/root expression
  */
-FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr_list) {
+FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr) {
   this->name = name;
   this->var_list = var_list;
-  this->expr_list = expr_list;
+  this->expr = expr;
 }
 
 /**
@@ -38,7 +38,7 @@ FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr_list) {
  */
 FuncDef::~FuncDef() {
   delete var_list;
-  delete expr_list;
+  delete expr;
 }
 
 /**
@@ -49,6 +49,9 @@ void FuncDef::attribute() {
 
   // Register variables
   var_list->register_var();
+
+  // Check semantics in wrapped expression
+  expr->attribute();
 
   pop_frame();
 }
@@ -64,7 +67,7 @@ void FuncDef::set_symbols(SymbolTables *symbol_tables) {
   // Assign symbols to parameters and expressions
   if (var_list != nullptr)
     var_list->set_symbols(symbol_tables);
-  expr_list->set_symbols(symbol_tables);
+  expr->set_symbols(symbol_tables);
 }
 
 }  // namespace AST

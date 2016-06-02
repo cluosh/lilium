@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include <string>
+#include <iostream>
 
 #include "lang/ast/data/var.h"
 
@@ -41,17 +42,20 @@ Var::~Var() {
 }
 
 /**
- * Add a variable as symbol to the symbol table, propagate to other
- * Variables in list.
+ * Check, whether the variable is defined and whether the type is
+ * an acceptable type.
  */
-void Var::register_var() {
-  // Create symbol and add it to the table
-  Symbol symbol = {0, get_type()};
-  add_symbol(name, symbol);
+void Var::attribute() {
+  // Check whether the variable is defined
+  const Symbol *sym = symbol(name);
+  if (sym == nullptr) {
+    // Variable undefined
+    // TODO(cluosh): Error message
+    std::cout << "Variable " << name << " undefined\n";
+    return;
+  }
 
-  // Register other vars in list
-  if (next != nullptr)
-    next->register_var();
+  // TODO(cluosh): Check for type errors
 }
 
 /**
@@ -65,6 +69,27 @@ void Var::set_symbols(SymbolTables *symbol_tables) {
   // Assign symbol table to next variable, if defined
   if (next != nullptr)
     next->set_symbols(symbol_tables);
+}
+
+/**
+ * Add a variable as symbol to the symbol table, propagate to other
+ * Variables in list.
+ */
+void Var::register_var() {
+  // Check, whether the variable is registered already
+  if (symbol(name) != nullptr) {
+    // Variable already assigned
+    // TODO(cluosh): Error message
+    return;
+  }
+
+  // Create symbol and add it to the table
+  Symbol sym = {0, get_type()};
+  add_symbol(name, sym);
+
+  // Register other vars in list
+  if (next != nullptr)
+    next->register_var();
 }
 
 }  // namespace AST

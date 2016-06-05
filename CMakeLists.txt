@@ -19,17 +19,23 @@ set(LCC_SRC_FILES
         lang/ast/func/func_def.h
         lang/ast/expr/global_expr.h
         lang/ast/expr/binary_expr.h
-    lang/ast/program.cc
-    lang/ast/program.h
+        lang/ast/program.cc
+        lang/ast/program.h
         lang/ast/common/types.h
         lang/ast/data/var.cc
         lang/ast/data/var.h
-    lang/parser/controller.cc
-    lang/parser/controller.h
+        lang/parser/controller.cc
+        lang/parser/controller.h
         lang/parser/grammar/parser.yy
-    lang/parser/scanner.cc
-    lang/parser/scanner.h
-        lang/parser/grammar/scanner.l lang/ast/expr/binary_expr.cc lang/ast/common/operators.h lang/ast/expr/unary_expr.h lang/ast/expr/unary_expr.cc lang/ast/common/symbol.h lang/ast/expr/global_expr.cc lang/ast/expr/numeric_expr.h)
+        lang/parser/scanner.cc
+        lang/parser/scanner.h
+        lang/parser/grammar/scanner.l
+        lang/ast/expr/binary_expr.cc
+        lang/ast/common/operators.h
+        lang/ast/expr/unary_expr.h
+        lang/ast/expr/unary_expr.cc
+        lang/ast/common/symbol.h
+        lang/ast/expr/global_expr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

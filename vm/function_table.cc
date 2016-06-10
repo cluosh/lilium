@@ -15,21 +15,42 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
-
+#include <cstdint>
+#include <new>
 #include <string>
+
+#include "vm/function_table.h"
 
 namespace VM {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * Initialize a function table with the size. The size is fixed
+ * for one module and can't be changed after initialization.
+ *
+ * @param size Size of the function table
  */
-class BytecodeLoader {
- public:
-  bool load_module(std::string file);
-};
+FunctionTable::FunctionTable(std::uint32_t size) {
+  // Allocate memory
+  names = new (std::nothrow) std::string[size];
+  global_addr = new (std::nothrow) std::uint64_t[size];
+}
+
+/**
+ * Retrieve the names of all functions.
+ *
+ * @return String array
+ */
+std::string *FunctionTable::get_names() {
+  return names;
+}
+
+/**
+ * Retrieve the addresses of all functions.
+ *
+ * @return Address array
+ */
+std::uint64_t *FunctionTable::get_addr() {
+  return global_addr;
+}
 
 }  // namespace VM
-
-#endif  // VM_BYTECODE_LOADER_H_

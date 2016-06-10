@@ -15,21 +15,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
+#include "lang/ast/expr/const_single.h"
 
-#include <string>
-
-namespace VM {
+namespace AST {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * Initialize constant integer node with value.
+ *
+ * @param value Integer value to be assigned to this node
  */
-class BytecodeLoader {
- public:
-  bool load_module(std::string file);
-};
+ConstSingle::ConstSingle(float value) : Expr(TYPE_SINGLEP) {
+  this->value = value;
+}
 
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_LOADER_H_

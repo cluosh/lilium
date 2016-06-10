@@ -48,6 +48,9 @@
   #include "lang/ast/expr/expr.h"
   #include "lang/ast/expr/binary_expr.h"
   #include "lang/ast/expr/unary_expr.h"
+  #include "lang/ast/expr/const_double.h"
+  #include "lang/ast/expr/const_int.h"
+  #include "lang/ast/expr/const_single.h"
   #include "lang/ast/data/var.h"
   #include "lang/ast/common/types.h"
   #include "lang/ast/common/operators.h"
@@ -91,9 +94,9 @@ Params:
   | ID TDP Params { $$ = new AST::Var($1, $3, AST::TYPE_DOUBLEP); }
 Expr:
   ID { $$ = new AST::Var($1, nullptr, AST::TYPE_COUNT); }
-  | INT { $$ = new AST::Expr(AST::TYPE_INT); }
-  | SINGLEP { $$ = new AST::Expr(AST::TYPE_SINGLEP); }
-  | DOUBLEP { $$ = new AST::Expr(AST::TYPE_DOUBLEP); }
+  | INT { $$ = new AST::ConstInt($1); }
+  | SINGLEP { $$ = new AST::ConstSingle($1); }
+  | DOUBLEP { $$ = new AST::ConstDouble($1); }
   | '(' '+' PlusExprList ')' { $$ = $3; }
   | '(' '-' MinusExprList ')' { $$ = $3; }
   | '(' '*' MulExprList ')' { $$ = $3; }

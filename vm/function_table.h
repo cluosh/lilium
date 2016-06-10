@@ -15,21 +15,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
+#ifndef VM_FUNCTION_TABLE_H_
+#define VM_FUNCTION_TABLE_H_
 
+#include <cstdint>
 #include <string>
 
 namespace VM {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * Store all function symbols in a modules table.
  */
-class BytecodeLoader {
+class FunctionTable {
+ private:
+  std::string *names;
+  std::uint64_t *global_addr;
+
  public:
-  bool load_module(std::string file);
+  explicit FunctionTable(std::uint32_t size);
+
+  std::string *get_names();
+  std::uint64_t *get_addr();
 };
 
 }  // namespace VM
 
-#endif  // VM_BYTECODE_LOADER_H_
+#endif  // VM_FUNCTION_TABLE_H_

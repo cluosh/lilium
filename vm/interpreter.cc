@@ -18,7 +18,6 @@
 #include <cstdint>
 #include <iostream>
 #include <fstream>
-#include "opcodes.h"
 
 // Dispatching macro
 #define DP() goto *token_table[code[pc++]]

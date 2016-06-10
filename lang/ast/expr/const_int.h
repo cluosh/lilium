@@ -15,21 +15,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
+#ifndef LANG_AST_EXPR_CONST_INT_H_
+#define LANG_AST_EXPR_CONST_INT_H_
 
-#include <string>
+#include <cstdint>
 
-namespace VM {
+#include "lang/ast/expr/expr.h"
+
+namespace AST {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * A constant integer expression.
  */
-class BytecodeLoader {
+class ConstInt : public Expr {
+ private:
+  std::int64_t value;
+
  public:
-  bool load_module(std::string file);
+  explicit ConstInt(std::int64_t value);
+
+  void attribute() { }
 };
 
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_LOADER_H_
+#endif  // LANG_AST_EXPR_CONST_INT_H_

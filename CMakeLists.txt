@@ -3,14 +3,17 @@ project(liliumvm)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES
-    bas/Makefile
-    bas/parser.y
-    bas/scanner.l
-    vm/bytecode_loader.cc
-    vm/bytecode_loader.h
-    vm/interpreter.cc
-    vm/opcodes.h)
+set(BAS_SRC_FILES
+        bas/codegen/generator.h
+        bas/parser/grammar/scanner.l)
+
+set(VM_SRC_FILES
+        vm/bytecode_loader.cc
+        vm/bytecode_loader.h
+        vm/interpreter.cc
+        vm/opcodes.h
+        vm/function_table.h
+        vm/function_table.cc)
 
 set(LCC_SRC_FILES
         lang/ast/expr/expr.cc
@@ -35,15 +38,25 @@ set(LCC_SRC_FILES
         lang/ast/expr/unary_expr.h
         lang/ast/expr/unary_expr.cc
         lang/ast/common/symbol.h
-        lang/ast/expr/global_expr.cc)
+        lang/ast/expr/global_expr.cc
+        bas/codegen/generator.h
+        lang/ast/expr/const_int.h
+        lang/ast/expr/const_single.h
+        lang/ast/expr/const_double.h
+        lang/ast/expr/const_int.cc
+        lang/ast/expr/const_double.cc
+        lang/ast/expr/const_single.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+bison_target(bas_parser bas/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
+flex_target(lcc_lexer bas/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
 bison_target(lcc_parser lang/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
 flex_target(lcc_lexer lang/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
 add_flex_bison_dependency(lcc_lexer lcc_parser)
 
+# LCC
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lang/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(lcc
@@ -51,3 +64,13 @@ add_executable(lcc
         ${BISON_lcc_parser_OUTPUTS}
         ${FLEX_lcc_lexer_OUTPUTS}
 )
+
+# VM
+add_executable(vm
+        ${VM_SRC_FILES})
+
+# BAS
+add_executable(bas
+        ${BAS_SRC_FILES}
+        ${BISON_bas_parser_OUTPUTS}
+        ${FLEX_bas_lexer_OUTPUTS})

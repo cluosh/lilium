@@ -3,6 +3,9 @@ project(liliumvm)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+set(CONTROLLER_SRC_FILES
+        controller/common.h controller/main.cc)
+
 set(BAS_SRC_FILES
         bas/codegen/generator.h
         bas/parser/grammar/scanner.l)
@@ -62,18 +65,23 @@ add_flex_bison_dependency(lcc_lexer lcc_parser)
 # LCC
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lang/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
-add_executable(lcc
+add_library(lcc STATIC
         ${LCC_SRC_FILES}
         ${BISON_lcc_parser_OUTPUTS}
         ${FLEX_lcc_lexer_OUTPUTS}
 )
 
 # VM
-add_executable(vm
+add_library(vm STATIC
         ${VM_SRC_FILES})
 
 # BAS
-add_executable(bas
+add_library(bas STATIC
         ${BAS_SRC_FILES}
         ${BISON_bas_parser_OUTPUTS}
         ${FLEX_bas_lexer_OUTPUTS})
+
+# Main controller
+add_executable(lilium
+        ${CONTROLLER_SRC_FILES})
+target_link_libraries(lilium vm)

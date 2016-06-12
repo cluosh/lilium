@@ -15,41 +15,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_INTERPRETER_H_
-#define VM_INTERPRETER_H_
-
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
-#include "vm/module.h"
-
-namespace VM {
 
 /**
- * A function symbol table entry
+ * Main entry point. Check arguments and decide whether to compile bytecode
+ * or execute it.
+ *
+ * @param argc Number of arguments
+ * @param argv Arguments
+ * @return 0 if no error occurred
  */
-typedef std::pair<std::uint32_t, std::uint16_t> FuncSym;
-
-/**
- * The main interpreter class. Execution, memory and symbol-management.
- */
-class Interpreter {
- private:
-  std::unordered_map<std::string, FuncSym> function_symbols;
-  std::vector<std::unique_ptr<Module>> modules;
-  std::uint16_t num_modules = 0;
-  FuncSym entry_point;
-
- public:
-  Interpreter();
-
-  bool add_module(std::string filename);
-};
-
-}  // namespace VM
-
-#endif  // VM_INTERPRETER_H_
+int main(int argc, char **argv) {
+  return 0;
+}

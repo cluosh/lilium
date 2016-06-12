@@ -41,14 +41,14 @@ class Module {
  public:
   ByteCode *code = nullptr;
   FunctionTable *funcs = nullptr;
+  std::string module_name;
   std::uint64_t *constant_pool = nullptr;
-  std::uint64_t start_address = 0;
-  std::uint64_t entry_point = 0;
+  std::uint64_t num_instructions = 0;
   std::uint32_t num_functions = 0;
   std::uint16_t num_const = 0;
-  std::uint64_t num_instructions = 0;
+  std::uint16_t module_id = 0;
 
-  explicit Module(std::uint64_t start_address);
+  explicit Module(std::uint16_t module_id);
   ~Module();
 };
 

@@ -33,6 +33,16 @@ FunctionTable::FunctionTable(std::uint32_t size) {
   // Allocate memory
   names = new (std::nothrow) std::string[size];
   global_addr = new (std::nothrow) std::uint64_t[size];
+  module_id = new (std::nothrow) std::uint16_t[size];
+}
+
+/**
+ * Free the allocated memory.
+ */
+FunctionTable::~FunctionTable() {
+  delete names;
+  delete global_addr;
+  delete module_id;
 }
 
 /**
@@ -51,6 +61,23 @@ std::string *FunctionTable::get_names() {
  */
 std::uint64_t *FunctionTable::get_addr() {
   return global_addr;
+}
+
+/**
+ * Retrieve the module ids for all functions.
+ *
+ * @return Array with module ids
+ */
+std::uint16_t *FunctionTable::get_module_ids() {
+  return module_id;
+}
+
+/**
+ * Free only the allocated memory for names.
+ */
+void FunctionTable::free_names() {
+  delete names;
+  names = nullptr;
 }
 
 }  // namespace VM

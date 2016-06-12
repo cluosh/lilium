@@ -18,15 +18,82 @@
 #include <cstdint>
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <utility>
 
-// Dispatching macro
-#define DP() goto *token_table[code[pc++]]
+#include "vm/bytecode_loader.h"
+#include "vm/interpreter.h"
+
+namespace VM {
 
 /**
- * @brief Computed goto test
- * @param argc Number of arguments
- * @param argv Arguments as strings
+ * Set initial container sizes.
  */
+Interpreter::Interpreter() {
+  // Set initial entry symbol
+  entry_point = std::make_pair(0xFFFFFFFF, 0xFFFF);
+
+  // Just some values, not empirically relevant, maybe record some statistics?
+  function_symbols.reserve(100);
+  modules.reserve(20);
+}
+
+/**
+ * Load a bytecode module into the interpreter.
+ *
+ * @param filename Path to the bytecode module
+ */
+bool Interpreter::add_module(std::string filename) {
+  // Create a new module
+  std::uint16_t num_modules = this->num_modules;
+  modules.push_back(std::unique_ptr<Module>(
+      new (std::nothrow) Module(num_modules)));
+  Module *module = modules.back().get();
+
+  // Load bytecode into module
+  bool loaded = BytecodeLoader::load_module(filename, module);
+  if (!loaded) {
+    std::cerr << "Could not load bytecode module \"" << filename << "\"\n";
+    return false;
+  }
+
+  // Read module function symbols
+  std::uint32_t num_functions = module->num_functions;
+  std::string *names = module->funcs->get_names();
+  std::uint64_t *addr = module->funcs->get_addr();
+  for (std::uint32_t i = 0; i < num_functions; i++) {
+    // Check if function symbol has already been declared
+    auto symbol_entry = function_symbols.find(names[i]);
+    if (symbol_entry != function_symbols.end()) {
+      std::cerr << "Function \""
+          << names[i]
+          << "\" has already been declared "
+          << " in module \""
+          << modules[symbol_entry->second.second]->module_name
+          << "\".\n";
+      return false;
+    }
+
+    // Add function symbol to table if it's a function local to the module
+    if (addr[i] != 0xFFFFFFFFFFFFFFFF) {
+      FuncSym sym = std::make_pair(i, num_modules);
+      function_symbols[names[i]] = sym;
+
+      // Check if the symbol is an entry point
+      if (names[i] == "start")
+        entry_point = sym;
+    }
+  }
+
+  // Increase number of modules and return
+  this->num_modules++;
+  return true;
+}
+
+}  // namespace VM
+
+/**
+#define DP() goto *token_table[code[pc++]]
 int main(int argc, char *argv[]) {
   // Check if a parameter was given
   if (argc != 2)
@@ -101,7 +168,6 @@ int main(int argc, char *argv[]) {
     DP();
   op_loa:
   op_lov:
-    // TODO(cluosh): Bad code, byte order?
     reg[op0[pc - 1]] = code[pc + 2];
     reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op1[pc + 1];
     reg[op0[pc - 1]] = (reg[op0[pc - 1]] << 8) | op0[pc + 1];
@@ -123,3 +189,4 @@ int main(int argc, char *argv[]) {
   delete[] op1;
   return 0;
 }
+*/

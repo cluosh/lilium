@@ -23,13 +23,12 @@
 namespace VM {
 
 /**
- * Create module with starting address, which is assigned by
- * the interpreter.
+ * Initialize module with module id.
  *
- * @param start_address Start of address space for module
+ * @param module_id Id of the module, assigned by interpreter
  */
-Module::Module(std::uint64_t start_address) {
-  this->start_address = start_address;
+Module::Module(uint16_t module_id) {
+  this->module_id = module_id;
 }
 
 /**

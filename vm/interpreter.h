@@ -32,7 +32,11 @@ namespace VM {
 /**
  * A function symbol table entry
  */
-typedef std::pair<std::uint32_t, std::uint16_t> FuncSym;
+struct FuncSym {
+  const char *name;
+  std::uint32_t local_addr;
+  std::uint16_t module_id;
+};
 
 /**
  * The main interpreter class. Execution, memory and symbol-management.
@@ -41,6 +45,7 @@ class Interpreter {
  private:
   std::unordered_map<std::string, FuncSym> function_symbols;
   std::vector<std::unique_ptr<Module>> modules;
+  std::vector<FuncSym> unresolved_symbols;
   std::uint16_t num_modules = 0;
   FuncSym entry_point;
 
@@ -48,6 +53,8 @@ class Interpreter {
   Interpreter();
 
   bool add_module(std::string filename);
+  bool link();
+  bool execute();
 };
 
 }  // namespace VM

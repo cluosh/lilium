@@ -83,29 +83,3 @@ bool Controller::parse(const std::istream &is) {
 }
 
 }  // namespace Parser
-
-/**
- * @brief Main entry point
- * @param argc Number of arguments
- * @param argv Arguments as strings
- */
-int main(int argc, char *argv[]) {
-  // Check number of arguments
-  if (argc != 1 && argc != 2) {
-    std::cerr << "Usage: ./lcc file\n";
-    return 1;
-  }
-
-  // Create parser controller
-  Parser::Controller controller;
-  bool error;
-  if (argc == 2)
-    error = controller.parse(std::string(argv[1]));
-  else
-    error = controller.parse(std::cin);
-
-  // Check if parsing went without errors
-  if (error)
-    return 1;
-  return 0;
-}

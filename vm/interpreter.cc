@@ -31,10 +31,11 @@ namespace VM {
  */
 Interpreter::Interpreter() {
   // Set initial entry symbol
-  entry_point = std::make_pair(0xFFFFFFFF, 0xFFFF);
+  entry_point = { nullptr, 0xFFFFFFFF, 0xFFFF };
 
-  // Just some values, not empirically relevant, maybe record some statistics?
+  // Just some values, not empirically relevant, should record some statistics
   function_symbols.reserve(100);
+  unresolved_symbols.reserve(100);
   modules.reserve(20);
 }
 
@@ -42,6 +43,7 @@ Interpreter::Interpreter() {
  * Load a bytecode module into the interpreter.
  *
  * @param filename Path to the bytecode module
+ * @return False if an error happened during bytecode parsing
  */
 bool Interpreter::add_module(std::string filename) {
   // Create a new module
@@ -63,30 +65,84 @@ bool Interpreter::add_module(std::string filename) {
   std::uint64_t *addr = module->funcs->get_addr();
   for (std::uint32_t i = 0; i < num_functions; i++) {
     // Check if function symbol has already been declared
-    auto symbol_entry = function_symbols.find(names[i]);
+    const auto symbol_entry = function_symbols.find(names[i]);
     if (symbol_entry != function_symbols.end()) {
       std::cerr << "Function \""
           << names[i]
           << "\" has already been declared "
           << " in module \""
-          << modules[symbol_entry->second.second]->module_name
+          << modules[symbol_entry->second.module_id]->module_name
           << "\".\n";
       return false;
     }
 
     // Add function symbol to table if it's a function local to the module
+    FuncSym sym = { names[i].c_str(), i, num_modules};
     if (addr[i] != 0xFFFFFFFFFFFFFFFF) {
-      FuncSym sym = std::make_pair(i, num_modules);
       function_symbols[names[i]] = sym;
 
       // Check if the symbol is an entry point
       if (names[i] == "start")
         entry_point = sym;
+    } else {
+      unresolved_symbols.push_back(sym);
     }
   }
 
   // Increase number of modules and return
   this->num_modules++;
+  return true;
+}
+
+/**
+ * Link all function symbols in all modules.
+ *
+ * @return False, if a function symbol couldn't be found
+ */
+bool Interpreter::link() {
+  // Check if an entry point has been found
+  if (entry_point.local_addr == 0xFFFFFFFF) {
+    std::cerr << "No \"start\" method has been defined in the given modules\n";
+    return false;
+  }
+
+  // Resolve all unresolved symbols
+  for (const auto &symbol : unresolved_symbols) {
+    const auto symbol_entry = function_symbols.find(symbol.name);
+    if (symbol_entry == function_symbols.end()) {
+      std::cerr << "Unresolved symbol \""
+          << symbol.name
+          << "\" in module \""
+          << modules[symbol.module_id]->module_name
+          << "\".\n";
+      return false;
+    }
+
+    // Resolve symbol in the module
+    FunctionTable *funcs = modules[symbol.module_id]->funcs;
+    FunctionTable *funcs_defined =
+        modules[symbol_entry->second.module_id]->funcs;
+    funcs->get_addr()[symbol.local_addr] =
+        funcs_defined->get_addr()[symbol_entry->second.local_addr];
+    funcs->get_module_ids()[symbol.local_addr] =
+        symbol_entry->second.module_id;
+  }
+
+  // Cleanup table of unresolved functions
+  unresolved_symbols.clear();
+  return true;
+}
+
+/**
+ * Start code execution at entry point.
+ */
+bool Interpreter::execute() {
+  // Check if entry point is defined
+  if (entry_point.local_addr == 0xFFFFFFFF) {
+    std::cerr << "No entry point defined\n";
+    return false;
+  }
+
   return true;
 }
 

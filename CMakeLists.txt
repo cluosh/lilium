@@ -84,4 +84,4 @@ add_library(bas STATIC
 # Main controller
 add_executable(lilium
         ${CONTROLLER_SRC_FILES})
-target_link_libraries(lilium vm)
+target_link_libraries(lilium vm lcc)

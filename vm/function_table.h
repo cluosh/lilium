@@ -29,7 +29,7 @@ namespace VM {
 class FunctionTable {
  private:
   std::string *names;
-  std::uint64_t *global_addr;
+  std::uint64_t *addr;
   std::uint16_t *module_id;
 
  public:
@@ -39,7 +39,6 @@ class FunctionTable {
   std::string *get_names();
   std::uint64_t *get_addr();
   std::uint16_t *get_module_ids();
-  void free_names();
 };
 
 }  // namespace VM

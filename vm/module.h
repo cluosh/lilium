@@ -15,23 +15,43 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
+#ifndef VM_MODULE_H_
+#define VM_MODULE_H_
 
+#include <cstdint>
 #include <string>
 
-#include "vm/module.h"
+#include "vm/function_table.h"
 
 namespace VM {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * Bytecode structure.
  */
-class BytecodeLoader {
+struct ByteCode {
+  std::uint8_t opcode;
+  std::uint8_t op[3];
+};
+
+/**
+ * A module: Representation of one bytecode module, corresponding to one
+ * bytecode file. Contains function symbols and constant pool entries.
+ */
+class Module {
  public:
-  static bool load_module(std::string file, Module *module);
+  ByteCode *code = nullptr;
+  FunctionTable *funcs = nullptr;
+  std::uint64_t *constant_pool = nullptr;
+  std::uint64_t start_address = 0;
+  std::uint64_t entry_point = 0;
+  std::uint32_t num_functions = 0;
+  std::uint16_t num_const = 0;
+  std::uint64_t num_instructions = 0;
+
+  explicit Module(std::uint64_t start_address);
+  ~Module();
 };
 
 }  // namespace VM
 
-#endif  // VM_BYTECODE_LOADER_H_
+#endif  // VM_MODULE_H_

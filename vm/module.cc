@@ -15,23 +15,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
-
-#include <string>
+#include <iostream>
+#include <fstream>
 
 #include "vm/module.h"
 
 namespace VM {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * Create module with starting address, which is assigned by
+ * the interpreter.
+ *
+ * @param start_address Start of address space for module
  */
-class BytecodeLoader {
- public:
-  static bool load_module(std::string file, Module *module);
-};
+Module::Module(std::uint64_t start_address) {
+  this->start_address = start_address;
+}
+
+/**
+ * Free all allocated data structures.
+ */
+Module::~Module() {
+  delete code;
+  delete funcs;
+  delete constant_pool;
+}
 
 }  // namespace VM
 
-#endif  // VM_BYTECODE_LOADER_H_

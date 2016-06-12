@@ -15,23 +15,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_LOADER_H_
-#define VM_BYTECODE_LOADER_H_
-
-#include <string>
-
-#include "vm/module.h"
+#ifndef VM_INTERPRETER_H_
+#define VM_INTERPRETER_H_
 
 namespace VM {
 
 /**
- * Loader class, can load bytecode modules (which are specified correctly).
+ * The main interpreter class. Execution, memory and symbol-management.
  */
-class BytecodeLoader {
+class Interpreter {
  public:
-  static bool load_module(std::string file, Module *module);
+  Interpreter();
 };
 
 }  // namespace VM
 
-#endif  // VM_BYTECODE_LOADER_H_
+#endif  // VM_INTERPRETER_H_

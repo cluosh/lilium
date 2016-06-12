@@ -8,12 +8,15 @@ set(BAS_SRC_FILES
         bas/parser/grammar/scanner.l)
 
 set(VM_SRC_FILES
-        vm/bytecode_loader.cc
-        vm/bytecode_loader.h
         vm/interpreter.cc
         vm/opcodes.h
         vm/function_table.h
-        vm/function_table.cc)
+        vm/function_table.cc
+        vm/interpreter.h
+        vm/module.h
+        vm/module.cc
+        vm/bytecode_loader.cc
+        vm/bytecode_loader.h)
 
 set(LCC_SRC_FILES
         lang/ast/expr/expr.cc

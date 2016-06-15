@@ -153,8 +153,6 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   module->code = code;
   module->module_name = module_name;
   module->num_functions = num_functions;
-  module->num_const = num_const;
-  module->num_instructions = num_instructions;
   return true;
 }
 

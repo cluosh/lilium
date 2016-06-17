@@ -28,9 +28,9 @@ namespace VM {
 /**
  * Bytecode structure.
  */
-struct ByteCode {
-  std::uint8_t opcode;
-  std::uint8_t op[3];
+union ByteCode {
+  std::uint32_t all;
+  std::uint8_t op[4];
 };
 
 /**

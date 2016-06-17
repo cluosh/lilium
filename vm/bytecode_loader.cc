@@ -40,7 +40,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   // Check for magic number
   char buffer[257];
   module_file.read(&buffer[0], 2);
-  if (module_file.fail() || buffer[0] != 0xFF || buffer[1] != 0xBC) {
+  if (module_file.fail() || buffer[0] != '\xFF' || buffer[1] != '\xBC') {
     std::cerr << "Specified module file \"" << file << "\" is not valid "
         << "Lilium bytecode.\n";
     return false;

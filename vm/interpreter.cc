@@ -20,6 +20,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "vm/bytecode_loader.h"
 #include "vm/interpreter.h"
@@ -144,25 +145,90 @@ bool Interpreter::execute() {
   }
 
   // Set code pointer to the current entry point module
-  ByteCode *code = modules[entry_point.module_id]->code;
-  std::uint64_t pc = entry_point.local_addr;
+  Module *module = modules[entry_point.module_id].get();
+  ByteCode *code = module->code;
+  std::uint64_t *func_addr = module->funcs->get_addr();
+  std::uint16_t *func_module = module->funcs->get_module_ids();
+  std::uint64_t pc = entry_point.local_addr - 1;
+
+  // Call stack for function calls
+  Module *cs_modules[20];
+  std::uint64_t cs_pc[20];
+  std::uint64_t cs_top = 0;
+
+  // Register definitions
+  std::uint64_t reg[256];
 
   // Jump-table for token threaded code
-  const void *token_table[] = {
+  static void *token_table[] = {
       && op_nop,
-      && op_hlt,
-      && op_call
+      && op_calli,
+      && op_calle,
+      && op_return,
+      && op_addi,
+      && op_subi,
+      && op_muli,
+      && op_divi,
+      && op_halt
   };
 
   // Macro for easy dispatching
-#define DP() goto *token_table[code[pc++].opcode]
+#define DP() goto *token_table[code[++pc].op[0]];
 
   // Main dispatch loop
+  DP();
   op_nop:
-  op_call:
     DP();
-  op_hlt:
+  op_calli:
+    // Store module and program counter on stack
+    cs_modules[cs_top] = module;
+    cs_pc[cs_top] = pc;
+    cs_top++;
+
+    // Jump to new address in code
+    pc = func_addr[code[pc].all & 0xFFFFFF];
+    DP();
+  op_calle:
+    // Store module and program counter on stack
+    cs_modules[cs_top] = module;
+    cs_pc[cs_top] = pc;
+    cs_top++;
+
+    // Change to new module and jump to new address in code
+    pc = func_addr[code[pc].all & 0xFFFFFF];
+    module = modules[func_module[code[pc].all & 0xFFFFFF]].get();
+    func_addr = module->funcs->get_addr();
+    func_module = module->funcs->get_module_ids();
+    code = module->code;
+    DP();
+  op_return:
+    // Retrieve module and program counter from stack
+    cs_top--;
+    module = cs_modules[cs_top];
+    pc = cs_pc[cs_top];
+
+    // Change to old module
+    func_addr = module->funcs->get_addr();
+    func_module = module->funcs->get_module_ids();
+    code = module->code;
+    DP();
+  op_addi:
+    reg[code[pc].op[3]] = reg[code[pc].op[1]] + reg[code[pc].op[2]];
+    DP();
+  op_subi:
+    reg[code[pc].op[3]] = reg[code[pc].op[1]] - reg[code[pc].op[2]];
+    DP();
+  op_muli:
+    reg[code[pc].op[3]] = reg[code[pc].op[1]] * reg[code[pc].op[2]];
+    DP();
+  op_divi:
+    reg[code[pc].op[3]] = reg[code[pc].op[1]] / reg[code[pc].op[2]];
+    DP();
+  op_halt:
     return true;
+
+  // This should be unreachable
+  return false;
 }
 
 }  // namespace VM

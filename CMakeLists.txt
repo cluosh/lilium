@@ -8,7 +8,8 @@ set(CONTROLLER_SRC_FILES
 
 set(BAS_SRC_FILES
         bas/codegen/generator.h
-        bas/parser/grammar/scanner.l)
+        bas/parser/grammar/scanner.l
+        bas/codegen/generator.h)
 
 set(VM_SRC_FILES
         vm/interpreter.cc
@@ -19,7 +20,9 @@ set(VM_SRC_FILES
         vm/module.h
         vm/module.cc
         vm/bytecode_loader.cc
-        vm/bytecode_loader.h)
+        vm/bytecode_loader.h
+        vm/types/type_check.h
+        vm/types/types.h)
 
 set(LCC_SRC_FILES
         lang/ast/expr/expr.cc
@@ -30,7 +33,6 @@ set(LCC_SRC_FILES
         lang/ast/expr/binary_expr.h
         lang/ast/program.cc
         lang/ast/program.h
-        vm/common/types.h
         lang/ast/data/var.cc
         lang/ast/data/var.h
         lang/parser/controller.cc
@@ -45,7 +47,6 @@ set(LCC_SRC_FILES
         lang/ast/expr/unary_expr.cc
         lang/ast/common/symbol.h
         lang/ast/expr/global_expr.cc
-        bas/codegen/generator.h
         lang/ast/expr/const_int.h
         lang/ast/expr/const_single.h
         lang/ast/expr/const_double.h

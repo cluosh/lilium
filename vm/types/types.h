@@ -15,8 +15,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_COMMON_TYPES_H_
-#define VM_COMMON_TYPES_H_
+#ifndef VM_TYPES_TYPES_H_
+#define VM_TYPES_TYPES_H_
 
 namespace VM {
 
@@ -33,4 +33,4 @@ enum Type {
 
 }  // namespace VM
 
-#endif  // VM_COMMON_TYPES_H_
+#endif  // VM_TYPES_TYPES_H_

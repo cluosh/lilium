@@ -123,11 +123,26 @@ bool Interpreter::link() {
     FunctionTable *funcs = modules[symbol.module_id]->funcs;
     FunctionTable *funcs_defined =
         modules[symbol_entry->second.module_id]->funcs;
+
+    // Check the types, if the types are correct, continue
+    if (funcs->get_types()[symbol.local_addr]
+        != funcs_defined->get_addr()[symbol_entry->second.local_addr]) {
+      std::cerr << "Symbol \""
+          << symbol.name
+          << "\" has been declared with different types.\n";
+      return false;
+    }
+
+    // Link function addresses
     funcs->get_addr()[symbol.local_addr] =
         funcs_defined->get_addr()[symbol_entry->second.local_addr];
     funcs->get_module_ids()[symbol.local_addr] =
         symbol_entry->second.module_id;
   }
+
+  // Remove unused data in function tables
+  for (const auto &module : modules)
+    module->funcs->remove_unused();
 
   // Cleanup table of unresolved functions
   unresolved_symbols.clear();

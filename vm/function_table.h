@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <string>
 
-#include "vm/common/types.h"
+#include "vm/types/types.h"
 
 namespace VM {
 

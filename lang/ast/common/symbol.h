@@ -23,7 +23,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "vm/common/types.h"
+#include "vm/types/types.h"
 
 namespace AST {
 

@@ -15,6 +15,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <iostream>
+
 #include "lang/ast/expr/expr.h"
 
 namespace AST {
@@ -71,26 +73,12 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
     return;
   }
 
-  // Check if type is numeric
-  if (expr1->type <= VM::TYPE_DOUBLEP && expr2->type <= VM::TYPE_DOUBLEP) {
-    // Check if type is double precision
-    if (expr1->type == VM::TYPE_DOUBLEP || expr2->type == VM::TYPE_DOUBLEP) {
-      type = VM::TYPE_DOUBLEP;
-      return;
-    }
+  // Check if type are equivalent
+  if (expr1->type != expr2->type) {
+    std::cerr << "Type mismatch during expression parsing.\n";
 
-    // Check if type is single precision
-    if (expr1->type == VM::TYPE_SINGLEP || expr2->type == VM::TYPE_SINGLEP) {
-      type = VM::TYPE_SINGLEP;
-      return;
-    }
-
-    // Only integer type remains
-    type = VM::TYPE_INT;
-    return;
+    // TODO(cluosh): Throw appropriate exception
   }
-
-  // TODO(cluosh): Add checks for other types and errors
 }
 
 /**

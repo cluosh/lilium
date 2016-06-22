@@ -20,6 +20,7 @@
 #include <fstream>
 
 #include "vm/bytecode_loader.h"
+#include "vm/types/types.h"
 
 namespace VM {
 
@@ -96,12 +97,14 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   std::string *names = funcs->get_names();
   std::uint64_t *addr = funcs->get_addr();
   std::uint16_t *module_ids = funcs->get_module_ids();
+  Type *types = funcs->get_types();
   std::uint8_t len_symbol = 0;
   std::uint16_t module_id = module->module_id;
   for (std::uint32_t i = 0; i < num_functions; i++) {
     // Read referring address and symbol name
     // TODO(cluosh): Swap bytes if byte order is not little endian
     module_file.read(reinterpret_cast<char *>(&addr[i]), 8);
+    module_file.read(reinterpret_cast<char *>(&types[i]), 1);
     module_file.read(reinterpret_cast<char *>(&len_symbol), 1);
     module_file.read(&buffer[0], len_symbol);
 

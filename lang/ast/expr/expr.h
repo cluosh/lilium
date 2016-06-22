@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "vm/common/types.h"
+#include "vm/types/types.h"
 #include "lang/ast/expr/global_expr.h"
 
 namespace AST {

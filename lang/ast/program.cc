@@ -50,4 +50,14 @@ void Program::attribute_tree() {
   }
 }
 
+/**
+ * Generate the bytecode from the AST.
+ *
+ * @param generator Generator used to write the bytecode
+ */
+void Program::generate_code(VM::Generator *generator) {
+  // Print header
+  generator->module_header("", 0, 0, 0);
+}
+
 }  // namespace AST

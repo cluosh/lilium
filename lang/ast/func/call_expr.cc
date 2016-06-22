@@ -39,6 +39,8 @@ CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
  * @param func_addr Pointer to map of function addresses
  */
 void CallExpr::attribute(FuncAddr *func_addr) {
+  if (expr_list != nullptr)
+    expr_list->attribute(func_addr);
 }
 
 /**

@@ -19,8 +19,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "vm/bytecode_loader.h"
-#include "vm/types/types.h"
+#include "vm/bytecode/bytecode_loader.h"
 
 namespace VM {
 

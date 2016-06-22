@@ -54,8 +54,9 @@ void FuncDef::attribute(FuncAddr *func_addr) {
   expr->attribute(func_addr);
 
   // Store function name if it hasn't been stored yet
+  // TODO(cluosh): Expression type!
   if (func_addr->find(name) == func_addr->end())
-    func_addr->insert(std::make_pair(name, 1));
+    func_addr->insert(std::make_pair(name, std::make_pair(1, VM::TYPE_COUNT)));
 
   pop_frame();
 }

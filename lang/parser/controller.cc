@@ -18,6 +18,7 @@
 #include <fstream>
 
 #include "lang/parser/controller.h"
+#include "vm/bytecode/generator.h"
 
 namespace Parser {
 
@@ -79,6 +80,10 @@ bool Controller::parse(const std::istream &is) {
 
   // Attribute syntax tree
   ast->attribute_tree();
+
+  // Generate code
+  VM::Generator generator(std::cout);
+  ast->generate_code(&generator);
   return true;
 }
 

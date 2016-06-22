@@ -19,13 +19,20 @@
 #define LANG_AST_EXPR_GLOBAL_EXPR_H_
 
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "lang/ast/common/symbol.h"
 
 namespace AST {
 
 // Type definition for function addresses
-typedef std::unordered_map<std::string, std::uint64_t> FuncAddr;
+typedef std::unordered_map<std::string,
+                           std::pair<std::uint64_t, VM::Type>> FuncAddr;
+
+// Type definition for the constant pool
+typedef std::vector<std::uint64_t> ConstPool;
 
 /**
  * A global definition in a program, either a expression without variables

@@ -23,7 +23,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "lang/ast/common/types.h"
+#include "vm/common/types.h"
 
 namespace AST {
 
@@ -32,7 +32,7 @@ namespace AST {
  */
 struct Symbol {
   std::uint8_t reg;
-  Type type;
+  VM::Type type;
 };
 
 typedef std::unordered_map<std::string, Symbol> SymbolTable;

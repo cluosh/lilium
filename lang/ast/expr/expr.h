@@ -20,7 +20,7 @@
 
 #include <string>
 
-#include "lang/ast/common/types.h"
+#include "vm/common/types.h"
 #include "lang/ast/expr/global_expr.h"
 
 namespace AST {
@@ -30,18 +30,20 @@ namespace AST {
  */
 class Expr : public GlobalExpr {
  private:
-  Type type;
+  VM::Type type;
+  Expr *next = nullptr;
 
  public:
-  explicit Expr(Type type = TYPE_COUNT);
+  Expr(VM::Type type, Expr *next);
   virtual ~Expr() = default;
 
-  virtual void attribute() = 0;
+  virtual void attribute(FuncAddr *func_addr) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
 
+  void set_next(Expr *next);
  protected:
   void choose_type(Expr *expr1, Expr *expr2);
-  Type get_type();
+  VM::Type get_type();
 };
 
 }  // namespace AST

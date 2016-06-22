@@ -30,7 +30,7 @@ set(LCC_SRC_FILES
         lang/ast/expr/binary_expr.h
         lang/ast/program.cc
         lang/ast/program.h
-        lang/ast/common/types.h
+        vm/common/types.h
         lang/ast/data/var.cc
         lang/ast/data/var.h
         lang/parser/controller.cc
@@ -51,7 +51,9 @@ set(LCC_SRC_FILES
         lang/ast/expr/const_double.h
         lang/ast/expr/const_int.cc
         lang/ast/expr/const_double.cc
-        lang/ast/expr/const_single.cc)
+        lang/ast/expr/const_single.cc
+        lang/ast/func/call_expr.h
+        lang/ast/func/call_expr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

@@ -44,14 +44,18 @@ FuncDef::~FuncDef() {
 /**
  * Attribute a function definition.
  */
-void FuncDef::attribute() {
+void FuncDef::attribute(FuncAddr *func_addr) {
   push_frame();
 
   // Register variables
   var_list->register_var();
 
   // Check semantics in wrapped expression
-  expr->attribute();
+  expr->attribute(func_addr);
+
+  // Store function name if it hasn't been stored yet
+  if (func_addr->find(name) == func_addr->end())
+    func_addr->insert(std::make_pair(name, 1));
 
   pop_frame();
 }

@@ -32,9 +32,9 @@ class ConstInt : public Expr {
   std::int64_t value;
 
  public:
-  explicit ConstInt(std::int64_t value);
+  explicit ConstInt(std::int64_t value, Expr *next);
 
-  void attribute() { }
+  void attribute(FuncAddr *func_addr) override { }
 };
 
 }  // namespace AST

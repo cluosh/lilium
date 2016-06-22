@@ -24,7 +24,7 @@ namespace AST {
  *
  * @param type Expression type, use TYPE_COUNT for type inferring
  */
-Expr::Expr(Type type) {
+Expr::Expr(VM::Type type, Expr *next) {
   this->type = type;
 }
 
@@ -35,6 +35,19 @@ Expr::Expr(Type type) {
  */
 void Expr::set_symbols(SymbolTables *symbol_tables) {
   GlobalExpr::set_symbols(symbol_tables);
+
+  // Pass symbol to other expressions in expression list
+  if (next != nullptr)
+    next->set_symbols(symbol_tables);
+}
+
+/**
+ * Set the next expression in an expression list.
+ *
+ * @param next Next expression in the list
+ */
+void Expr::set_next(Expr *next) {
+  this->next = next;
 }
 
 /**
@@ -59,21 +72,21 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
   }
 
   // Check if type is numeric
-  if (expr1->type <= TYPE_DOUBLEP && expr2->type <= TYPE_DOUBLEP) {
+  if (expr1->type <= VM::TYPE_DOUBLEP && expr2->type <= VM::TYPE_DOUBLEP) {
     // Check if type is double precision
-    if (expr1->type == TYPE_DOUBLEP || expr2->type == TYPE_DOUBLEP) {
-      type = TYPE_DOUBLEP;
+    if (expr1->type == VM::TYPE_DOUBLEP || expr2->type == VM::TYPE_DOUBLEP) {
+      type = VM::TYPE_DOUBLEP;
       return;
     }
 
     // Check if type is single precision
-    if (expr1->type == TYPE_SINGLEP || expr2->type == TYPE_SINGLEP) {
-      type = TYPE_SINGLEP;
+    if (expr1->type == VM::TYPE_SINGLEP || expr2->type == VM::TYPE_SINGLEP) {
+      type = VM::TYPE_SINGLEP;
       return;
     }
 
     // Only integer type remains
-    type = TYPE_INT;
+    type = VM::TYPE_INT;
     return;
   }
 
@@ -85,7 +98,7 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
  *
  * @return Type of this expression
  */
-Type Expr::get_type() {
+VM::Type Expr::get_type() {
   return type;
 }
 

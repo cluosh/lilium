@@ -15,22 +15,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_COMMON_TYPES_H_
-#define LANG_AST_COMMON_TYPES_H_
+#ifndef LANG_AST_FUNC_CALL_EXPR_H_
+#define LANG_AST_FUNC_CALL_EXPR_H_
+
+#include <string>
+
+#include "lang/ast/expr/expr.h"
 
 namespace AST {
 
 /**
- * Enumeration describing all possible types.
+ * A function call expression, has a variety of arguments.
  */
-enum Type {
-  TYPE_INT,
-  TYPE_SINGLEP,
-  TYPE_DOUBLEP,
-  TYPE_STRING,
-  TYPE_COUNT
+class CallExpr : public Expr {
+ private:
+  Expr *expr_list;
+  std::string name;
+
+ public:
+  CallExpr(std::string name, Expr *expr_list, Expr *next);
+
+  void attribute(FuncAddr *func_addr);
+  void set_symbols(SymbolTables *symbol_tables);
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_COMMON_TYPES_H_
+#endif  // LANG_AST_FUNC_CALL_EXPR_H_

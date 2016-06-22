@@ -29,7 +29,7 @@ namespace AST {
  * @param next Next var in list
  * @param type Type of the variable
  */
-Var::Var(std::string name, Var *next, Type type) : Expr(type) {
+Var::Var(std::string name, Var *next, VM::Type type) : Expr(type, nullptr) {
   this->name = name;
   this->next = next;
 }
@@ -45,7 +45,7 @@ Var::~Var() {
  * Check, whether the variable is defined and whether the type is
  * an acceptable type.
  */
-void Var::attribute() {
+void Var::attribute(FuncAddr *func_addr) {
   // Check whether the variable is defined
   const Symbol *sym = symbol(name);
   if (sym == nullptr) {

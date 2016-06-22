@@ -32,11 +32,11 @@ class UnaryExpr : public Expr {
   UnaryOperator op = UNARY_COUNT;
 
  public:
-  UnaryExpr(Expr *fst, UnaryOperator op);
+  UnaryExpr(Expr *fst, UnaryOperator op, Expr *next);
   ~UnaryExpr();
 
-  void attribute() { }
-  void set_symbols(SymbolTables *symbol_tables);
+  void attribute(FuncAddr *func_addr) override { }
+  void set_symbols(SymbolTables *symbol_tables) override;
 };
 
 }  // namespace AST

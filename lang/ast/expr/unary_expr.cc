@@ -24,8 +24,10 @@ namespace AST {
  *
  * @param expr Enclosed expression
  * @param op Unary operation
+ * @param next Next expression in list
  */
-UnaryExpr::UnaryExpr(Expr *fst, UnaryOperator op) : Expr() {
+UnaryExpr::UnaryExpr(Expr *fst, UnaryOperator op, Expr *next)
+    : Expr(VM::TYPE_COUNT, next) {
   this->fst = fst;
   this->op = op;
 

@@ -25,7 +25,7 @@
 namespace AST {
 
 /**
- * @brief A list of variables/parameters
+ * A list of variables/parameters.
  */
 class Var : public Expr {
  private:
@@ -33,10 +33,10 @@ class Var : public Expr {
   Var *next = nullptr;
 
  public:
-  Var(std::string name, Var *next, Type type);
+  Var(std::string name, Var *next, VM::Type type);
   ~Var();
 
-  void attribute();
+  void attribute(FuncAddr *func_addr);
   void set_symbols(SymbolTables *symbol_tables);
   void register_var();
 };

@@ -81,4 +81,11 @@ void GlobalExpr::pop_frame() {
   symbol_tables->pop_back();
 }
 
+/**
+ * Return empty string, function name is implemented by func_def
+ */
+std::string GlobalExpr::get_name() {
+  return "";
+}
+
 }  // namespace AST

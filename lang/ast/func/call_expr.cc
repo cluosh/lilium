@@ -15,47 +15,40 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "lang/ast/expr/binary_expr.h"
+#include "lang/ast/func/call_expr.h"
 
 namespace AST {
 
 /**
- * Initialize a plus expression with two operands.
+ * Create a call expression with an id (function to be called) and
+ * a list of expressions to be passed as parameters.
  *
- * @param fst First operand
- * @param snd Second operand
- * @param op Operator for this binary expression node
- * @param next Next expression in list
+ * @param name Name of the function to be called
+ * @param expr_list List of parameter expressions
+ * @param next Next expression in expression list
  */
-BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next)
+CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
     : Expr(VM::TYPE_COUNT, next) {
-  this->fst = fst;
-  this->snd = snd;
-  this->op = op;
-
-  // Update type of expression
-  choose_type(fst, snd);
+  this->name = name;
+  this->expr_list = expr_list;
 }
 
 /**
- * Cleanup allocated expressions.
- */
-BinaryExpr::~BinaryExpr() {
-  delete fst;
-  delete snd;
-}
-
-/**
- * Assign symbols to this expression and the operands.
+ * Attribute this call expression.
  *
- * @param symbol_tables Symbol tables to be assigned
+ * @param func_addr Pointer to map of function addresses
  */
-void BinaryExpr::set_symbols(SymbolTables *symbol_tables) {
-  Expr::set_symbols(symbol_tables);
+void CallExpr::attribute(FuncAddr *func_addr) {
+}
 
-  // Assign symbols to operands
-  fst->set_symbols(symbol_tables);
-  snd->set_symbols(symbol_tables);
+/**
+ * Pass the symbol tables down to the expressions in the parameterlist.
+ *
+ * @param symbol_tables Symbol tables to be passed down
+ */
+void CallExpr::set_symbols(SymbolTables *symbol_tables) {
+  if (expr_list != nullptr)
+    expr_list->set_symbols(symbol_tables);
 }
 
 }  // namespace AST

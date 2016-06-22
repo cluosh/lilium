@@ -23,8 +23,9 @@ namespace AST {
  * Initialize constant integer node with value.
  *
  * @param value Integer value to be assigned to this node
+ * @param next Next expression in list
  */
-ConstInt::ConstInt(int64_t value) : Expr(TYPE_INT) {
+ConstInt::ConstInt(int64_t value, Expr *next) : Expr(VM::TYPE_INT, next) {
   this->value = value;
 }
 

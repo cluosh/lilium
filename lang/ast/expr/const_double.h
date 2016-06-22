@@ -30,9 +30,9 @@ class ConstDouble : public Expr {
   double value;
 
  public:
-  explicit ConstDouble(double value);
+  explicit ConstDouble(double value, Expr *next);
 
-  void attribute() { }
+  void attribute(FuncAddr *func_addr) override { }
 };
 
 }  // namespace AST

@@ -23,8 +23,10 @@ namespace AST {
  * Initialize constant integer node with value.
  *
  * @param value Integer value to be assigned to this node
+ * @param next Next expression in list.
  */
-ConstDouble::ConstDouble(double value) : Expr(TYPE_DOUBLEP) {
+ConstDouble::ConstDouble(double value, Expr *next)
+    : Expr(VM::TYPE_DOUBLEP, next) {
   this->value = value;
 }
 

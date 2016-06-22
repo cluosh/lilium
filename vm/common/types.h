@@ -15,26 +15,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_CONST_SINGLE_H_
-#define LANG_AST_EXPR_CONST_SINGLE_H_
+#ifndef VM_COMMON_TYPES_H_
+#define VM_COMMON_TYPES_H_
 
-#include "lang/ast/expr/expr.h"
-
-namespace AST {
+namespace VM {
 
 /**
- * A constant integer expression.
+ * Enumeration describing all possible types.
  */
-class ConstSingle : public Expr {
- private:
-  float value;
-
- public:
-  explicit ConstSingle(float value, Expr *next);
-
-  void attribute(FuncAddr *func_addr) override { }
+enum Type {
+  TYPE_INT,
+  TYPE_SINGLEP,
+  TYPE_DOUBLEP,
+  TYPE_STRING,
+  TYPE_COUNT
 };
 
-}  // namespace AST
+}  // namespace VM
 
-#endif  // LANG_AST_EXPR_CONST_SINGLE_H_
+#endif  // VM_COMMON_TYPES_H_

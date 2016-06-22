@@ -45,8 +45,9 @@ void Program::add(GlobalExpr *expr) {
  * Attribute the AST with symbol tables.
  */
 void Program::attribute_tree() {
-  for (auto const &expr : expr_list)
-    expr->attribute();
+  for (auto const &expr : expr_list) {
+    expr->attribute(&functions);
+  }
 }
 
 }  // namespace AST

@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <string>
 
+#include "vm/common/types.h"
+
 namespace VM {
 
 /**
@@ -31,6 +33,7 @@ class FunctionTable {
   std::string *names;
   std::uint64_t *addr;
   std::uint16_t *module_id;
+  Type *types;
 
  public:
   explicit FunctionTable(std::uint32_t size);
@@ -39,6 +42,9 @@ class FunctionTable {
   std::string *get_names();
   std::uint64_t *get_addr();
   std::uint16_t *get_module_ids();
+  Type *get_types();
+
+  void remove_unused();
 };
 
 }  // namespace VM

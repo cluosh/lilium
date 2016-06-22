@@ -45,6 +45,7 @@
 
   #include "lang/ast/program.h"
   #include "lang/ast/func/func_def.h"
+  #include "lang/ast/func/call_expr.h"
   #include "lang/ast/expr/expr.h"
   #include "lang/ast/expr/binary_expr.h"
   #include "lang/ast/expr/unary_expr.h"
@@ -52,9 +53,9 @@
   #include "lang/ast/expr/const_int.h"
   #include "lang/ast/expr/const_single.h"
   #include "lang/ast/data/var.h"
-  #include "lang/ast/common/types.h"
   #include "lang/ast/common/operators.h"
   #include "lang/parser/scanner.h"
+  #include "vm/common/types.h"
 
   #undef yylex
   #define yylex scanner.yylex
@@ -74,7 +75,7 @@
 %locations
 
 %type <AST::FuncDef *> FuncDef
-%type <AST::Expr *> Expr
+%type <AST::Expr *> Expr ExprList
 %type <AST::BinaryExpr *> PlusExprList MinusExprList MulExprList DivExprList
 %type <AST::BinaryExpr *> AndExprList OrExprList
 %type <AST::Var *> Params
@@ -89,52 +90,56 @@ FuncDef:
   ;
 Params:
   { $$ = nullptr; }
-  | ID Params { $$ = new AST::Var($1, $2, AST::TYPE_INT); }
-  | ID TSP Params { $$ = new AST::Var($1, $3, AST::TYPE_SINGLEP); }
-  | ID TDP Params { $$ = new AST::Var($1, $3, AST::TYPE_DOUBLEP); }
+  | ID Params { $$ = new AST::Var($1, $2, VM::TYPE_INT); }
+  | ID TSP Params { $$ = new AST::Var($1, $3, VM::TYPE_SINGLEP); }
+  | ID TDP Params { $$ = new AST::Var($1, $3, VM::TYPE_DOUBLEP); }
 Expr:
-  ID { $$ = new AST::Var($1, nullptr, AST::TYPE_COUNT); }
-  | INT { $$ = new AST::ConstInt($1); }
-  | SINGLEP { $$ = new AST::ConstSingle($1); }
-  | DOUBLEP { $$ = new AST::ConstDouble($1); }
+  ID { $$ = new AST::Var($1, nullptr, VM::TYPE_COUNT); }
+  | INT { $$ = new AST::ConstInt($1, nullptr); }
+  | SINGLEP { $$ = new AST::ConstSingle($1, nullptr); }
+  | DOUBLEP { $$ = new AST::ConstDouble($1, nullptr); }
   | '(' '+' PlusExprList ')' { $$ = $3; }
   | '(' '-' MinusExprList ')' { $$ = $3; }
   | '(' '*' MulExprList ')' { $$ = $3; }
   | '(' '/' DivExprList ')' { $$ = $3; }
   | '(' AND AndExprList ')' { $$ = $3; }
   | '(' OR OrExprList ')' { $$ = $3; }
-  | '(' '>' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_GT); }
-  | '(' '<' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_LT); }
-  | '(' GE Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_GE); }
-  | '(' LE Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_LE); }
-  | '(' '=' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_EQ); }
-  | '(' '!' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_NE); }
-  | '(' '-' Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NEG); }
-  | '(' NOT Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NOT); }
+  | '(' '>' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_GT, nullptr); }
+  | '(' '<' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_LT, nullptr); }
+  | '(' GE Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_GE, nullptr); }
+  | '(' LE Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_LE, nullptr); }
+  | '(' '=' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_EQ, nullptr); }
+  | '(' '!' Expr Expr ')' { $$ = new AST::BinaryExpr($3, $4, AST::BINARY_NE, nullptr); }
+  | '(' '-' Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NEG, nullptr); }
+  | '(' NOT Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NOT, nullptr); }
+  | '(' ID ExprList ')' { $$ = new AST::CallExpr($2, $3, nullptr); }
   ;
+ExprList:
+  { $$ = nullptr; }
+  | ExprList Expr { $2->set_next($1); $$ = $2; }
 PlusExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD); }
-  | PlusExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD, nullptr); }
+  | PlusExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD, nullptr); }
   ;
 MinusExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_SUB); }
-  | MinusExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_SUB); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_SUB, nullptr); }
+  | MinusExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_SUB, nullptr); }
   ;
 MulExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_MUL); }
-  | MulExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_MUL); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_MUL, nullptr); }
+  | MulExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_MUL, nullptr); }
   ;
 DivExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_DIV); }
-  | DivExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_DIV); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_DIV, nullptr); }
+  | DivExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_DIV, nullptr); }
   ;
 AndExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_AND); }
-  | AndExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_AND); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_AND, nullptr); }
+  | AndExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_AND, nullptr); }
   ;
 OrExprList:
-  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_OR); }
-  | OrExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_OR); }
+  Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_OR, nullptr); }
+  | OrExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_OR, nullptr); }
   ;
 %%
 

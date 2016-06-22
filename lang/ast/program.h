@@ -18,8 +18,10 @@
 #ifndef LANG_AST_PROGRAM_H_
 #define LANG_AST_PROGRAM_H_
 
+#include <cstdint>
 #include <list>
 #include <string>
+#include <unordered_map>
 
 #include "lang/ast/expr/global_expr.h"
 
@@ -31,12 +33,14 @@ namespace AST {
 class Program {
  private:
   std::list<GlobalExpr *> expr_list;
+  FuncAddr functions;
 
  public:
   ~Program();
 
   void add(GlobalExpr *expr);
   void attribute_tree();
+  void generate_code();
 };
 
 }  // namespace AST

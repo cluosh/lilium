@@ -35,11 +35,11 @@ class BinaryExpr: public Expr {
   BinaryOperator op = BINARY_COUNT;
 
  public:
-  BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op);
+  BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next);
   ~BinaryExpr();
 
-  void attribute() { }
-  void set_symbols(SymbolTables *symbol_tables);
+  void attribute(FuncAddr *func_addr) override { }
+  void set_symbols(SymbolTables *symbol_tables) override;
 };
 
 }  // namespace AST

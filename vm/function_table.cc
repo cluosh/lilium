@@ -34,6 +34,7 @@ FunctionTable::FunctionTable(std::uint32_t size) {
   names = new (std::nothrow) std::string[size];
   addr = new (std::nothrow) std::uint64_t[size];
   module_id = new (std::nothrow) std::uint16_t[size];
+  types = new (std::nothrow) Type[size];
 }
 
 /**
@@ -43,6 +44,7 @@ FunctionTable::~FunctionTable() {
   delete names;
   delete addr;
   delete module_id;
+  delete types;
 }
 
 /**
@@ -70,6 +72,24 @@ std::uint64_t *FunctionTable::get_addr() {
  */
 std::uint16_t *FunctionTable::get_module_ids() {
   return module_id;
+}
+
+/**
+ * Retrieve the types for all functions.
+ *
+ * @return type ID
+ */
+Type *FunctionTable::get_types() {
+  return types;
+}
+
+/**
+ * Remove unused data, namely types and names. Names are
+ * useful for dynamically loading modules later on tho.
+ */
+void FunctionTable::remove_unused() {
+  delete names;
+  delete types;
 }
 
 }  // namespace VM

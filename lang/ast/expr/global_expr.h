@@ -24,6 +24,9 @@
 
 namespace AST {
 
+// Type definition for function addresses
+typedef std::unordered_map<std::string, std::uint64_t> FuncAddr;
+
 /**
  * A global definition in a program, either a expression without variables
  * or a function definition.
@@ -35,8 +38,11 @@ class GlobalExpr {
  public:
   virtual ~GlobalExpr() = default;
 
+  // Retrieve name of the expression, if it's a function
+  virtual std::string get_name();
+
   // Attribution of the expressions
-  virtual void attribute() = 0;
+  virtual void attribute(FuncAddr *func_addr) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
 

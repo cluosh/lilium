@@ -57,7 +57,7 @@ void Program::attribute_tree() {
  */
 void Program::generate_code(VM::Generator *generator) {
   // Print header
-  generator->module_header("", 0, 0, 0);
+  generator->module_header("Module", 0, 0, 0);
 }
 
 }  // namespace AST

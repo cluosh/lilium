@@ -90,6 +90,8 @@ Type *FunctionTable::get_types() {
 void FunctionTable::remove_unused() {
   delete names;
   delete types;
+  names = nullptr;
+  types = nullptr;
 }
 
 }  // namespace VM

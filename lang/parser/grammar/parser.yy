@@ -55,7 +55,7 @@
   #include "lang/ast/data/var.h"
   #include "lang/ast/common/operators.h"
   #include "lang/parser/scanner.h"
-  #include "vm/common/types.h"
+  #include "vm/types/types.h"
 
   #undef yylex
   #define yylex scanner.yylex

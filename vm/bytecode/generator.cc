@@ -43,14 +43,22 @@ void Generator::module_header(std::string name,
 
   // Print module name (make sure exactly 128 bytes are printed)
   if (name.length() < 128) {
-    out.write(name.c_str(), name.length());
+    out.write(name.c_str(), name.size());
     for (std::uint64_t i = name.length(); i < 128; i++)
-      out.write("\0", i);
+      out.write("\0", 1);
   } else {
     out.write(name.c_str(), 128);
   }
 
-  // Write number of function table entries (24 bit)
+  // Write number of function table entries
+  // Only the lower 24 bit are being used
+  out.write(reinterpret_cast<char *>(&num_func), 4);
+
+  // Write number of constants
+  out.write(reinterpret_cast<char *>(&num_const), 2);
+
+  // Write number of total instructions
+  out.write(reinterpret_cast<char *>(&num_inst), 8);
 }
 
 }  // namespace VM

@@ -31,7 +31,7 @@ namespace VM {
  */
 bool BytecodeLoader::load_module(std::string file, Module *module) {
   // Open file and make sure it has been opened correctly
-  std::ifstream module_file(file, std::ifstream::ate | std::ifstream::binary);
+  std::ifstream module_file(file, std::ifstream::binary);
   if (!module_file.is_open()) {
     std::cerr << "Module file \"" << file << "\" could not be opened.\n";
     return false;
@@ -39,7 +39,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
 
   // Check for magic number
   char buffer[257];
-  module_file.read(&buffer[0], 2);
+  module_file.read(buffer, 2);
   if (module_file.fail() || buffer[0] != '\xFF' || buffer[1] != '\xBC') {
     std::cerr << "Specified module file \"" << file << "\" is not valid "
         << "Lilium bytecode.\n";
@@ -57,29 +57,30 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   std::string module_name(&buffer[0]);
 
   // Read number of function table entries
+  // Only the lower 24 bit are being used
   std::uint32_t num_functions = 0;
-  module_file.read(reinterpret_cast<char *>(&num_functions), 3);
-  if (module_file.fail()) {
+  module_file.read(reinterpret_cast<char *>(&num_functions), 4);
+  if (module_file.fail() || num_functions == 0) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
-        << "the number of function table entries.\n";
+        << "or contains invalid number of function table entries.\n";
     return false;
   }
 
   // Read number of constant pool entries
   std::uint16_t num_const = 0;
   module_file.read(reinterpret_cast<char *>(&num_const), 2);
-  if (module_file.fail()) {
+  if (module_file.fail() || num_const == 0) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
-        << "the number of constant pool entries.\n";
+        << "or contains invalid number of constant pool entries.\n";
     return false;
   }
 
   // Read number of instructions
   std::uint64_t num_instructions = 0;
   module_file.read(reinterpret_cast<char *>(&num_instructions), 8);
-  if (module_file.fail()) {
+  if (module_file.fail() || num_instructions == 0) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
-        << "the number of instructions.\n";
+        << "or contains invalid number of instructions.\n";
     return false;
   }
 

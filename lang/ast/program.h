@@ -35,8 +35,7 @@ namespace AST {
 class Program {
  private:
   std::list<GlobalExpr *> expr_list;
-  FuncAddr functions;
-  ConstPool constants;
+  AttribInfo attrib_info;
 
  public:
   ~Program();

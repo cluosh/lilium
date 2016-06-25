@@ -45,12 +45,10 @@ void Program::add(GlobalExpr *expr) {
  * Attribute the AST with symbol tables.
  */
 void Program::attribute_tree() {
-  // Create new attribute
-  Attribute attribute;
-
   // Attribute all expressions
   for (auto const &expr : expr_list) {
-    expr->attribute(&functions, &attribute, &constants);
+    attrib_info.next_reg = 0;
+    expr->attribute(&attrib_info);
   }
 }
 
@@ -60,9 +58,25 @@ void Program::attribute_tree() {
  * @param generator Generator used to write the bytecode
  */
 void Program::generate_code(VM::Generator *generator) {
+  // Forward-pass for reference resolving
+  generator->set_disabled(true);
+  attrib_info.code_counter = 0;
+  for (auto const &expr : expr_list) {
+    expr->generate_code(generator, &attrib_info);
+  }
+
   // Print header
-  generator->module_header("Module", (std::uint32_t) functions.size(),
-                           (std::uint16_t) constants.size(), 0);
+  generator->module_header(
+      "Module", static_cast<std::uint32_t>(attrib_info.func_addr.size()),
+      static_cast<std::uint16_t>(attrib_info.constants.size()),
+      static_cast<std::uint64_t>(attrib_info.code_counter));
+
+  // Generate code for all expressions
+  generator->set_disabled(false);
+  attrib_info.code_counter = 0;
+  for (auto const &expr : expr_list) {
+    expr->generate_code(generator, &attrib_info);
+  }
 }
 
 }  // namespace AST

@@ -39,9 +39,8 @@ class FuncDef : public GlobalExpr {
   FuncDef(std::string name, Var *var_list, Expr *expr);
   ~FuncDef();
 
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override;
-  void generate_code(VM::Generator *generator) override { }
+  void attribute(AttribInfo *attrib_info) override;
+  void generate_code(VM::Generator *generator, AttribInfo *attrib_info) override;
   void set_symbols(SymbolTables *symbol_tables) override;
 };
 

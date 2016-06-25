@@ -69,9 +69,9 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   // Read number of constant pool entries
   std::uint16_t num_const = 0;
   module_file.read(reinterpret_cast<char *>(&num_const), 2);
-  if (module_file.fail() || num_const == 0) {
+  if (module_file.fail()) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
-        << "or contains invalid number of constant pool entries.\n";
+        << "valid number of constant pool entries.\n";
     return false;
   }
 
@@ -120,19 +120,22 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Allocate constant pool
-  std::uint64_t *constant_pool = new (std::nothrow) std::uint64_t[num_const];
-  if (constant_pool == nullptr) {
-    std::cerr << "Could not allocate memory for constant pool in \""
-        << module_name << "\".\n";
-    return false;
-  }
+  std::uint64_t *constant_pool = nullptr;
+  if (num_const > 0) {
+    constant_pool = new(std::nothrow) std::uint64_t[num_const];
+    if (constant_pool == nullptr) {
+      std::cerr << "Could not allocate memory for constant pool in \""
+          << module_name << "\".\n";
+      return false;
+    }
 
-  // Read constant pool entries from file
-  module_file.read(reinterpret_cast<char *>(&constant_pool[0]), num_const);
-  if (module_file.fail()) {
-    std::cerr << "Module \"" << module_name << "\" does not contain "
-        << "the specified number of constants.\n";
-    return false;
+    // Read constant pool entries from file
+    module_file.read(reinterpret_cast<char *>(&constant_pool[0]), num_const);
+    if (module_file.fail()) {
+      std::cerr << "Module \"" << module_name << "\" does not contain "
+          << "the specified number of constants.\n";
+      return false;
+    }
   }
 
   // Allocate byte code array

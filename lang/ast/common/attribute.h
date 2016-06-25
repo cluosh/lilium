@@ -19,13 +19,29 @@
 #define LANG_AST_COMMON_ATTRIBUTE_H_
 
 #include <cstdint>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <utility>
+
+#include "vm/types/types.h"
 
 namespace AST {
 
+// Type definition for function addresses
+typedef std::unordered_map<std::string,
+                           std::pair<std::uint64_t, VM::Type>> FuncAddr;
+
+// Type definition for the constant pool
+typedef std::vector<std::uint64_t> ConstPool;
+
 /**
- * Store counter and next register in an attribute struct.
+ * Structure for storing information passed down during generation and
+ * attributation.
  */
-struct Attribute {
+struct AttribInfo {
+  FuncAddr func_addr;
+  ConstPool constants;
   std::uint64_t code_counter;
   std::uint8_t next_reg;
 };

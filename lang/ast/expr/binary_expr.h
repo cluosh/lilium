@@ -22,6 +22,7 @@
 
 #include "lang/ast/expr/expr.h"
 #include "lang/ast/common/operators.h"
+#include "vm/opcodes.h"
 
 namespace AST {
 
@@ -34,13 +35,15 @@ class BinaryExpr: public Expr {
   Expr *snd = nullptr;
   BinaryOperator op = BINARY_COUNT;
 
+  VM::OpCode pick_typed();
+
  public:
   BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next);
   ~BinaryExpr();
 
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override;
-  void generate_code(VM::Generator *generator) override;
+  void attribute(AttribInfo *attrib_info) override;
+  void generate_code(VM::Generator *generator,
+                     AttribInfo *attrib_info) override;
   void set_symbols(SymbolTables *symbol_tables) override;
 };
 

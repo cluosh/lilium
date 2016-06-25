@@ -29,5 +29,16 @@ ConstInt::ConstInt(int64_t value, Expr *next) : Const(VM::TYPE_INT, next) {
   this->value = value;
 }
 
+/**
+ * Attribute a constant integer definition
+ *
+ * @param attrib_info Info needed for attribution and code generation
+ *                    later on
+ */
+void ConstInt::attribute(AttribInfo *attrib_info) {
+  result_reg = attrib_info->next_reg;
+  attrib_info->next_reg++;
+}
+
 }  // namespace AST
 

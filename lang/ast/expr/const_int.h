@@ -34,9 +34,9 @@ class ConstInt : public Const {
  public:
   explicit ConstInt(std::int64_t value, Expr *next);
 
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override { }
-  void generate_code(VM::Generator *generator) override { }
+  void attribute(AttribInfo *attrib_info) override;
+  void generate_code(VM::Generator *generator,
+                     AttribInfo *attrib_info) override { }
 };
 
 }  // namespace AST

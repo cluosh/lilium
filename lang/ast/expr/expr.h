@@ -37,15 +37,16 @@ class Expr : public GlobalExpr {
   Expr(VM::Type type, Expr *next);
   virtual ~Expr() = default;
 
-  virtual void attribute(FuncAddr *func_addr, Attribute *attr,
-                         ConstPool *constants) = 0;
-  virtual void generate_code(VM::Generator *generator) = 0;
+  virtual void attribute(AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::Generator *generator,
+                             AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
 
   void set_next(Expr *next);
+  VM::Type get_type();
+
  protected:
   void choose_type(Expr *expr1, Expr *expr2);
-  VM::Type get_type();
 };
 
 }  // namespace AST

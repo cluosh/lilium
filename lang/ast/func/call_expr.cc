@@ -36,15 +36,12 @@ CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
 /**
  * Attribute this call expression.
  *
- * @param func_addr Pointer to map of function addresses
- * @param attr Attribute containing current code position count and
- *             next register
- * @param constants Constant pool of the module
+ * @param attrib_info Info needed for attribution and code generation
+ *                    later on
  */
-void CallExpr::attribute(FuncAddr *func_addr, Attribute *attr,
-                         ConstPool *constants) {
+void CallExpr::attribute(AttribInfo *attrib_info) {
   if (expr_list != nullptr)
-    expr_list->attribute(func_addr, attr, constants);
+    expr_list->attribute(attrib_info);
 }
 
 /**

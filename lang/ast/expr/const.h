@@ -31,9 +31,9 @@ class Const : public Expr {
   Const(VM::Type type, Expr *next);
   virtual ~Const() = default;
 
-  virtual void attribute(FuncAddr *func_addr, Attribute *attr,
-                         ConstPool *constants) = 0;
-  virtual void generate_code(VM::Generator *generator) = 0;
+  virtual void attribute(AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::Generator *generator,
+                             AttribInfo *attrib_info) = 0;
 };
 
 }  // namespace AST

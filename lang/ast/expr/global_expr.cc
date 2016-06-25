@@ -83,9 +83,20 @@ void GlobalExpr::pop_frame() {
 
 /**
  * Return empty string, function name is implemented by func_def
+ *
+ * @return Empty string
  */
 std::string GlobalExpr::get_name() {
   return "";
+}
+
+/**
+ * Return register of this expression node.
+ *
+ * @return Register ID
+ */
+std::uint8_t GlobalExpr::get_result_reg() {
+  return result_reg;
 }
 
 }  // namespace AST

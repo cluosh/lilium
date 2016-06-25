@@ -21,6 +21,8 @@
 #include <ostream>
 #include <string>
 
+#include "vm/module.h"
+
 namespace VM {
 
 /**
@@ -29,13 +31,17 @@ namespace VM {
 class Generator {
  private:
   std::ostream out;
+  bool disabled;
 
  public:
   explicit Generator(const std::ostream &output);
+  void set_disabled(bool disabled);
 
   // Code generation functions
   void module_header(std::string name, std::uint32_t num_func,
                      std::uint16_t num_const, std::uint64_t num_inst);
+  void function_table();
+  void instruction(const ByteCode &bc);
 };
 
 }  // namespace VM

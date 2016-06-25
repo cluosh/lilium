@@ -20,22 +20,12 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #include "lang/ast/common/attribute.h"
 #include "lang/ast/common/symbol.h"
 #include "vm/bytecode/generator.h"
 
 namespace AST {
-
-// Type definition for function addresses
-typedef std::unordered_map<std::string,
-                           std::pair<std::uint64_t, VM::Type>> FuncAddr;
-
-// Type definition for the constant pool
-typedef std::vector<std::uint64_t> ConstPool;
 
 /**
  * A global definition in a program, either a expression without variables
@@ -52,11 +42,12 @@ class GlobalExpr {
   virtual std::string get_name();
 
   // Attribution of the expressions
-  virtual void attribute(FuncAddr *func_addr, Attribute *attr,
-                         ConstPool *constants) = 0;
-  virtual void generate_code(VM::Generator *generator) = 0;
+  virtual void attribute(AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::Generator *generator,
+                             AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
+  std::uint8_t get_result_reg();
 
  protected:
   std::uint8_t result_reg;

@@ -27,6 +27,15 @@ namespace VM {
 Generator::Generator(const std::ostream &output) : out(output.rdbuf()) { }
 
 /**
+ * Disable/Enable code generation.
+ *
+ * @param disable Disable/Enable code generation
+ */
+void Generator::set_disabled(bool disabled) {
+  this->disabled = disabled;
+}
+
+/**
  * Generate the bytecode header for a module file.
  *
  * @param name Name of the module (limited to 128 bytes)
@@ -59,6 +68,16 @@ void Generator::module_header(std::string name,
 
   // Write number of total instructions
   out.write(reinterpret_cast<char *>(&num_inst), 8);
+}
+
+/**
+ * Generate bytecode for a bytecode instruction.
+ *
+ * @param bc Information for the bytecode instruction
+ */
+void Generator::instruction(const ByteCode &bc) {
+  if (!disabled)
+    out.write(reinterpret_cast<char *>(const_cast<VM::ByteCode *>(&bc)), 4);
 }
 
 }  // namespace VM

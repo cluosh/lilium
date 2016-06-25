@@ -15,6 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <iostream>
 #include <string>
 
 #include "lang/ast/func/func_def.h"
@@ -44,27 +45,46 @@ FuncDef::~FuncDef() {
 /**
  * Attribute a function definition.
  *
- * @param func_addr Pointer to a map of function addresses
- * @param attr Attribute containing current code position count and
- *             next register
- * @param constants Pointer to the constant pool of this module
+ * @param attrib_info Info needed for attribution and code generation
+ *                    later on
  */
-void FuncDef::attribute(FuncAddr *func_addr, Attribute *attr,
-                        ConstPool *constants) {
+void FuncDef::attribute(AttribInfo *attrib_info) {
   push_frame();
 
   // Register variables
   var_list->register_var();
 
-  // Check semantics in wrapped expression
-  expr->attribute(func_addr, attr, constants);
+  // Check semantics in wrapped expression and set result register
+  result_reg = attrib_info->next_reg;
+  expr->attribute(attrib_info);
 
   // Store function name if it hasn't been stored yet
-  // TODO(cluosh): Expression type!
-  if (func_addr->find(name) == func_addr->end())
-    func_addr->insert(std::make_pair(name, std::make_pair(1, VM::TYPE_COUNT)));
+  if (attrib_info->func_addr.find(name) == attrib_info->func_addr.end()) {
+    attrib_info->func_addr.insert(std::make_pair(
+        name, std::make_pair(1, expr->get_type())));
+  }
 
   pop_frame();
+}
+
+/**
+ * Generate code for the function definition.
+ *
+ * @param generator Code generator helper class
+ * @param attrib_info Attribute information needed for code generation
+ */
+void FuncDef::generate_code(VM::Generator *generator,
+                            AttribInfo *attrib_info) {
+  if (attrib_info->func_addr.find(name) == attrib_info->func_addr.end()) {
+    std::cerr << "Could not find function \""
+        << name
+        << "\" in function name table.\n";
+    return;
+  }
+
+  // Store code address in function
+  attrib_info->func_addr[name].first = attrib_info->code_counter;
+  expr->generate_code(generator, attrib_info);
 }
 
 /**

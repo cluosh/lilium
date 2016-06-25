@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "lang/ast/expr/binary_expr.h"
+#include "vm/types/types.h"
 
 namespace AST {
 
@@ -46,25 +47,62 @@ BinaryExpr::~BinaryExpr() {
 }
 
 /**
+ * Pick a typed operation for this binary expression.
+ */
+VM::OpCode BinaryExpr::pick_typed() {
+  switch (op) {
+    case BINARY_ADD:
+      return VM::OP_ADDI;
+    case BINARY_SUB:
+      return VM::OP_SUBI;
+    case BINARY_MUL:
+      return VM::OP_MULI;
+    case BINARY_DIV:
+      return VM::OP_DIVI;
+    default:
+      return VM::OP_NOP;
+  }
+}
+
+/**
  * Attribute a binary expression.
  *
- * @param func_addr Pointer to map of function addresses
- * @param attr Attribute containing current code position count and
- *             next register
- * @param constants Constant pool of the module
+ * @param attrib_info Info needed for attribution and code generation
+ *                    later on
  */
-void BinaryExpr::attribute(FuncAddr *func_addr, Attribute *attr,
-                           ConstPool *constants) {
+void BinaryExpr::attribute(AttribInfo *attrib_info) {
   // Set result register and increase register counter
-  result_reg = attr->next_reg;
-  attr->next_reg += 1;
+  result_reg = attrib_info->next_reg;
+  attrib_info->next_reg += 1;
 
   // Attribute the operands
-  fst->attribute(func_addr, attr, constants);
-  snd->attribute(func_addr, attr, constants);
+  fst->attribute(attrib_info);
+  snd->attribute(attrib_info);
 
   // Reset attribute register counter
-  attr->next_reg -= 1;
+  attrib_info->next_reg -= 1;
+}
+
+/**
+ * Generate code for binary expressions.
+ *
+ * @param generator Code generator helper class
+ * @param attrib_info Attribute information needed for code generation
+ */
+void BinaryExpr::generate_code(VM::Generator *generator,
+                               AttribInfo *attrib_info) {
+  // Generate bytecode of child nodes first
+  fst->generate_code(generator, attrib_info);
+  snd->generate_code(generator, attrib_info);
+
+  // Generate the bytecode instruction
+  VM::ByteCode bc;
+  bc.op[0] = static_cast<std::uint8_t>(pick_typed());
+  bc.op[1] = fst->get_result_reg();
+  bc.op[2] = snd->get_result_reg();
+  bc.op[3] = result_reg;
+  generator->instruction(bc);
+  attrib_info->code_counter++;
 }
 
 /**

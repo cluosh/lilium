@@ -32,9 +32,8 @@ class ConstSingle : public Const {
  public:
   explicit ConstSingle(float value, Expr *next);
 
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override { }
-  void generate_code(VM::Generator *generator) override { }
+  void attribute(AttribInfo *attrib_info) override { }
+  void generate_code(VM::Generator *generator, AttribInfo *attrib_info) override { }
 };
 
 }  // namespace AST

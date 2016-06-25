@@ -18,6 +18,7 @@
 #ifndef LANG_AST_EXPR_GLOBAL_EXPR_H_
 #define LANG_AST_EXPR_GLOBAL_EXPR_H_
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -25,6 +26,7 @@
 
 #include "lang/ast/common/attribute.h"
 #include "lang/ast/common/symbol.h"
+#include "vm/bytecode/generator.h"
 
 namespace AST {
 
@@ -52,10 +54,13 @@ class GlobalExpr {
   // Attribution of the expressions
   virtual void attribute(FuncAddr *func_addr, Attribute *attr,
                          ConstPool *constants) = 0;
+  virtual void generate_code(VM::Generator *generator) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
 
  protected:
+  std::uint8_t result_reg;
+
   const Symbol *symbol(std::string name);
   void add_symbol(std::string name, Symbol symbol);
   void push_frame();

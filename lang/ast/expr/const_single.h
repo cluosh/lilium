@@ -34,6 +34,7 @@ class ConstSingle : public Const {
 
   void attribute(FuncAddr *func_addr, Attribute *attr,
                  ConstPool *constants) override { }
+  void generate_code(VM::Generator *generator) override { }
 };
 
 }  // namespace AST

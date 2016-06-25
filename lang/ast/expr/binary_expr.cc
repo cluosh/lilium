@@ -46,6 +46,28 @@ BinaryExpr::~BinaryExpr() {
 }
 
 /**
+ * Attribute a binary expression.
+ *
+ * @param func_addr Pointer to map of function addresses
+ * @param attr Attribute containing current code position count and
+ *             next register
+ * @param constants Constant pool of the module
+ */
+void BinaryExpr::attribute(FuncAddr *func_addr, Attribute *attr,
+                           ConstPool *constants) {
+  // Set result register and increase register counter
+  result_reg = attr->next_reg;
+  attr->next_reg += 1;
+
+  // Attribute the operands
+  fst->attribute(func_addr, attr, constants);
+  snd->attribute(func_addr, attr, constants);
+
+  // Reset attribute register counter
+  attr->next_reg -= 1;
+}
+
+/**
  * Assign symbols to this expression and the operands.
  *
  * @param symbol_tables Symbol tables to be assigned

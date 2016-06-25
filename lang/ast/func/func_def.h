@@ -41,6 +41,7 @@ class FuncDef : public GlobalExpr {
 
   void attribute(FuncAddr *func_addr, Attribute *attr,
                  ConstPool *constants) override;
+  void generate_code(VM::Generator *generator) override { }
   void set_symbols(SymbolTables *symbol_tables) override;
 };
 

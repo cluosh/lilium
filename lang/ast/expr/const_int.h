@@ -20,21 +20,22 @@
 
 #include <cstdint>
 
-#include "lang/ast/expr/expr.h"
+#include "lang/ast/expr/const.h"
 
 namespace AST {
 
 /**
  * A constant integer expression.
  */
-class ConstInt : public Expr {
+class ConstInt : public Const {
  private:
   std::int64_t value;
 
  public:
   explicit ConstInt(std::int64_t value, Expr *next);
 
-  void attribute(FuncAddr *func_addr) override { }
+  void attribute(FuncAddr *func_addr, Attribute *attr,
+                 ConstPool *constants) override { }
 };
 
 }  // namespace AST

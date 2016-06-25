@@ -26,7 +26,7 @@ namespace AST {
  * @param next Next expression in list
  */
 ConstSingle::ConstSingle(float value, Expr *next)
-    : Expr(VM::TYPE_SINGLEP, next) {
+    : Const(VM::TYPE_SINGLEP, next) {
   this->value = value;
 }
 

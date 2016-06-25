@@ -25,6 +25,7 @@ namespace AST {
  * Initialize an expression.
  *
  * @param type Expression type, use TYPE_COUNT for type inferring
+ * @param next Next expression in expression list
  */
 Expr::Expr(VM::Type type, Expr *next) {
   this->type = type;

@@ -26,7 +26,7 @@ namespace AST {
  * @param next Next expression in list.
  */
 ConstDouble::ConstDouble(double value, Expr *next)
-    : Expr(VM::TYPE_DOUBLEP, next) {
+    : Const(VM::TYPE_DOUBLEP, next) {
   this->value = value;
 }
 

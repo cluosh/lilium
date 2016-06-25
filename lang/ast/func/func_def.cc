@@ -43,15 +43,21 @@ FuncDef::~FuncDef() {
 
 /**
  * Attribute a function definition.
+ *
+ * @param func_addr Pointer to a map of function addresses
+ * @param attr Attribute containing current code position count and
+ *             next register
+ * @param constants Pointer to the constant pool of this module
  */
-void FuncDef::attribute(FuncAddr *func_addr) {
+void FuncDef::attribute(FuncAddr *func_addr, Attribute *attr,
+                        ConstPool *constants) {
   push_frame();
 
   // Register variables
   var_list->register_var();
 
   // Check semantics in wrapped expression
-  expr->attribute(func_addr);
+  expr->attribute(func_addr, attr, constants);
 
   // Store function name if it hasn't been stored yet
   // TODO(cluosh): Expression type!

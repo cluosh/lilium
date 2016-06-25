@@ -15,27 +15,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_CONST_SINGLE_H_
-#define LANG_AST_EXPR_CONST_SINGLE_H_
-
 #include "lang/ast/expr/const.h"
 
 namespace AST {
 
 /**
- * A constant integer expression.
+ * Initialize a constant expression.
+ *
+ * @param type Type of the expression
+ * @param next Next expression in expression list
  */
-class ConstSingle : public Const {
- private:
-  float value;
-
- public:
-  explicit ConstSingle(float value, Expr *next);
-
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override { }
-};
+Const::Const(VM::Type type, Expr *next) : Expr(type, next) { }
 
 }  // namespace AST
-
-#endif  // LANG_AST_EXPR_CONST_SINGLE_H_

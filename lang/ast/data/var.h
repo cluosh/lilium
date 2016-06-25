@@ -36,8 +36,9 @@ class Var : public Expr {
   Var(std::string name, Var *next, VM::Type type);
   ~Var();
 
-  void attribute(FuncAddr *func_addr);
-  void set_symbols(SymbolTables *symbol_tables);
+  void attribute(FuncAddr *func_addr, Attribute *attr,
+                 ConstPool *constants) override;
+  void set_symbols(SymbolTables *symbol_tables) override;
   void register_var();
 };
 

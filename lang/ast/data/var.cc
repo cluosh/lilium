@@ -44,8 +44,14 @@ Var::~Var() {
 /**
  * Check, whether the variable is defined and whether the type is
  * an acceptable type.
+ *
+ * @param func_addr Pointer to map of function addresses
+ * @param attr Attribute containing current code position count and
+ *             next register
+ * @param constants Constant pool of the module
  */
-void Var::attribute(FuncAddr *func_addr) {
+void Var::attribute(FuncAddr *func_addr, Attribute *attr,
+                    ConstPool *constants) {
   // Check whether the variable is defined
   const Symbol *sym = symbol(name);
   if (sym == nullptr) {

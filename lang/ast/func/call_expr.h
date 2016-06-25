@@ -35,8 +35,9 @@ class CallExpr : public Expr {
  public:
   CallExpr(std::string name, Expr *expr_list, Expr *next);
 
-  void attribute(FuncAddr *func_addr);
-  void set_symbols(SymbolTables *symbol_tables);
+  void attribute(FuncAddr *func_addr, Attribute *attr,
+                 ConstPool *constants) override;
+  void set_symbols(SymbolTables *symbol_tables) override;
 };
 
 }  // namespace AST

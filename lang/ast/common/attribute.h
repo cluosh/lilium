@@ -15,27 +15,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_EXPR_CONST_SINGLE_H_
-#define LANG_AST_EXPR_CONST_SINGLE_H_
+#ifndef LANG_AST_COMMON_ATTRIBUTE_H_
+#define LANG_AST_COMMON_ATTRIBUTE_H_
 
-#include "lang/ast/expr/const.h"
+#include <cstdint>
 
 namespace AST {
 
 /**
- * A constant integer expression.
+ * Store counter and next register in an attribute struct.
  */
-class ConstSingle : public Const {
- private:
-  float value;
-
- public:
-  explicit ConstSingle(float value, Expr *next);
-
-  void attribute(FuncAddr *func_addr, Attribute *attr,
-                 ConstPool *constants) override { }
+struct Attribute {
+  std::uint64_t code_counter;
+  std::uint8_t next_reg;
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_EXPR_CONST_SINGLE_H_
+#endif  // LANG_AST_COMMON_ATTRIBUTE_H_

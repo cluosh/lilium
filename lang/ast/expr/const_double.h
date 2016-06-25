@@ -18,21 +18,22 @@
 #ifndef LANG_AST_EXPR_CONST_DOUBLE_H_
 #define LANG_AST_EXPR_CONST_DOUBLE_H_
 
-#include "lang/ast/expr/expr.h"
+#include "lang/ast/expr/const.h"
 
 namespace AST {
 
 /**
  * A constant integer expression.
  */
-class ConstDouble : public Expr {
+class ConstDouble : public Const {
  private:
   double value;
 
  public:
   explicit ConstDouble(double value, Expr *next);
 
-  void attribute(FuncAddr *func_addr) override { }
+  void attribute(FuncAddr *func_addr, Attribute *attr,
+                 ConstPool *constants) override { }
 };
 
 }  // namespace AST

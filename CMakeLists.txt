@@ -55,7 +55,7 @@ set(LCC_SRC_FILES
         lang/ast/expr/const_single.cc
         lang/ast/func/call_expr.h
         lang/ast/func/call_expr.cc
-        vm/bytecode/generator.cc)
+        vm/bytecode/generator.cc lang/ast/common/attribute.h lang/ast/expr/const.h lang/ast/expr/const.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "lang/ast/common/attribute.h"
 #include "lang/ast/common/symbol.h"
 
 namespace AST {
@@ -49,7 +50,8 @@ class GlobalExpr {
   virtual std::string get_name();
 
   // Attribution of the expressions
-  virtual void attribute(FuncAddr *func_addr) = 0;
+  virtual void attribute(FuncAddr *func_addr, Attribute *attr,
+                         ConstPool *constants) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
 

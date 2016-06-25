@@ -45,8 +45,12 @@ void Program::add(GlobalExpr *expr) {
  * Attribute the AST with symbol tables.
  */
 void Program::attribute_tree() {
+  // Create new attribute
+  Attribute attribute;
+
+  // Attribute all expressions
   for (auto const &expr : expr_list) {
-    expr->attribute(&functions);
+    expr->attribute(&functions, &attribute, &constants);
   }
 }
 
@@ -57,7 +61,8 @@ void Program::attribute_tree() {
  */
 void Program::generate_code(VM::Generator *generator) {
   // Print header
-  generator->module_header("Module", 0, 0, 0);
+  generator->module_header("Module", (std::uint32_t) functions.size(),
+                           (std::uint16_t) constants.size(), 0);
 }
 
 }  // namespace AST

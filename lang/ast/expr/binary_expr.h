@@ -38,7 +38,8 @@ class BinaryExpr: public Expr {
   BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next);
   ~BinaryExpr();
 
-  void attribute(FuncAddr *func_addr) override { }
+  void attribute(FuncAddr *func_addr, Attribute *attr,
+                 ConstPool *constants) override { }
   void set_symbols(SymbolTables *symbol_tables) override;
 };
 

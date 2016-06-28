@@ -141,8 +141,8 @@ bool Interpreter::link() {
   }
 
   // Remove unused data in function tables
-  for (const auto &module : modules)
-    module->funcs->remove_unused();
+  /*for (const auto &module : modules)
+    module->funcs->remove_unused();*/
 
   // Cleanup table of unresolved functions
   unresolved_symbols.clear();
@@ -164,7 +164,7 @@ bool Interpreter::execute() {
   ByteCode *code = module->code;
   std::uint64_t *func_addr = module->funcs->get_addr();
   std::uint16_t *func_module = module->funcs->get_module_ids();
-  std::uint64_t pc = entry_point.local_addr - 1;
+  std::uint64_t pc = func_addr[entry_point.local_addr] - 1;
 
   // Call stack for function calls
   Module *cs_modules[20];

@@ -67,9 +67,12 @@ void Program::generate_code(VM::Generator *generator) {
 
   // Print header
   generator->module_header(
-      "Module", static_cast<std::uint32_t>(attrib_info.func_addr.size()),
+      "Module", static_cast<std::uint32_t>(attrib_info.func_addr.get_count()),
       static_cast<std::uint16_t>(attrib_info.constants.size()),
       static_cast<std::uint64_t>(attrib_info.code_counter));
+
+  // Generate function table
+  generator->function_table(&attrib_info.func_addr);
 
   // Generate code for all expressions
   generator->set_disabled(false);

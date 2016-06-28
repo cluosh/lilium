@@ -23,7 +23,6 @@
 
 #include "lang/ast/common/attribute.h"
 #include "lang/ast/common/symbol.h"
-#include "vm/bytecode/generator.h"
 
 namespace AST {
 

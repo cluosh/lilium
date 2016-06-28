@@ -48,7 +48,7 @@ void Generator::module_header(std::string name,
                               std::uint16_t num_const,
                               std::uint64_t num_inst) {
   // Write the magic number
-  out.write("\xFF\xBC", 2);
+  out.write("\x4C\x49", 2);
 
   // Print module name (make sure exactly 128 bytes are printed)
   if (name.length() < 128) {
@@ -68,6 +68,37 @@ void Generator::module_header(std::string name,
 
   // Write number of total instructions
   out.write(reinterpret_cast<char *>(&num_inst), 8);
+}
+
+/**
+ * Write a function table to the file, based on function addresses.
+ *
+ * @param func_addr The function addresses, types and names
+ */
+void Generator::function_table(FuncAddr *func_addr) {
+  std::uint32_t func_count = func_addr->get_count();
+  std::uint64_t addr;
+  std::uint8_t type;
+  std::uint8_t len;
+  std::string name;
+
+  // Write table entries as bytecode
+  for (std::uint32_t i = 0; i < func_count; i++) {
+    addr = func_addr->get_addr(i);
+    type = func_addr->get_type(i);
+    name = func_addr->get_name(i);
+    len = (std::uint8_t) name.length();
+
+    // Check if type is undefined
+    if (type == TYPE_COUNT)
+      type = TYPE_INT;
+
+    // Write bytecode
+    out.write(reinterpret_cast<char *>(&addr), 8);
+    out.write(reinterpret_cast<char *>(&type), 1);
+    out.write(reinterpret_cast<char *>(&len), 1);
+    out.write(name.c_str(), name.length());
+  }
 }
 
 /**

@@ -25,23 +25,17 @@
 #include <utility>
 
 #include "vm/types/types.h"
+#include "vm/bytecode/generator.h"
 
 namespace AST {
-
-// Type definition for function addresses
-typedef std::unordered_map<std::string,
-                           std::pair<std::uint64_t, VM::Type>> FuncAddr;
-
-// Type definition for the constant pool
-typedef std::vector<std::uint64_t> ConstPool;
 
 /**
  * Structure for storing information passed down during generation and
  * attributation.
  */
 struct AttribInfo {
-  FuncAddr func_addr;
-  ConstPool constants;
+  VM::FuncAddr func_addr;
+  VM::ConstPool constants;
   std::uint64_t code_counter;
   std::uint8_t next_reg;
 };

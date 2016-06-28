@@ -15,6 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -52,16 +53,23 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
   push_frame();
 
   // Register variables
-  var_list->register_var();
+  if (var_list != nullptr)
+    var_list->register_var();
 
   // Check semantics in wrapped expression and set result register
   result_reg = attrib_info->next_reg;
   expr->attribute(attrib_info);
 
   // Store function name if it hasn't been stored yet
-  if (attrib_info->func_addr.find(name) == attrib_info->func_addr.end()) {
-    attrib_info->func_addr.insert(std::make_pair(
-        name, std::make_pair(1, expr->get_type())));
+  if (!attrib_info->func_addr.func_declared(name)) {
+    attrib_info->func_addr.add_func(name, 0, expr->get_type());
+  } else {
+    std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+    if (attrib_info->func_addr.get_type(local_addr) != expr->get_type()) {
+      std::cerr << "Two different types for function \"" << name << "\" "
+          << "have been declared, abort.\n";
+      std::exit(EXIT_FAILURE);
+    }
   }
 
   pop_frame();
@@ -75,7 +83,7 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
  */
 void FuncDef::generate_code(VM::Generator *generator,
                             AttribInfo *attrib_info) {
-  if (attrib_info->func_addr.find(name) == attrib_info->func_addr.end()) {
+  if (!attrib_info->func_addr.func_declared(name)) {
     std::cerr << "Could not find function \""
         << name
         << "\" in function name table.\n";
@@ -83,7 +91,8 @@ void FuncDef::generate_code(VM::Generator *generator,
   }
 
   // Store code address in function
-  attrib_info->func_addr[name].first = attrib_info->code_counter;
+  std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+  attrib_info->func_addr.set_addr(local_addr, attrib_info->code_counter);
   expr->generate_code(generator, attrib_info);
 }
 

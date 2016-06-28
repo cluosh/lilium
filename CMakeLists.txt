@@ -21,8 +21,7 @@ set(VM_SRC_FILES
         vm/module.cc
         vm/bytecode/bytecode_loader.cc
         vm/bytecode/bytecode_loader.h
-        vm/types/types.h
-        vm/bytecode/generator.h)
+        vm/types/types.h)
 
 set(LCC_SRC_FILES
         lang/ast/expr/expr.cc
@@ -55,7 +54,13 @@ set(LCC_SRC_FILES
         lang/ast/expr/const_single.cc
         lang/ast/func/call_expr.h
         lang/ast/func/call_expr.cc
-        vm/bytecode/generator.cc lang/ast/common/attribute.h lang/ast/expr/const.h lang/ast/expr/const.cc)
+        lang/ast/common/attribute.h
+        lang/ast/expr/const.h
+        lang/ast/expr/const.cc
+        vm/bytecode/generator.h
+        vm/bytecode/generator.cc
+        vm/bytecode/func_addr.h
+        vm/bytecode/func_addr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

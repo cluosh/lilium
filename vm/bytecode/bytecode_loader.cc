@@ -20,6 +20,7 @@
 #include <fstream>
 
 #include "vm/bytecode/bytecode_loader.h"
+#include "vm/opcodes.h"
 
 namespace VM {
 
@@ -40,7 +41,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   // Check for magic number
   char buffer[257];
   module_file.read(buffer, 2);
-  if (module_file.fail() || buffer[0] != '\xFF' || buffer[1] != '\xBC') {
+  if (module_file.fail() || buffer[0] != '\x4C' || buffer[1] != '\x49') {
     std::cerr << "Specified module file \"" << file << "\" is not valid "
         << "Lilium bytecode.\n";
     return false;
@@ -139,12 +140,13 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Allocate byte code array
-  ByteCode *code = new (std::nothrow) ByteCode[num_instructions];
+  ByteCode *code = new (std::nothrow) ByteCode[num_instructions + 1];
   if (code == nullptr) {
     std::cerr << "Could not allocate memory for byte code in \""
         << module_name << "\".\n";
     return false;
   }
+  code[num_instructions].op[0] = OP_HALT;
 
   // Read bytecode from file
   module_file.read(reinterpret_cast<char *>(&code[0]), num_instructions);

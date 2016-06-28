@@ -41,10 +41,10 @@ FunctionTable::FunctionTable(std::uint32_t size) {
  * Free the allocated memory.
  */
 FunctionTable::~FunctionTable() {
-  delete names;
-  delete addr;
-  delete module_id;
-  delete types;
+  delete[] names;
+  delete[] addr;
+  delete[] module_id;
+  delete[] types;
 }
 
 /**
@@ -88,8 +88,8 @@ Type *FunctionTable::get_types() {
  * useful for dynamically loading modules later on tho.
  */
 void FunctionTable::remove_unused() {
-  delete names;
-  delete types;
+  delete[] names;
+  delete[] types;
   names = nullptr;
   types = nullptr;
 }

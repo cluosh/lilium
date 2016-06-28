@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     }
 
     // Execute code
-    if (interpreter.execute()) {
+    if (!interpreter.execute()) {
       std::cerr << "Error during execution.\n";
       return 1;
     }

@@ -15,43 +15,40 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef VM_BYTECODE_FUNC_ADDR_H_
+#define VM_BYTECODE_FUNC_ADDR_H_
 
-#include <ostream>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
-#include "vm/bytecode/func_addr.h"
-#include "vm/module.h"
+#include "vm/types/types.h"
 
 namespace VM {
 
-// Type definition for the constant pool
-typedef std::vector<std::uint64_t> ConstPool;
-
 /**
- * Class for storing methods allowing to generate bytecode.
+ * Class for handling the storage of function addresses within modules.
  */
-class Generator {
+class FuncAddr {
  private:
-  std::ostream out;
-  bool disabled;
+  std::vector<std::uint64_t> addr;
+  std::vector<Type> type;
+  std::vector<std::string> name;
+  std::unordered_map<std::string, std::uint32_t> local_addr;
+  std::uint32_t count = 0;
 
  public:
-  explicit Generator(const std::ostream &output);
-  void set_disabled(bool disabled);
-
-  // Code generation functions
-  void module_header(std::string name, std::uint32_t num_func,
-                     std::uint16_t num_const, std::uint64_t num_inst);
-  void function_table(FuncAddr *func_addr);
-  void constant_pool(ConstPool *const_pool);
-  void instruction(const ByteCode &bc);
+  void add_func(std::string, std::uint64_t addr, Type type);
+  std::uint64_t get_addr(std::uint32_t local_addr);
+  void set_addr(std::uint32_t local_addr, std::uint64_t addr);
+  Type get_type(std::uint32_t local_addr);
+  std::uint32_t get_local_addr(std::string);
+  bool func_declared(std::string);
+  std::uint32_t get_count();
+  std::string get_name(std::uint32_t local_addr);
 };
 
 }  // namespace VM
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // VM_BYTECODE_FUNC_ADDR_H_

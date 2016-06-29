@@ -32,6 +32,7 @@ class Expr : public GlobalExpr {
  private:
   VM::Type type;
   Expr *next = nullptr;
+  bool last = false;
 
  public:
   Expr(VM::Type type, Expr *next);
@@ -43,9 +44,11 @@ class Expr : public GlobalExpr {
   virtual void set_symbols(SymbolTables *symbol_tables);
 
   void set_next(Expr *next);
+  void set_last(bool last);
   VM::Type get_type();
 
  protected:
+  bool is_last();
   void choose_type(Expr *expr1, Expr *expr2);
 };
 

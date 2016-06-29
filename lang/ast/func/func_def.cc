@@ -20,6 +20,7 @@
 #include <string>
 
 #include "lang/ast/func/func_def.h"
+#include "vm/opcodes.h"
 
 namespace AST {
 
@@ -33,6 +34,9 @@ FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr) {
   this->name = name;
   this->var_list = var_list;
   this->expr = expr;
+
+  // Mark expression as tail expression
+  expr->set_last(true);
 }
 
 /**
@@ -94,6 +98,13 @@ void FuncDef::generate_code(VM::Generator *generator,
   std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
   attrib_info->func_addr.set_addr(local_addr, attrib_info->code_counter);
   expr->generate_code(generator, attrib_info);
+
+  // Add return instruction
+  VM::ByteCode bc;
+  bc.all = 0;
+  bc.op[0] = VM::OP_RETURN;
+  generator->instruction(bc);
+  attrib_info->code_counter += 1;
 }
 
 /**

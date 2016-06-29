@@ -78,9 +78,6 @@ void BinaryExpr::attribute(AttribInfo *attrib_info) {
   // Attribute the operands
   fst->attribute(attrib_info);
   snd->attribute(attrib_info);
-
-  // Reset attribute register counter
-  attrib_info->next_reg -= 1;
 }
 
 /**

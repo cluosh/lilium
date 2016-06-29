@@ -46,12 +46,6 @@ set(LCC_SRC_FILES
         lang/ast/expr/unary_expr.cc
         lang/ast/common/symbol.h
         lang/ast/expr/global_expr.cc
-        lang/ast/expr/const_int.h
-        lang/ast/expr/const_single.h
-        lang/ast/expr/const_double.h
-        lang/ast/expr/const_int.cc
-        lang/ast/expr/const_double.cc
-        lang/ast/expr/const_single.cc
         lang/ast/func/call_expr.h
         lang/ast/func/call_expr.cc
         lang/ast/common/attribute.h
@@ -66,7 +60,7 @@ set(LCC_SRC_FILES
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 bison_target(bas_parser bas/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
-flex_target(lcc_lexer bas/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
+flex_target(bas_lexer bas/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
 bison_target(lcc_parser lang/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
 flex_target(lcc_lexer lang/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
 add_flex_bison_dependency(lcc_lexer lcc_parser)

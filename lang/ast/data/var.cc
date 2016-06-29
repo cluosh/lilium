@@ -15,6 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <cstdlib>
 #include <string>
 #include <iostream>
 
@@ -82,8 +83,8 @@ void Var::register_var() {
   // Check, whether the variable is registered already
   if (symbol(name) != nullptr) {
     // Variable already assigned
-    // TODO(cluosh): Error message
-    return;
+    std::cerr << "Symbol \"" << name << "\" is already defined\n";
+    std::exit(EXIT_FAILURE);
   }
 
   // Create symbol and add it to the table

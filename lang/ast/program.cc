@@ -71,8 +71,9 @@ void Program::generate_code(VM::Generator *generator) {
       static_cast<std::uint16_t>(attrib_info.constants.size()),
       static_cast<std::uint64_t>(attrib_info.code_counter));
 
-  // Generate function table
+  // Generate function table and constant pool
   generator->function_table(&attrib_info.func_addr);
+  generator->constant_pool(&attrib_info.constants);
 
   // Generate code for all expressions
   generator->set_disabled(false);

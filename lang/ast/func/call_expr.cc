@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "lang/ast/func/call_expr.h"
+#include "vm/opcodes.h"
 
 namespace AST {
 
@@ -52,6 +53,37 @@ void CallExpr::attribute(AttribInfo *attrib_info) {
 void CallExpr::set_symbols(SymbolTables *symbol_tables) {
   if (expr_list != nullptr)
     expr_list->set_symbols(symbol_tables);
+}
+
+/**
+ * Generate code for this function call.
+ *
+ * @param generator The bytecode generator
+ * @param attrib_info Info from attribution
+ */
+void CallExpr::generate_code(VM::Generator *generator,
+                             AttribInfo *attrib_info) {
+  // Get information about the function to be called
+  std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+  std::uint64_t addr = attrib_info->func_addr.get_addr(local_addr);
+  VM::ByteCode call;
+  call.all = local_addr << 8;
+
+  // Check if this call is a tail call
+  if (is_last()) {
+    if (addr != 0)
+      call.op[0] = VM::OP_LCALLI;
+    else
+      call.op[0] = VM::OP_LCALLE;
+  } else {
+    // TODO(cluosh): Stack
+    if (addr != 0)
+      call.op[0] = VM::OP_CALLI;
+    else
+      call.op[0] = VM::OP_CALLE;
+  }
+  generator->instruction(call);
+  attrib_info->code_counter += 1;
 }
 
 }  // namespace AST

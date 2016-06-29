@@ -79,7 +79,7 @@ bool Interpreter::add_module(std::string filename) {
 
     // Add function symbol to table if it's a function local to the module
     FuncSym sym = { names[i].c_str(), i, num_modules};
-    if (addr[i] != 0xFFFFFFFFFFFFFFFF) {
+    if (addr[i] != 0x0) {
       function_symbols[names[i]] = sym;
 
       // Check if the symbol is an entry point
@@ -141,8 +141,8 @@ bool Interpreter::link() {
   }
 
   // Remove unused data in function tables
-  /*for (const auto &module : modules)
-    module->funcs->remove_unused();*/
+  for (const auto &module : modules)
+    module->funcs->remove_unused();
 
   // Cleanup table of unresolved functions
   unresolved_symbols.clear();
@@ -152,11 +152,11 @@ bool Interpreter::link() {
 /**
  * Start code execution at entry point.
  */
-bool Interpreter::execute() {
+int Interpreter::execute() {
   // Check if entry point is defined
   if (entry_point.local_addr == 0xFFFFFFFF) {
     std::cerr << "No entry point defined\n";
-    return false;
+    return 1;
   }
 
   // Set code pointer to the current entry point module
@@ -164,12 +164,14 @@ bool Interpreter::execute() {
   ByteCode *code = module->code;
   std::uint64_t *func_addr = module->funcs->get_addr();
   std::uint16_t *func_module = module->funcs->get_module_ids();
-  std::uint64_t pc = func_addr[entry_point.local_addr] - 1;
+  std::uint64_t pc = func_addr[entry_point.local_addr];
 
   // Call stack for function calls
   Module *cs_modules[20];
   std::uint64_t cs_pc[20];
-  std::uint64_t cs_top = 0;
+  std::uint64_t cs_top = 1;
+  cs_modules[0] = module;
+  cs_pc[0] = module->num_instructions - 1;
 
   // Register definitions
   std::uint64_t reg[256];
@@ -179,11 +181,14 @@ bool Interpreter::execute() {
       && op_nop,
       && op_calli,
       && op_calle,
+      && op_lcalli,
+      && op_lcalle,
       && op_return,
       && op_addi,
       && op_subi,
       && op_muli,
       && op_divi,
+      && op_loadi,
       && op_halt
   };
 
@@ -201,7 +206,7 @@ bool Interpreter::execute() {
     cs_top++;
 
     // Jump to new address in code
-    pc = func_addr[code[pc].all & 0xFFFFFF];
+    pc = func_addr[code[pc].all >> 8];
     DP();
   op_calle:
     // Store module and program counter on stack
@@ -210,8 +215,20 @@ bool Interpreter::execute() {
     cs_top++;
 
     // Change to new module and jump to new address in code
-    pc = func_addr[code[pc].all & 0xFFFFFF];
-    module = modules[func_module[code[pc].all & 0xFFFFFF]].get();
+    pc = func_addr[code[pc].all >> 8];
+    module = modules[func_module[code[pc].all >> 8]].get();
+    func_addr = module->funcs->get_addr();
+    func_module = module->funcs->get_module_ids();
+    code = module->code;
+    DP();
+  op_lcalli:
+    // Jump to new address in code
+    pc = func_addr[code[pc].all >> 8];
+    DP();
+  op_lcalle:
+    // Change to new module and jump to new address in code
+    pc = func_addr[code[pc].all >> 8];
+    module = modules[func_module[code[pc].all >> 8]].get();
     func_addr = module->funcs->get_addr();
     func_module = module->funcs->get_module_ids();
     code = module->code;
@@ -239,11 +256,14 @@ bool Interpreter::execute() {
   op_divi:
     reg[code[pc].op[3]] = reg[code[pc].op[1]] / reg[code[pc].op[2]];
     DP();
+  op_loadi:
+    reg[code[pc].op[1]] = module->constant_pool[code[pc].all >> 16];
+    DP();
   op_halt:
-    return true;
+    return static_cast<int>(reg[0]);
 
   // This should be unreachable
-  return false;
+  return 1;
 }
 
 }  // namespace VM

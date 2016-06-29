@@ -49,9 +49,7 @@
   #include "lang/ast/expr/expr.h"
   #include "lang/ast/expr/binary_expr.h"
   #include "lang/ast/expr/unary_expr.h"
-  #include "lang/ast/expr/const_double.h"
-  #include "lang/ast/expr/const_int.h"
-  #include "lang/ast/expr/const_single.h"
+  #include "lang/ast/expr/const.h"
   #include "lang/ast/data/var.h"
   #include "lang/ast/common/operators.h"
   #include "lang/parser/scanner.h"
@@ -95,9 +93,9 @@ Params:
   | ID TDP Params { $$ = new AST::Var($1, $3, VM::TYPE_DOUBLEP); }
 Expr:
   ID { $$ = new AST::Var($1, nullptr, VM::TYPE_COUNT); }
-  | INT { $$ = new AST::ConstInt($1, nullptr); }
-  | SINGLEP { $$ = new AST::ConstSingle($1, nullptr); }
-  | DOUBLEP { $$ = new AST::ConstDouble($1, nullptr); }
+  | INT { $$ = new AST::Const($1, VM::TYPE_INT, nullptr); }
+  | SINGLEP { $$ = new AST::Const(static_cast<std::int64_t>($1), VM::TYPE_SINGLEP, nullptr); }
+  | DOUBLEP { $$ = new AST::Const(static_cast<std::int64_t>($1), VM::TYPE_DOUBLEP, nullptr); }
   | '(' '+' PlusExprList ')' { $$ = $3; }
   | '(' '-' MinusExprList ')' { $$ = $3; }
   | '(' '*' MulExprList ')' { $$ = $3; }

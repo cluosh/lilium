@@ -18,6 +18,8 @@
 #ifndef LANG_AST_EXPR_CONST_H_
 #define LANG_AST_EXPR_CONST_H_
 
+#include <cstdint>
+
 #include "lang/ast/expr/expr.h"
 
 namespace AST {
@@ -27,13 +29,16 @@ namespace AST {
  * the constant pool of the module.
  */
 class Const : public Expr {
- public:
-  Const(VM::Type type, Expr *next);
-  virtual ~Const() = default;
+ private:
+  std::int64_t value;
+  std::uint16_t cp_index = 0;
 
-  virtual void attribute(AttribInfo *attrib_info) = 0;
-  virtual void generate_code(VM::Generator *generator,
-                             AttribInfo *attrib_info) = 0;
+ public:
+  Const(std::int64_t value, VM::Type type, Expr *next);
+
+  void attribute(AttribInfo *attrib_info) override;
+  void generate_code(VM::Generator *generator,
+                     AttribInfo *attrib_info) override;
 };
 
 }  // namespace AST

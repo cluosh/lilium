@@ -84,7 +84,7 @@ void Generator::function_table(FuncAddr *func_addr) {
 
   // Write table entries as bytecode
   for (std::uint32_t i = 0; i < func_count; i++) {
-    addr = func_addr->get_addr(i);
+    addr = func_addr->get_addr(i) - 1;
     type = func_addr->get_type(i);
     name = func_addr->get_name(i);
     len = (std::uint8_t) name.length();
@@ -99,6 +99,17 @@ void Generator::function_table(FuncAddr *func_addr) {
     out.write(reinterpret_cast<char *>(&len), 1);
     out.write(name.c_str(), name.length());
   }
+}
+
+/**
+ * Generate the constant pool of a module.
+ *
+ * @param const_pool Constants picked up during generation
+ */
+void Generator::constant_pool(ConstPool *const_pool) {
+  // Write constants to module file
+  out.write(reinterpret_cast<char *>(&const_pool->at(0)),
+            8 * const_pool->size());
 }
 
 /**

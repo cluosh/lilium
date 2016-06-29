@@ -27,11 +27,14 @@ enum OpCode {
   OP_NOP,
   OP_CALLI,
   OP_CALLE,
+  OP_LCALLI,
+  OP_LCALLE,
   OP_RETURN,
   OP_ADDI,
   OP_SUBI,
   OP_MULI,
   OP_DIVI,
+  OP_LOADI,
   OP_HALT
 };
 

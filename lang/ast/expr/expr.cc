@@ -15,6 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <cstdlib>
 #include <iostream>
 
 #include "lang/ast/expr/expr.h"
@@ -74,11 +75,16 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
     return;
   }
 
+  // Set expression type, if no type has been inferred
+  if (expr1->type == VM::TYPE_COUNT)
+    expr1->type = expr2->type;
+  else if (expr2->type == VM::TYPE_COUNT)
+    expr2->type = expr1->type;
+
   // Check if type are equivalent
   if (expr1->type != expr2->type) {
     std::cerr << "Type mismatch during expression parsing.\n";
-
-    // TODO(cluosh): Throw appropriate exception
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -89,6 +95,24 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
  */
 VM::Type Expr::get_type() {
   return type;
+}
+
+/**
+ * Mark if expression is the last expression in a function.
+ *
+ * @param last Set true to make expression a tail expression
+ */
+void Expr::set_last(bool last) {
+  this->last = last;
+}
+
+/**
+ * Check if expression is a tail expression.
+ *
+ * @return True, if expression is a tail expression
+ */
+bool Expr::is_last() {
+  return last;
 }
 
 }  // namespace AST

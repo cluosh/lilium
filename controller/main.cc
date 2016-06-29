@@ -59,12 +59,7 @@ int main(int argc, char **argv) {
       std::cerr << "Couldn't link modules, abort...\n";
       return 1;
     }
-
-    // Execute code
-    if (!interpreter.execute()) {
-      std::cerr << "Error during execution.\n";
-      return 1;
-    }
+    return interpreter.execute();
   } else if (std::string(argv[1]) == "compile") {
     Parser::Controller controller;
 

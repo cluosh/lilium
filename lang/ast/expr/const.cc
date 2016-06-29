@@ -16,15 +16,52 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "lang/ast/expr/const.h"
+#include "vm/opcodes.h"
 
 namespace AST {
 
 /**
  * Initialize a constant expression.
  *
+ * @param value Value of the constant expression
  * @param type Type of the expression
  * @param next Next expression in expression list
  */
-Const::Const(VM::Type type, Expr *next) : Expr(type, next) { }
+Const::Const(std::int64_t value, VM::Type type, Expr *next)
+    : Expr(type, next) {
+  this->value = value;
+}
+
+/**
+ * Attribute a constant expression.
+ *
+ * @param attrib_info Attribution information
+ */
+void Const::attribute(AttribInfo *attrib_info) {
+  // Assign register
+  result_reg = attrib_info->next_reg;
+  attrib_info->next_reg++;
+
+  // Store constant in constant pool
+  cp_index = static_cast<std::uint16_t>(attrib_info->constants.size());
+  attrib_info->constants.push_back(static_cast<std::uint64_t>(value));
+}
+
+/**
+ * Generate code for this constant expression.
+ *
+ * @param generator The bytecode generator helper
+ * @param attrib_info Attribution information from previous passes
+ */
+void Const::generate_code(VM::Generator *generator, AttribInfo *attrib_info) {
+  // Load constant from pool into result register
+  VM::ByteCode bc;
+  bc.op[0] = VM::OP_LOADI;
+  bc.op[1] = result_reg;
+  bc.op[2] = static_cast<uint8_t>(cp_index & 0xFF);
+  bc.op[3] = static_cast<uint8_t>(cp_index >> 8);
+  generator->instruction(bc);
+  attrib_info->code_counter += 1;
+}
 
 }  // namespace AST

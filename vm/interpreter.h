@@ -54,7 +54,7 @@ class Interpreter {
 
   bool add_module(std::string filename);
   bool link();
-  bool execute();
+  int execute();
 };
 
 }  // namespace VM

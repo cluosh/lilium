@@ -131,7 +131,8 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
     }
 
     // Read constant pool entries from file
-    module_file.read(reinterpret_cast<char *>(&constant_pool[0]), num_const);
+    module_file.read(reinterpret_cast<char *>(&constant_pool[0]),
+                     num_const * sizeof(std::uint64_t));
     if (module_file.fail()) {
       std::cerr << "Module \"" << module_name << "\" does not contain "
           << "the specified number of constants.\n";
@@ -149,10 +150,12 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   code[num_instructions].op[0] = OP_HALT;
 
   // Read bytecode from file
-  module_file.read(reinterpret_cast<char *>(&code[0]), num_instructions);
+  module_file.read(reinterpret_cast<char *>(&code[0]), num_instructions
+      * sizeof(ByteCode));
   if (module_file.fail()) {
     std::cerr << "Could not read byte code from file \""
         << module_name << "\".\n";
+    return false;
   }
 
   // Store loaded data in module
@@ -161,6 +164,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   module->code = code;
   module->module_name = module_name;
   module->num_functions = num_functions;
+  module->num_instructions = num_instructions;
   return true;
 }
 

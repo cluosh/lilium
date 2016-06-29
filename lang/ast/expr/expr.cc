@@ -30,6 +30,7 @@ namespace AST {
  */
 Expr::Expr(VM::Type type, Expr *next) {
   this->type = type;
+  this->next = next;
 }
 
 /**
@@ -43,15 +44,6 @@ void Expr::set_symbols(SymbolTables *symbol_tables) {
   // Pass symbol to other expressions in expression list
   if (next != nullptr)
     next->set_symbols(symbol_tables);
-}
-
-/**
- * Set the next expression in an expression list.
- *
- * @param next Next expression in the list
- */
-void Expr::set_next(Expr *next) {
-  this->next = next;
 }
 
 /**

@@ -58,7 +58,7 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
 
   // Register variables
   if (var_list != nullptr)
-    var_list->register_var();
+    var_list->register_var(200);
 
   // Check semantics in wrapped expression and set result register
   result_reg = attrib_info->next_reg;

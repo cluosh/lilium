@@ -188,7 +188,10 @@ int Interpreter::execute() {
       && op_subi,
       && op_muli,
       && op_divi,
+      && op_gt,
       && op_loadi,
+      && op_jmpc,
+      && op_jmp,
       && op_halt
   };
 
@@ -256,8 +259,19 @@ int Interpreter::execute() {
   op_divi:
     reg[code[pc].op[3]] = reg[code[pc].op[1]] / reg[code[pc].op[2]];
     DP();
+  op_gt:
+    reg[code[pc].op[3]] = static_cast<std::uint64_t>(reg[code[pc].op[1]]
+        > reg[code[pc].op[2]]);
+    DP();
   op_loadi:
     reg[code[pc].op[1]] = module->constant_pool[code[pc].all >> 16];
+    DP();
+  op_jmpc:
+    if (reg[code[pc].op[1]] == 0)
+      pc = module->constant_pool[code[pc].all >> 16];
+    DP();
+  op_jmp:
+    pc = module->constant_pool[code[pc].all >> 16];
     DP();
   op_halt:
     return static_cast<int>(reg[0]);

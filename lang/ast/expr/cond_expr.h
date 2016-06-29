@@ -15,34 +15,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef LANG_AST_DATA_VAR_H_
-#define LANG_AST_DATA_VAR_H_
-
-#include <string>
+#ifndef LANG_AST_EXPR_COND_EXPR_H_
+#define LANG_AST_EXPR_COND_EXPR_H_
 
 #include "lang/ast/expr/expr.h"
 
 namespace AST {
 
 /**
- * A list of variables/parameters.
+ * A conditional expression (if).
  */
-class Var : public Expr {
+class CondExpr : public Expr {
  private:
-  std::string name;
-  Var *next = nullptr;
+  Expr *condition;
+  Expr *fst;
+  Expr *snd;
+  std::uint16_t fst_cp_index;
+  std::uint16_t snd_cp_index;
 
  public:
-  Var(std::string name, Var *next, VM::Type type);
-  ~Var();
-
+  CondExpr(Expr *condition, Expr *fst, Expr *snd);
   void attribute(AttribInfo *attrib_info) override;
   void generate_code(VM::Generator *generator,
-                     AttribInfo *attrib_info) override { }
+                     AttribInfo *attrib_info) override;
   void set_symbols(SymbolTables *symbol_tables) override;
-  void register_var(std::uint8_t reg);
+  void set_last(bool last) override;
 };
 
 }  // namespace AST
 
-#endif  // LANG_AST_DATA_VAR_H_
+#endif  // LANG_AST_EXPR_COND_EXPR_H_

@@ -54,12 +54,16 @@ void Var::attribute(AttribInfo *attrib_info) {
   const Symbol *sym = symbol(name);
   if (sym == nullptr) {
     // Variable undefined
-    // TODO(cluosh): Error message
-    std::cout << "Variable " << name << " undefined\n";
-    return;
+    std::cerr << "Variable " << name << " undefined\n";
+    std::exit(EXIT_FAILURE);
+  } else if (sym->type != get_type() && get_type() != VM::TYPE_COUNT) {
+    std::cerr << "Variable " << name << " has been used with "
+        << "different types\n";
+    std::exit(EXIT_FAILURE);
+  } else {
+    // Set the correct register for this variable
+    result_reg = sym->reg;
   }
-
-  // TODO(cluosh): Check for type errors
 }
 
 /**
@@ -78,8 +82,11 @@ void Var::set_symbols(SymbolTables *symbol_tables) {
 /**
  * Add a variable as symbol to the symbol table, propagate to other
  * Variables in list.
+ *
+ * @param reg The parameter register, where this and subsequent variables
+ *            should be stored
  */
-void Var::register_var() {
+void Var::register_var(std::uint8_t reg) {
   // Check, whether the variable is registered already
   if (symbol(name) != nullptr) {
     // Variable already assigned
@@ -88,12 +95,16 @@ void Var::register_var() {
   }
 
   // Create symbol and add it to the table
-  Symbol sym = {0, get_type()};
+  Symbol sym = {reg, get_type()};
   add_symbol(name, sym);
+  result_reg = reg;
+
+  // TODO(cluosh): Variables on stack if there are no registers left
 
   // Register other vars in list
+  reg += 1;
   if (next != nullptr)
-    next->register_var();
+    next->register_var(reg);
 }
 
 }  // namespace AST

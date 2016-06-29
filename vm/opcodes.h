@@ -34,7 +34,10 @@ enum OpCode {
   OP_SUBI,
   OP_MULI,
   OP_DIVI,
+  OP_GT,
   OP_LOADI,
+  OP_JMPC,
+  OP_JMP,
   OP_HALT
 };
 

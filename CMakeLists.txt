@@ -54,7 +54,7 @@ set(LCC_SRC_FILES
         vm/bytecode/generator.h
         vm/bytecode/generator.cc
         vm/bytecode/func_addr.h
-        vm/bytecode/func_addr.cc)
+        vm/bytecode/func_addr.cc lang/ast/expr/cond_expr.h lang/ast/expr/cond_expr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON REQUIRED)

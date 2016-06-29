@@ -35,6 +35,8 @@ class GlobalExpr {
   SymbolTables *symbol_tables = nullptr;
 
  public:
+  std::uint8_t result_reg;
+
   virtual ~GlobalExpr() = default;
 
   // Retrieve name of the expression, if it's a function
@@ -49,8 +51,6 @@ class GlobalExpr {
   std::uint8_t get_result_reg();
 
  protected:
-  std::uint8_t result_reg;
-
   const Symbol *symbol(std::string name);
   void add_symbol(std::string name, Symbol symbol);
   void push_frame();

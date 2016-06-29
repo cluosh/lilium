@@ -31,10 +31,11 @@ namespace AST {
 class Expr : public GlobalExpr {
  private:
   VM::Type type;
-  Expr *next = nullptr;
   bool last = false;
 
  public:
+  Expr *next = nullptr;
+
   Expr(VM::Type type, Expr *next);
   virtual ~Expr() = default;
 
@@ -43,8 +44,7 @@ class Expr : public GlobalExpr {
                              AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
 
-  void set_next(Expr *next);
-  void set_last(bool last);
+  virtual void set_last(bool last);
   VM::Type get_type();
 
  protected:

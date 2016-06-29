@@ -48,6 +48,7 @@
   #include "lang/ast/func/call_expr.h"
   #include "lang/ast/expr/expr.h"
   #include "lang/ast/expr/binary_expr.h"
+  #include "lang/ast/expr/cond_expr.h"
   #include "lang/ast/expr/unary_expr.h"
   #include "lang/ast/expr/const.h"
   #include "lang/ast/data/var.h"
@@ -111,10 +112,11 @@ Expr:
   | '(' '-' Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NEG, nullptr); }
   | '(' NOT Expr ')' { $$ = new AST::UnaryExpr($3, AST::UNARY_NOT, nullptr); }
   | '(' ID ExprList ')' { $$ = new AST::CallExpr($2, $3, nullptr); }
+  | '(' IF Expr Expr Expr ')' { $$ = new AST::CondExpr($3, $4, $5); }
   ;
 ExprList:
   { $$ = nullptr; }
-  | ExprList Expr { $2->set_next($1); $$ = $2; }
+  | Expr ExprList { $1->next = $2; $$ = $1; }
 PlusExprList:
   Expr Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD, nullptr); }
   | PlusExprList Expr { $$ = new AST::BinaryExpr($1, $2, AST::BINARY_ADD, nullptr); }

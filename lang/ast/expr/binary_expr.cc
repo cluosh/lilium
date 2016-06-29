@@ -59,6 +59,8 @@ VM::OpCode BinaryExpr::pick_typed() {
       return VM::OP_MULI;
     case BINARY_DIV:
       return VM::OP_DIVI;
+    case BINARY_GT:
+      return VM::OP_GT;
     default:
       return VM::OP_NOP;
   }
@@ -95,8 +97,8 @@ void BinaryExpr::generate_code(VM::Generator *generator,
   // Generate the bytecode instruction
   VM::ByteCode bc;
   bc.op[0] = static_cast<std::uint8_t>(pick_typed());
-  bc.op[1] = fst->get_result_reg();
-  bc.op[2] = snd->get_result_reg();
+  bc.op[1] = fst->result_reg;
+  bc.op[2] = snd->result_reg;
   bc.op[3] = result_reg;
   generator->instruction(bc);
   attrib_info->code_counter++;

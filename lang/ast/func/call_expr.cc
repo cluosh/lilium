@@ -41,8 +41,17 @@ CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
  *                    later on
  */
 void CallExpr::attribute(AttribInfo *attrib_info) {
-  if (expr_list != nullptr)
-    expr_list->attribute(attrib_info);
+  // Fill the expressions with parameter registers
+  std::uint8_t param_reg = 200;
+
+  // Loop over list of expressions
+  result_reg = attrib_info->next_reg;
+  for (Expr *it = expr_list; it != nullptr; it = it->next) {
+    attrib_info->next_reg = static_cast<uint8_t>(result_reg + 1);
+    it->attribute(attrib_info);
+    it->result_reg = param_reg++;
+  }
+  attrib_info->next_reg = static_cast<uint8_t>(result_reg + 1);
 }
 
 /**
@@ -82,6 +91,12 @@ void CallExpr::generate_code(VM::Generator *generator,
     else
       call.op[0] = VM::OP_CALLE;
   }
+
+  // Generate parameter expressions
+  for (Expr *it = expr_list; it != nullptr; it = it->next)
+    it->generate_code(generator, attrib_info);
+
+  // Generate call
   generator->instruction(call);
   attrib_info->code_counter += 1;
 }

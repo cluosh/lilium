@@ -36,7 +36,7 @@
 
 // Data storage for data token
 %union {
-  std::uint64_t ival;
+  uint64_t ival;
   char *sval;
 }
 

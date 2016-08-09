@@ -43,8 +43,8 @@ void Const::attribute(AttribInfo *attrib_info) {
   attrib_info->next_reg++;
 
   // Store constant in constant pool
-  cp_index = static_cast<std::uint16_t>(attrib_info->constants.size());
-  attrib_info->constants.push_back(static_cast<std::uint64_t>(value));
+  cp_index = static_cast<uint16_t>(attrib_info->constants.size());
+  attrib_info->constants.push_back(static_cast<uint64_t>(value));
 }
 
 /**
@@ -55,7 +55,7 @@ void Const::attribute(AttribInfo *attrib_info) {
  */
 void Const::generate_code(VM::Generator *generator, AttribInfo *attrib_info) {
   // Load constant from pool into result register
-  VM::ByteCode bc;
+  VM::Instruction bc;
   bc.op[0] = VM::OP_LOADI;
   bc.op[1] = result_reg;
   bc.op[2] = static_cast<uint8_t>(cp_index & 0xFF);

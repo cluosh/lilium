@@ -86,7 +86,7 @@ void Var::set_symbols(SymbolTables *symbol_tables) {
  * @param reg The parameter register, where this and subsequent variables
  *            should be stored
  */
-void Var::register_var(std::uint8_t reg) {
+void Var::register_var(uint8_t reg) {
   // Check, whether the variable is registered already
   if (symbol(name) != nullptr) {
     // Variable already assigned

@@ -40,7 +40,7 @@ class Var : public Expr {
   void generate_code(VM::Generator *generator,
                      AttribInfo *attrib_info) override { }
   void set_symbols(SymbolTables *symbol_tables) override;
-  void register_var(std::uint8_t reg);
+  void register_var(uint8_t reg);
 };
 
 }  // namespace AST

@@ -36,8 +36,8 @@ namespace AST {
 struct AttribInfo {
   VM::FuncAddr func_addr;
   VM::ConstPool constants;
-  std::uint64_t code_counter;
-  std::uint8_t next_reg;
+  uint64_t code_counter;
+  uint8_t next_reg;
 };
 
 }  // namespace AST

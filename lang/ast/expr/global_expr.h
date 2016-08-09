@@ -35,7 +35,7 @@ class GlobalExpr {
   SymbolTables *symbol_tables = nullptr;
 
  public:
-  std::uint8_t result_reg;
+  uint8_t result_reg;
 
   virtual ~GlobalExpr() = default;
 
@@ -48,10 +48,11 @@ class GlobalExpr {
                              AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
-  std::uint8_t get_result_reg();
+  uint8_t get_result_reg();
 
  protected:
-  const Symbol *symbol(std::string name);
+  Symbol *symbol(std::string name);
+  Symbol *symbol_by_reg(uint8_t reg);
   void add_symbol(std::string name, Symbol symbol);
   void push_frame();
   void pop_frame();

@@ -31,7 +31,7 @@ namespace AST {
 class Const : public Expr {
  private:
   std::int64_t value;
-  std::uint16_t cp_index = 0;
+  uint16_t cp_index = 0;
 
  public:
   Const(std::int64_t value, VM::Type type, Expr *next);

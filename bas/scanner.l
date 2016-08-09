@@ -35,7 +35,7 @@
   void yyerror(std::string msg);
 	
   // Linecounter
-  std::uint64_t line = 1;  
+  uint64_t line = 1;
 %}
 
 COMMENT		#.*

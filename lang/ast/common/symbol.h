@@ -31,7 +31,7 @@ namespace AST {
  * An entry in a symbol table.
  */
 struct Symbol {
-  std::uint8_t reg;
+  uint8_t reg;
   VM::Type type;
 };
 

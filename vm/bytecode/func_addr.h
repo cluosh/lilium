@@ -32,21 +32,21 @@ namespace VM {
  */
 class FuncAddr {
  private:
-  std::vector<std::uint64_t> addr;
+  std::vector<uint64_t> addr;
   std::vector<Type> type;
   std::vector<std::string> name;
-  std::unordered_map<std::string, std::uint32_t> local_addr;
-  std::uint32_t count = 0;
+  std::unordered_map<std::string, uint32_t> local_addr;
+  uint32_t count = 0;
 
  public:
-  void add_func(std::string, std::uint64_t addr, Type type);
-  std::uint64_t get_addr(std::uint32_t local_addr);
-  void set_addr(std::uint32_t local_addr, std::uint64_t addr);
-  Type get_type(std::uint32_t local_addr);
-  std::uint32_t get_local_addr(std::string);
+  void add_func(std::string, uint64_t addr, Type type);
+  uint64_t get_addr(uint32_t local_addr);
+  void set_addr(uint32_t local_addr, uint64_t addr);
+  Type get_type(uint32_t local_addr);
+  uint32_t get_local_addr(std::string);
   bool func_declared(std::string);
-  std::uint32_t get_count();
-  std::string get_name(std::uint32_t local_addr);
+  uint32_t get_count();
+  std::string get_name(uint32_t local_addr);
 };
 
 }  // namespace VM

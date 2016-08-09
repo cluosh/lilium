@@ -32,6 +32,11 @@ CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
     : Expr(VM::TYPE_COUNT, next) {
   this->name = name;
   this->expr_list = expr_list;
+
+  // Calculate number of parameters
+  num_param = 0;
+  for (Expr *it = expr_list; it != nullptr; it = it->next)
+    num_param += 1;
 }
 
 /**
@@ -42,12 +47,12 @@ CallExpr::CallExpr(std::string name, Expr *expr_list, Expr *next)
  */
 void CallExpr::attribute(AttribInfo *attrib_info) {
   // Fill the expressions with parameter registers
-  std::uint8_t param_reg = 200;
+  uint8_t param_reg = 200;
 
   // Loop over list of expressions
   result_reg = attrib_info->next_reg;
   for (Expr *it = expr_list; it != nullptr; it = it->next) {
-    attrib_info->next_reg = static_cast<uint8_t>(result_reg + 1);
+    attrib_info->next_reg = result_reg + num_param;
     it->attribute(attrib_info);
     it->result_reg = param_reg++;
   }
@@ -60,6 +65,7 @@ void CallExpr::attribute(AttribInfo *attrib_info) {
  * @param symbol_tables Symbol tables to be passed down
  */
 void CallExpr::set_symbols(SymbolTables *symbol_tables) {
+  Expr::set_symbols(symbol_tables);
   if (expr_list != nullptr)
     expr_list->set_symbols(symbol_tables);
 }
@@ -72,10 +78,13 @@ void CallExpr::set_symbols(SymbolTables *symbol_tables) {
  */
 void CallExpr::generate_code(VM::Generator *generator,
                              AttribInfo *attrib_info) {
+  // Fill the expressions with parameter registers
+  uint8_t param_reg = 200;
+
   // Get information about the function to be called
-  std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
-  std::uint64_t addr = attrib_info->func_addr.get_addr(local_addr);
-  VM::ByteCode call;
+  uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+  uint64_t addr = attrib_info->func_addr.get_addr(local_addr);
+  VM::Instruction call;
   call.all = local_addr << 8;
 
   // Check if this call is a tail call
@@ -90,6 +99,15 @@ void CallExpr::generate_code(VM::Generator *generator,
       call.op[0] = VM::OP_CALLI;
     else
       call.op[0] = VM::OP_CALLE;
+  }
+
+  // Move parameters to safe registers
+  for (uint8_t i = 0; i < num_param; i++) {
+    if (symbol_by_reg(param_reg + i) == nullptr)
+      break;
+    VM::Instruction bc;
+    bc.op[0] = VM::OP_MOV;
+    bc.op[1] =
   }
 
   // Generate parameter expressions

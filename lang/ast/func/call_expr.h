@@ -31,6 +31,7 @@ class CallExpr : public Expr {
  private:
   Expr *expr_list;
   std::string name;
+  uint8_t num_param;
 
  public:
   CallExpr(std::string name, Expr *expr_list, Expr *next);

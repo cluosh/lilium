@@ -68,7 +68,7 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
   if (!attrib_info->func_addr.func_declared(name)) {
     attrib_info->func_addr.add_func(name, 0, expr->get_type());
   } else {
-    std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+    uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
     if (attrib_info->func_addr.get_type(local_addr) != expr->get_type()) {
       std::cerr << "Two different types for function \"" << name << "\" "
           << "have been declared, abort.\n";
@@ -95,12 +95,12 @@ void FuncDef::generate_code(VM::Generator *generator,
   }
 
   // Store code address in function
-  std::uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
+  uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
   attrib_info->func_addr.set_addr(local_addr, attrib_info->code_counter);
   expr->generate_code(generator, attrib_info);
 
   // Add return instruction
-  VM::ByteCode bc;
+  VM::Instruction bc;
   bc.all = 0;
   bc.op[0] = VM::OP_RETURN;
   generator->instruction(bc);

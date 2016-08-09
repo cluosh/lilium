@@ -30,8 +30,8 @@ class CondExpr : public Expr {
   Expr *condition;
   Expr *fst;
   Expr *snd;
-  std::uint16_t fst_cp_index;
-  std::uint16_t snd_cp_index;
+  uint16_t fst_cp_index;
+  uint16_t snd_cp_index;
 
  public:
   CondExpr(Expr *condition, Expr *fst, Expr *snd);

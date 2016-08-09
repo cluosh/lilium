@@ -48,7 +48,7 @@ Interpreter::Interpreter() {
  */
 bool Interpreter::add_module(std::string filename) {
   // Create a new module
-  std::uint16_t num_modules = this->num_modules;
+  uint16_t num_modules = this->num_modules;
   modules.push_back(std::unique_ptr<Module>(
       new (std::nothrow) Module(num_modules)));
   Module *module = modules.back().get();
@@ -61,10 +61,10 @@ bool Interpreter::add_module(std::string filename) {
   }
 
   // Read module function symbols
-  std::uint32_t num_functions = module->num_functions;
+  uint32_t num_functions = module->num_functions;
   std::string *names = module->funcs->get_names();
-  std::uint64_t *addr = module->funcs->get_addr();
-  for (std::uint32_t i = 0; i < num_functions; i++) {
+  uint64_t *addr = module->funcs->get_addr();
+  for (uint32_t i = 0; i < num_functions; i++) {
     // Check if function symbol has already been declared
     const auto symbol_entry = function_symbols.find(names[i]);
     if (symbol_entry != function_symbols.end()) {
@@ -161,20 +161,20 @@ int Interpreter::execute() {
 
   // Set code pointer to the current entry point module
   Module *module = modules[entry_point.module_id].get();
-  ByteCode *code = module->code;
-  std::uint64_t *func_addr = module->funcs->get_addr();
-  std::uint16_t *func_module = module->funcs->get_module_ids();
-  std::uint64_t pc = func_addr[entry_point.local_addr];
+  Instruction *code = module->code;
+  uint64_t *func_addr = module->funcs->get_addr();
+  uint16_t *func_module = module->funcs->get_module_ids();
+  uint64_t pc = func_addr[entry_point.local_addr];
 
   // Call stack for function calls
   Module *cs_modules[20];
-  std::uint64_t cs_pc[20];
-  std::uint64_t cs_top = 1;
+  uint64_t cs_pc[20];
+  uint64_t cs_top = 1;
   cs_modules[0] = module;
   cs_pc[0] = module->num_instructions - 1;
 
   // Register definitions
-  std::uint64_t reg[256];
+  uint64_t reg[256];
 
   // Jump-table for token threaded code
   static void *token_table[] = {
@@ -192,11 +192,12 @@ int Interpreter::execute() {
       && op_loadi,
       && op_jmpc,
       && op_jmp,
+      && op_mov,
       && op_halt
   };
 
   // Macro for easy dispatching
-#define DP() goto *token_table[code[++pc].op[0]];
+#define DP() goto *token_table[code[++pc].opcode];
 
   // Main dispatch loop
   DP();
@@ -209,7 +210,7 @@ int Interpreter::execute() {
     cs_top++;
 
     // Jump to new address in code
-    pc = func_addr[code[pc].all >> 8];
+    //pc = func_addr[code[pc].all >> 8];
     DP();
   op_calle:
     // Store module and program counter on stack
@@ -218,23 +219,23 @@ int Interpreter::execute() {
     cs_top++;
 
     // Change to new module and jump to new address in code
-    pc = func_addr[code[pc].all >> 8];
+    /*pc = func_addr[code[pc].all >> 8];
     module = modules[func_module[code[pc].all >> 8]].get();
     func_addr = module->funcs->get_addr();
     func_module = module->funcs->get_module_ids();
-    code = module->code;
+    code = module->code;*/
     DP();
   op_lcalli:
     // Jump to new address in code
-    pc = func_addr[code[pc].all >> 8];
+    //pc = func_addr[code[pc].all >> 8];
     DP();
   op_lcalle:
     // Change to new module and jump to new address in code
-    pc = func_addr[code[pc].all >> 8];
+    /*pc = func_addr[code[pc].all >> 8];
     module = modules[func_module[code[pc].all >> 8]].get();
     func_addr = module->funcs->get_addr();
     func_module = module->funcs->get_module_ids();
-    code = module->code;
+    code = module->code;*/
     DP();
   op_return:
     // Retrieve module and program counter from stack
@@ -260,18 +261,21 @@ int Interpreter::execute() {
     reg[code[pc].op[3]] = reg[code[pc].op[1]] / reg[code[pc].op[2]];
     DP();
   op_gt:
-    reg[code[pc].op[3]] = static_cast<std::uint64_t>(reg[code[pc].op[1]]
+    reg[code[pc].op[3]] = static_cast<uint64_t>(reg[code[pc].op[1]]
         > reg[code[pc].op[2]]);
     DP();
   op_loadi:
-    reg[code[pc].op[1]] = module->constant_pool[code[pc].all >> 16];
+    //reg[code[pc].op[1]] = module->constant_pool[code[pc].all >> 16];
     DP();
   op_jmpc:
-    if (reg[code[pc].op[1]] == 0)
-      pc = module->constant_pool[code[pc].all >> 16];
+    /*if (reg[code[pc].op[1]] == 0)
+      pc = module->constant_pool[code[pc].all >> 16];*/
     DP();
   op_jmp:
-    pc = module->constant_pool[code[pc].all >> 16];
+    //pc = module->constant_pool[code[pc].all >> 16];
+    DP();
+  op_mov:
+    reg[code[pc].op[2]] = reg[code[pc].op[1]];
     DP();
   op_halt:
     return static_cast<int>(reg[0]);

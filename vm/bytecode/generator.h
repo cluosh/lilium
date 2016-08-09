@@ -30,7 +30,7 @@
 namespace VM {
 
 // Type definition for the constant pool
-typedef std::vector<std::uint64_t> ConstPool;
+typedef std::vector<uint64_t> ConstPool;
 
 /**
  * Class for storing methods allowing to generate bytecode.
@@ -45,11 +45,11 @@ class Generator {
   void set_disabled(bool disabled);
 
   // Code generation functions
-  void module_header(std::string name, std::uint32_t num_func,
-                     std::uint16_t num_const, std::uint64_t num_inst);
+  void module_header(std::string name, uint32_t num_func,
+                     uint16_t num_const, uint64_t num_inst);
   void function_table(FuncAddr *func_addr);
   void constant_pool(ConstPool *const_pool);
-  void instruction(const ByteCode &bc);
+  void instruction(const Instruction &bc);
 };
 
 }  // namespace VM

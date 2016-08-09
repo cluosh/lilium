@@ -33,9 +33,9 @@ namespace VM {
  * A function symbol table entry
  */
 struct FuncSym {
-  const char *name;
-  std::uint32_t local_addr;
-  std::uint16_t module_id;
+  std::string name;
+  uint32_t local_addr;
+  uint16_t module_id;
 };
 
 /**
@@ -43,11 +43,17 @@ struct FuncSym {
  */
 class Interpreter {
  private:
+  // Linking stage
   std::unordered_map<std::string, FuncSym> function_symbols;
   std::vector<std::unique_ptr<Module>> modules;
   std::vector<FuncSym> unresolved_symbols;
-  std::uint16_t num_modules = 0;
-  FuncSym entry_point;
+  uint16_t num_modules = 0;
+
+  // Execution stage
+  std::vector<Instruction> code;
+  std::vector<uint64_t> functionTable;
+  std::vector<uint64_t> constantPool;
+  uint64_t entry_point;
 
  public:
   Interpreter();

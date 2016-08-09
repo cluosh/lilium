@@ -20,34 +20,42 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
-#include "vm/function_table.h"
+#include "vm/types/types.h"
 
 namespace VM {
 
 /**
  * Bytecode structure.
  */
-union ByteCode {
-  std::uint32_t all;
-  std::uint8_t op[4];
+struct Instruction {
+  uint8_t opcode;
+  uint8_t op[3];
+};
+
+/**
+ * Entry in the function table.
+ */
+struct FunctionTableEntry {
+  std::string name;
+  uint64_t address;
+  Type type;
 };
 
 /**
  * A module: Representation of one bytecode module, corresponding to one
- * bytecode file. Contains function symbols and constant pool entries.
+ * bytecode file. Contains function symbols and constant pool entries before
+ * the linking stage.
  */
 class Module {
  public:
-  ByteCode *code = nullptr;
-  FunctionTable *funcs = nullptr;
+  std::vector<Instruction> code;
+  std::vector<FunctionTableEntry> functionTable;
+  std::vector<uint64_t> constantPool;
   std::string module_name;
-  std::uint64_t *constant_pool = nullptr;
-  std::uint32_t num_functions = 0;
-  std::uint64_t num_instructions = 0;
-  std::uint16_t module_id = 0;
 
-  explicit Module(std::uint16_t module_id);
+  explicit Module(uint16_t module_id);
   ~Module();
 };
 

@@ -67,9 +67,9 @@ void Program::generate_code(VM::Generator *generator) {
 
   // Print header
   generator->module_header(
-      "Module", static_cast<std::uint32_t>(attrib_info.func_addr.get_count()),
-      static_cast<std::uint16_t>(attrib_info.constants.size()),
-      static_cast<std::uint64_t>(attrib_info.code_counter));
+      "Module", static_cast<uint32_t>(attrib_info.func_addr.get_count()),
+      static_cast<uint16_t>(attrib_info.constants.size()),
+      static_cast<uint64_t>(attrib_info.code_counter));
 
   // Generate function table and constant pool
   generator->function_table(&attrib_info.func_addr);

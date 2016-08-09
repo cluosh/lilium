@@ -43,14 +43,31 @@ void GlobalExpr::set_symbols(SymbolTables *symbol_tables) {
  * @param name Name of the variable
  * @return Pointer to the symbol or nullptr if not found
  */
-const Symbol *GlobalExpr::symbol(std::string name) {
-  for (auto const &symbol_table : *symbol_tables) {
+Symbol *GlobalExpr::symbol(std::string name) {
+  for (auto &symbol_table : *symbol_tables) {
     auto it = symbol_table.find(name);
     if (it != symbol_table.end())
       return &it->second;
   }
   return nullptr;
 }
+
+/**
+ * Find a symbol by it's register.
+ *
+ * @param reg Register of the symbol
+ * @return Pointer to the symbol or nullptr if not found
+ */
+Symbol *GlobalExpr::symbol_by_reg(uint8_t reg) {
+  for (auto &symbol_table : *symbol_tables) {
+    for (auto &symbol : symbol_table) {
+      if (symbol.second.reg == reg)
+        return &(symbol.second);
+    }
+  }
+  return nullptr;
+}
+
 
 /**
  * Add a symbol to the current top of the symbol table stack.
@@ -95,7 +112,7 @@ std::string GlobalExpr::get_name() {
  *
  * @return Register ID
  */
-std::uint8_t GlobalExpr::get_result_reg() {
+uint8_t GlobalExpr::get_result_reg() {
   return result_reg;
 }
 

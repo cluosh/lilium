@@ -38,6 +38,7 @@ enum OpCode {
   OP_LOADI,
   OP_JMPC,
   OP_JMP,
+  OP_MOV,
   OP_HALT
 };
 

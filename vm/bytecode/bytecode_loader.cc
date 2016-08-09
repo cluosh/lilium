@@ -59,7 +59,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
 
   // Read number of function table entries
   // Only the lower 24 bit are being used
-  std::uint32_t num_functions = 0;
+  uint32_t num_functions = 0;
   module_file.read(reinterpret_cast<char *>(&num_functions), 4);
   if (module_file.fail() || num_functions == 0) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
@@ -68,7 +68,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Read number of constant pool entries
-  std::uint16_t num_const = 0;
+  uint16_t num_const = 0;
   module_file.read(reinterpret_cast<char *>(&num_const), 2);
   if (module_file.fail()) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
@@ -77,7 +77,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Read number of instructions
-  std::uint64_t num_instructions = 0;
+  uint64_t num_instructions = 0;
   module_file.read(reinterpret_cast<char *>(&num_instructions), 8);
   if (module_file.fail() || num_instructions == 0) {
     std::cerr << "Module \"" << module_name << "\" does not contain "
@@ -96,12 +96,12 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   // Read the function table entries
   // TODO(cluosh): Better way of reading function table at once?
   std::string *names = funcs->get_names();
-  std::uint64_t *addr = funcs->get_addr();
-  std::uint16_t *module_ids = funcs->get_module_ids();
+  uint64_t *addr = funcs->get_addr();
+  uint16_t *module_ids = funcs->get_module_ids();
   Type *types = funcs->get_types();
-  std::uint8_t len_symbol = 0;
-  std::uint16_t module_id = module->module_id;
-  for (std::uint32_t i = 0; i < num_functions; i++) {
+  uint8_t len_symbol = 0;
+  uint16_t module_id = module->module_id;
+  for (uint32_t i = 0; i < num_functions; i++) {
     // Read referring address and symbol name
     // TODO(cluosh): Swap bytes if byte order is not little endian
     module_file.read(reinterpret_cast<char *>(&addr[i]), 8);
@@ -121,9 +121,9 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Allocate constant pool
-  std::uint64_t *constant_pool = nullptr;
+  uint64_t *constant_pool = nullptr;
   if (num_const > 0) {
-    constant_pool = new(std::nothrow) std::uint64_t[num_const];
+    constant_pool = new(std::nothrow) uint64_t[num_const];
     if (constant_pool == nullptr) {
       std::cerr << "Could not allocate memory for constant pool in \""
           << module_name << "\".\n";
@@ -132,7 +132,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
 
     // Read constant pool entries from file
     module_file.read(reinterpret_cast<char *>(&constant_pool[0]),
-                     num_const * sizeof(std::uint64_t));
+                     num_const * sizeof(uint64_t));
     if (module_file.fail()) {
       std::cerr << "Module \"" << module_name << "\" does not contain "
           << "the specified number of constants.\n";
@@ -141,7 +141,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
   }
 
   // Allocate byte code array
-  ByteCode *code = new (std::nothrow) ByteCode[num_instructions + 1];
+  Instruction *code = new (std::nothrow) Instruction[num_instructions + 1];
   if (code == nullptr) {
     std::cerr << "Could not allocate memory for byte code in \""
         << module_name << "\".\n";
@@ -151,7 +151,7 @@ bool BytecodeLoader::load_module(std::string file, Module *module) {
 
   // Read bytecode from file
   module_file.read(reinterpret_cast<char *>(&code[0]), num_instructions
-      * sizeof(ByteCode));
+      * sizeof(Instruction));
   if (module_file.fail()) {
     std::cerr << "Could not read byte code from file \""
         << module_name << "\".\n";

@@ -45,9 +45,9 @@ void CondExpr::attribute(AttribInfo *attrib_info) {
   result_reg = attrib_info->next_reg;
 
   // Reserve two constants in the constant pool for conditional jump
-  fst_cp_index = static_cast<std::uint16_t>(attrib_info->constants.size());
+  fst_cp_index = static_cast<uint16_t>(attrib_info->constants.size());
   attrib_info->constants.push_back(0);
-  snd_cp_index = static_cast<std::uint16_t>(attrib_info->constants.size());
+  snd_cp_index = static_cast<uint16_t>(attrib_info->constants.size());
   attrib_info->constants.push_back(0);
 
   // Attribute condition and choices
@@ -70,7 +70,7 @@ void CondExpr::generate_code(VM::Generator *generator,
   condition->generate_code(generator, attrib_info);
 
   // Generate code for conditional jump
-  VM::ByteCode bc;
+  VM::Instruction bc;
   bc.op[0] = VM::OP_JMPC;
   bc.op[1] = condition->result_reg;
   bc.op[2] = static_cast<uint8_t>(snd_cp_index & 0xFF);

@@ -44,16 +44,16 @@ void Generator::set_disabled(bool disabled) {
  * @param num_inst Number of instructions (code size)
  */
 void Generator::module_header(std::string name,
-                              std::uint32_t num_func,
-                              std::uint16_t num_const,
-                              std::uint64_t num_inst) {
+                              uint32_t num_func,
+                              uint16_t num_const,
+                              uint64_t num_inst) {
   // Write the magic number
   out.write("\x4C\x49", 2);
 
   // Print module name (make sure exactly 128 bytes are printed)
   if (name.length() < 128) {
     out.write(name.c_str(), name.size());
-    for (std::uint64_t i = name.length(); i < 128; i++)
+    for (uint64_t i = name.length(); i < 128; i++)
       out.write("\0", 1);
   } else {
     out.write(name.c_str(), 128);
@@ -76,18 +76,18 @@ void Generator::module_header(std::string name,
  * @param func_addr The function addresses, types and names
  */
 void Generator::function_table(FuncAddr *func_addr) {
-  std::uint32_t func_count = func_addr->get_count();
-  std::uint64_t addr;
-  std::uint8_t type;
-  std::uint8_t len;
+  uint32_t func_count = func_addr->get_count();
+  uint64_t addr;
+  uint8_t type;
+  uint8_t len;
   std::string name;
 
   // Write table entries as bytecode
-  for (std::uint32_t i = 0; i < func_count; i++) {
+  for (uint32_t i = 0; i < func_count; i++) {
     addr = func_addr->get_addr(i) - 1;
     type = func_addr->get_type(i);
     name = func_addr->get_name(i);
-    len = (std::uint8_t) name.length();
+    len = (uint8_t) name.length();
 
     // Check if type is undefined
     if (type == TYPE_COUNT)
@@ -117,9 +117,9 @@ void Generator::constant_pool(ConstPool *const_pool) {
  *
  * @param bc Information for the bytecode instruction
  */
-void Generator::instruction(const ByteCode &bc) {
+void Generator::instruction(const Instruction &bc) {
   if (!disabled)
-    out.write(reinterpret_cast<char *>(const_cast<VM::ByteCode *>(&bc)), 4);
+    out.write(reinterpret_cast<char *>(const_cast<VM::Instruction *>(&bc)), 4);
 }
 
 }  // namespace VM

@@ -95,8 +95,8 @@ void BinaryExpr::generate_code(VM::Generator *generator,
   snd->generate_code(generator, attrib_info);
 
   // Generate the bytecode instruction
-  VM::ByteCode bc;
-  bc.op[0] = static_cast<std::uint8_t>(pick_typed());
+  VM::Instruction bc;
+  bc.op[0] = static_cast<uint8_t>(pick_typed());
   bc.op[1] = fst->result_reg;
   bc.op[2] = snd->result_reg;
   bc.op[3] = result_reg;

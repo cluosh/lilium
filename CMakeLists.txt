@@ -17,15 +17,15 @@ set(VM_SRC_FILES
         vm/interpreter.h
         vm/module.h
         vm/module.cc
-        vm/bytecode/bytecode_loader.cc
-        vm/bytecode/bytecode_loader.h
+        vm/bytecode/loader.cc
+        vm/bytecode/loader.h
         vm/types/types.h
         vm/pipeline/loader.h
         vm/pipeline/linker.h
         vm/pipeline/interpreter.h
         vm/pipeline/loader.cc
         vm/pipeline/linker.cc
-        vm/pipeline/interpreter.cc vm/data/program_buffer.h vm/bytecode/common.h)
+        vm/pipeline/interpreter.cc vm/data/program_buffer.h vm/bytecode/common.h vm/data/common.h)
 
 set(LCC_SRC_FILES
         lang/ast/expr/expr.cc

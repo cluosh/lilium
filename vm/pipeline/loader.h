@@ -18,6 +18,9 @@
 #ifndef VM_PIPELINE_LOADER_H_
 #define VM_PIPELINE_LOADER_H_
 
+#include <string>
+#include <vector>
+
 namespace VM {
 
 // Forward declarations
@@ -32,7 +35,8 @@ namespace Pipeline {
  */
 class Loader {
  public:
-  void execute(Data::ProgramBuffer *buffer) = delete;
+  void execute(const std::vector<std::string> &modules,
+               Data::ProgramBuffer *buffer) = delete;
 };
 
 }  // namespace Pipeline

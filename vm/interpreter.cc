@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-#include "vm/bytecode/bytecode_loader.h"
+#include "vm/bytecode/loader.h"
 #include "vm/interpreter.h"
 
 namespace VM {

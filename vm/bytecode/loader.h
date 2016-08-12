@@ -18,20 +18,35 @@
 #ifndef VM_BYTECODE_BYTECODE_LOADER_H_
 #define VM_BYTECODE_BYTECODE_LOADER_H_
 
+#include <cstdint>
+#include <fstream>
 #include <string>
 
 #include "vm/module.h"
 
 namespace VM {
+namespace ByteCode {
 
 /**
  * Loader class, can load bytecode modules (which are specified correctly).
  */
-class BytecodeLoader {
+class Loader {
+ private:
+  std::string moduleName;
+  std::ifstream module;
+  uint64_t numInstructions = 0;
+  uint32_t numFunctions = 0;
+  uint16_t numConstants = 0;
+  bool consistent = false;
+
  public:
-  static bool load_module(std::string file, Module *module);
+  Loader(std::string file);
+  void readHeaders();
+
+  void logError(const std::string &message);
 };
 
+}  // namespace ByteCode
 }  // namespace VM
 
 #endif  // VM_BYTECODE_BYTECODE_LOADER_H_

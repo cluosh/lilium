@@ -36,7 +36,7 @@ namespace Pipeline {
 class Loader {
  public:
   void execute(const std::vector<std::string> &modules,
-               Data::ProgramBuffer *buffer) = delete;
+               Data::ProgramBuffer *buffer);
 };
 
 }  // namespace Pipeline

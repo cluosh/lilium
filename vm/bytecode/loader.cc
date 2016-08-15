@@ -21,6 +21,7 @@
 
 #include "vm/bytecode/loader.h"
 #include "vm/data/common.h"
+#include "vm/data/program_buffer.h"
 #include "vm/opcodes.h"
 
 namespace VM {
@@ -83,6 +84,44 @@ void Loader::readHeaders() {
 }
 
 /**
+ * Read the actual bytecode data:
+ * - Constant pool
+ * - Function table
+ * - Bytecode instructions
+ *
+ * @param programBuffer Storage for the complete program data, to be filled
+ * @param offsetInstructions Offset in the global bytecode array
+ * @param offsetFunctions Offset in the global function table
+ * @param offsetConstants Offset in the global constant pool
+ */
+void Loader::readData(Data::ProgramBuffer *programBuffer,
+                      uint64_t offsetInstructions,
+                      uint64_t offsetFunctionTable,
+                      uint64_t offsetConstants) const {
+  // Check if previous steps have been consistent
+  if (!consistent) {
+    logError("Previous loading steps have not yielded a consistent result");
+    return;
+  }
+
+  // Read constants into global constant pool
+  module.read(reinterpret_cast<char *>(&programBuffer->constantPool[offsetConstants]),
+              numConstants * 8);
+  if (module.fail()) {
+    logError("Could not load constant pool");
+    return;
+  }
+
+  // Read instructions into global array
+  module.read(reinterpret_cast<char *>(&programBuffer->byteCode[offsetInstructions]),
+              numInstructions * sizeof(Data::Instruction));
+  if (module.fail()) {
+    logError("Could not load bytecode instructions");
+    return;
+  }
+}
+
+/**
  * Log an error message regarding the bytecode loading.
  *
  * @param message Message to be logged
@@ -90,6 +129,33 @@ void Loader::readHeaders() {
 void Loader::logError(const std::string &message) {
   std::cerr << "Module file \"" << moduleName << "\":" << message << "\n";
   consistent = false;
+}
+
+/**
+ * Retrieve number of instructions.
+ *
+ * @return Number of instructions
+ */
+uint64_t Loader::getNumInstructions() const {
+  return numInstructions;
+}
+
+/**
+ * Retrieve number of function table entries.
+ *
+ * @return Number of function table entries
+ */
+uint32_t Loader::getNumFunctions() const {
+  return numFunctions;
+}
+
+/**
+ * Retrieve number of constant pool entries.
+ *
+ * @return Number of constant pool entries
+ */
+uint16_t Loader::getNumConstants() const {
+  return numConstants;
 }
 
 }  // namespace ByteCode

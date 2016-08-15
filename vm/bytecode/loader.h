@@ -22,9 +22,13 @@
 #include <fstream>
 #include <string>
 
-#include "vm/module.h"
-
 namespace VM {
+
+// Forward declarations
+namespace Data {
+struct ProgramBuffer;
+}
+
 namespace ByteCode {
 
 /**
@@ -42,8 +46,15 @@ class Loader {
  public:
   Loader(std::string file);
   void readHeaders();
-
+  void readData(Data::ProgramBuffer *programBuffer,
+                uint64_t offsetInstructions,
+                uint64_t offsetFunctionTable,
+                uint64_t offsetConstants) const;
   void logError(const std::string &message);
+
+  uint64_t getNumInstructions() const;
+  uint32_t getNumFunctions() const;
+  uint16_t getNumConstants() const;
 };
 
 }  // namespace ByteCode

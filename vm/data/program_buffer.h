@@ -21,19 +21,22 @@
 #include <vector>
 
 namespace VM {
-
-// Forward declarations
-namespace ByteCode {
-struct Instruction;
-}  // namespace ByteCode
-
 namespace Data {
+
+/**
+ * Bytecode structure.
+ */
+struct Instruction {
+  uint8_t opcode;
+  uint8_t op[3];
+};
 
 /**
  * Store bytecode and all other relevent information in this buffer object.
  */
 struct ProgramBuffer {
-  std::vector<ByteCode::Instruction> byteCode;
+  std::vector<Instruction> byteCode;
+  std::vector<uint64_t> constantPool;
 };
 
 }  // namespace Data

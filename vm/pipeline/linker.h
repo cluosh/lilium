@@ -32,7 +32,7 @@ namespace Pipeline {
  */
 class Linker {
  public:
-  void execute(Data::ProgramBuffer *buffer) = delete;
+  void execute(Data::ProgramBuffer *buffer);
 };
 
 }  // namespace Pipeline

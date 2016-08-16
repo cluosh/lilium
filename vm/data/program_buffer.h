@@ -32,11 +32,32 @@ struct Instruction {
 };
 
 /**
+ * Function table header, is being discarded after load.
+ */
+struct FunctionHeaderInfo {
+  uint8_t nameLength;
+  uint8_t parameterCount;
+};
+
+/**
+ * Function table entry, need for linking
+ */
+struct FunctionTableEntry {
+  uint64_t address;
+  std::string name;
+  std::vector<uint8_t> parameterTypes;
+};
+
+/**
  * Store bytecode and all other relevent information in this buffer object.
  */
 struct ProgramBuffer {
   std::vector<Instruction> byteCode;
   std::vector<uint64_t> constantPool;
+
+  std::vector<FunctionTableEntry> linkerFunctionTable;
+  std::vector<uint64_t> functionTableOffset;
+  std::vector<uint64_t> constantPoolOffset;
 };
 
 }  // namespace Data

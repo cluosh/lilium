@@ -49,7 +49,7 @@ class Loader {
   void readData(Data::ProgramBuffer *programBuffer,
                 uint64_t offsetInstructions,
                 uint64_t offsetFunctionTable,
-                uint64_t offsetConstants) const;
+                uint64_t offsetConstants);
   void logError(const std::string &message);
 
   uint64_t getNumInstructions() const;

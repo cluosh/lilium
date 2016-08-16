@@ -22,7 +22,6 @@
 #include "vm/bytecode/loader.h"
 #include "vm/data/common.h"
 #include "vm/data/program_buffer.h"
-#include "vm/opcodes.h"
 
 namespace VM {
 namespace ByteCode {
@@ -77,10 +76,11 @@ void Loader::readHeaders() {
   // Load total number of instructions
   module.read(reinterpret_cast<char *>(buffer.data()), 8);
   if (module.fail()) {
-    logError("Total number of instructions");
+    logError("Total number of instructions not found");
     return;
   }
   numInstructions = Data::parse_u64(buffer);
+  consistent = true;
 }
 
 /**
@@ -97,7 +97,7 @@ void Loader::readHeaders() {
 void Loader::readData(Data::ProgramBuffer *programBuffer,
                       uint64_t offsetInstructions,
                       uint64_t offsetFunctionTable,
-                      uint64_t offsetConstants) const {
+                      uint64_t offsetConstants) {
   // Check if previous steps have been consistent
   if (!consistent) {
     logError("Previous loading steps have not yielded a consistent result");
@@ -110,6 +110,45 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
   if (module.fail()) {
     logError("Could not load constant pool");
     return;
+  }
+
+  // Read function table entries
+  Data::FunctionTableEntry *functionTable = programBuffer->linkerFunctionTable.data();
+  for (uint32_t i = 0; i < numFunctions; i++) {
+    // Read function table header
+    Data::FunctionHeaderInfo headerInfo = {};
+    module.read(reinterpret_cast<char *>(&headerInfo), 2);
+    if (module.fail()) {
+      logError("Invalid function table header found");
+      return;
+    }
+
+    // Read function address
+    Data::FunctionTableEntry *functionTableEntry =
+        &functionTable[offsetFunctionTable + i * sizeof(Data::FunctionTableEntry)];
+    module.read(reinterpret_cast<char *>(&functionTableEntry->address), 8);
+    if (module.fail()) {
+      logError("Could not read function address");
+      return;
+    }
+
+    // Read function name
+    std::vector<char> nameBuffer(headerInfo.nameLength);
+    module.read(nameBuffer.data(), headerInfo.nameLength);
+    if (module.fail()) {
+      logError("Could not read function name");
+      return;
+    }
+    functionTableEntry->name = std::string(nameBuffer.begin(), nameBuffer.end());
+
+    // Read parameter types
+    functionTableEntry->parameterTypes.resize(headerInfo.parameterCount);
+    module.read(reinterpret_cast<char *>(functionTableEntry->parameterTypes.data()),
+                headerInfo.parameterCount);
+    if (module.fail()) {
+      logError("Could not read parameter types of a function");
+      return;
+    }
   }
 
   // Read instructions into global array

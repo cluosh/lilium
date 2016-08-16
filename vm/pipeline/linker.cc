@@ -20,5 +20,15 @@
 namespace VM {
 namespace Pipeline {
 
+/**
+ * Resolve cross-module references, build function tables, and offsets with
+ * module information.
+ *
+ * @param buffer Buffer containing loaded functions and bytecode
+ */
+void Linker::execute(Data::ProgramBuffer *buffer) {
+  
+}
+
 }  // namespace Pipeline
 }  // namespace VM

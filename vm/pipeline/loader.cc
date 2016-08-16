@@ -41,28 +41,37 @@ void Loader::execute(const std::vector<std::string> &modules, Data::ProgramBuffe
     loaders.push_back(loader);
   }
 
+  // Allocate memory for offsets
+  buffer->constantPoolOffset.resize(modules.size(), 0);
+  buffer->functionTableOffset.resize(modules.size(), 0);
+
   // Find number of table entries
   uint64_t numInstructions = 0;
   uint32_t numFunctions = 0;
   uint16_t numConstants = 0;
-  for (const auto &loader : loaders) {
-    numInstructions += loader.getNumInstructions();
-    numFunctions += loader.getNumFunctions();
-    numConstants += loader.getNumConstants();
+  for (size_t i = 0; i < modules.size(); i++) {
+    buffer->constantPoolOffset[i] = numConstants;
+    buffer->functionTableOffset[i] = numFunctions;
+
+    numInstructions += loaders[i].getNumInstructions();
+    numFunctions += loaders[i].getNumFunctions();
+    numConstants += loaders[i].getNumConstants();
   }
 
   // Allocate program memory
-  buffer->byteCode.resize(numInstructions, Data::Instruction{});
+  buffer->byteCode.resize(numInstructions, {});
   buffer->constantPool.resize(numConstants, 0);
+  buffer->linkerFunctionTable.resize(numFunctions, {});
 
   // Fill the program buffer and calculate offsets
   uint64_t offsetInstruction = 0;
   uint64_t offsetFunctionTable = 0;
   uint64_t offsetConstantPool = 0;
-  for (const auto &loader : loaders) {
+  for (auto &loader : loaders) {
     loader.readData(buffer, offsetInstruction, offsetFunctionTable, offsetConstantPool);
     offsetInstruction += loader.getNumInstructions();
-
+    offsetFunctionTable += loader.getNumFunctions();
+    offsetConstantPool += loader.getNumInstructions();
   }
 }
 

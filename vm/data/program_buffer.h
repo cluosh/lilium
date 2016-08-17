@@ -49,15 +49,24 @@ struct FunctionTableEntry {
 };
 
 /**
+ * Function table entry, used during execution
+ */
+struct FunctionEntry {
+  uint64_t address;
+  uint64_t module;
+};
+
+/**
  * Store bytecode and all other relevent information in this buffer object.
  */
 struct ProgramBuffer {
   std::vector<Instruction> byteCode;
   std::vector<uint64_t> constantPool;
-
-  std::vector<FunctionTableEntry> linkerFunctionTable;
+  std::vector<FunctionEntry> functionTable;
   std::vector<uint64_t> functionTableOffset;
   std::vector<uint64_t> constantPoolOffset;
+
+  std::vector<FunctionTableEntry> linkerFunctionTable;
 };
 
 }  // namespace Data

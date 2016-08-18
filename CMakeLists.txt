@@ -12,9 +12,7 @@ set(BAS_SRC_FILES
         bas/codegen/generator.h)
 
 set(VM_SRC_FILES
-        vm/interpreter.cc
         vm/opcodes.h
-        vm/interpreter.h
         vm/bytecode/loader.cc
         vm/bytecode/loader.h
         vm/types/types.h

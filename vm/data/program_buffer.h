@@ -18,6 +18,7 @@
 #ifndef VM_DATA_PROGRAM_BUFFER_H_
 #define VM_DATA_PROGRAM_BUFFER_H_
 
+#include <string>
 #include <vector>
 
 namespace VM {

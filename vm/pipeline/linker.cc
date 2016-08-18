@@ -28,8 +28,10 @@ namespace Pipeline {
  * module information.
  *
  * @param buffer Buffer containing loaded functions and bytecode
+ * @param funcTable
  */
-void Linker::execute(Data::ProgramBuffer *buffer) {
+void Linker::execute(Data::ProgramBuffer *buffer,
+                     const std::vector<Data::FunctionTableEntry> &funcTable) {
   std::unordered_map<std::string, Data::FunctionEntry> functions;
   std::unordered_map<uint64_t, uint64_t> functionIndex;
   const auto &funcOffsets = buffer->functionTableOffset;
@@ -38,22 +40,40 @@ void Linker::execute(Data::ProgramBuffer *buffer) {
   // Store defined functions in map
   for (uint64_t index = 0; index < funcOffsets.size(); index++) {
     uint64_t upper = index == funcOffsets.size() - 1 ? funcTable.size() : funcOffsets[index + 1];
+    uint64_t lower = funcOffsets[index];
 
-    for (uint64_t i = funcOffsets[index]; i < upper; i++) {
-      if (funcTable[i].address != 0xFFFFFFFFFFFFFFFF
-          || functions.find(funcTable[i].name) != functions.end()) {
-        // TODO(cluosh): Error message and abort (duplicate function name)
-      } else {
-        functions[funcTable[i].name] = {funcTable[i].address + funcOffsets[i], index};
+    // Look up indices between the corresponding offsets
+    for (uint64_t i = lower; i < upper; i++) {
+      // Check if address is valid
+      // Valid address implies a function definition
+      // Invalid address implies unresolved function
+      if (funcTable[i].address != 0xFFFFFFFFFFFFFFFF)
+        continue;
+
+      // Insert a function definition into the temporary table
+      auto function = functions.insert(std::make_pair(
+          funcTable[i].name, {funcTable[i].address + lower, index}));
+      if (!function.second)
+        throw std::runtime_error("Found duplicate function '" + funcTable[i].name + "'");
+      else
         functionIndex[funcTable[i].address] = i;
-      }
     }
   }
 
   // Build runtime function table and resolve functions
   buffer->functionTable.resize(funcTable.size(), {});
   for (uint64_t i = 0; i < funcTable.size(); i++) {
+    // Look up function in the reference map
+    auto function = functions.find(funcTable[i].name);
+    if (function == functions.end())
+      throw std::runtime_error("Could not resolve function '" + funcTable[i].name + "'");
+
+    // Store function reference in actual function table
+    buffer->functionTable[i] = function->second;
   }
+
+  // Clear temporary function table
+  buffer->linkerFunctionTable.clear();
 }
 
 }  // namespace Pipeline

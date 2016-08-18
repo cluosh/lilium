@@ -32,7 +32,7 @@ namespace Pipeline {
  */
 class Interpreter {
  public:
-  void execute(const Data::ProgramBuffer &buffer) = delete;
+  void execute(const Data::ProgramBuffer &buffer);
 };
 
 }  // namespace Pipeline

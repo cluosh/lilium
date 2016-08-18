@@ -21,7 +21,6 @@
 
 #include "vm/bytecode/loader.h"
 #include "vm/data/common.h"
-#include "vm/data/program_buffer.h"
 
 namespace VM {
 namespace ByteCode {
@@ -90,11 +89,13 @@ void Loader::readHeaders() {
  * - Bytecode instructions
  *
  * @param programBuffer Storage for the complete program data, to be filled
+ * @param funcTable Helper function table for the linker, to be filled
  * @param offsetInstructions Offset in the global bytecode array
  * @param offsetFunctions Offset in the global function table
  * @param offsetConstants Offset in the global constant pool
  */
 void Loader::readData(Data::ProgramBuffer *programBuffer,
+                      std::vector<Data::FunctionTableEntry> *funcTable,
                       uint64_t offsetInstructions,
                       uint64_t offsetFunctionTable,
                       uint64_t offsetConstants) {
@@ -113,7 +114,7 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
   }
 
   // Read function table entries
-  Data::FunctionTableEntry *functionTable = programBuffer->linkerFunctionTable.data();
+  Data::FunctionTableEntry *functionTable = funcTable->data();
   for (uint32_t i = 0; i < numFunctions; i++) {
     // Read function table header
     Data::FunctionHeaderInfo headerInfo = {};

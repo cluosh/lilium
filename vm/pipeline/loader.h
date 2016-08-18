@@ -26,6 +26,7 @@ namespace VM {
 // Forward declarations
 namespace Data {
 struct ProgramBuffer;
+struct FunctionTableEntry;
 }  // namespace Data
 
 namespace Pipeline {
@@ -36,7 +37,8 @@ namespace Pipeline {
 class Loader {
  public:
   void execute(const std::vector<std::string> &modules,
-               Data::ProgramBuffer *buffer);
+               Data::ProgramBuffer *buffer,
+               std::vector<Data::FunctionTableEntry> *funcTable);
 };
 
 }  // namespace Pipeline

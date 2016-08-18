@@ -23,6 +23,7 @@ namespace VM {
 // Forward declarations
 namespace Data {
 struct ProgramBuffer;
+struct FunctionTableEntry;
 }  // namespace Data
 
 namespace Pipeline {
@@ -32,7 +33,8 @@ namespace Pipeline {
  */
 class Linker {
  public:
-  void execute(Data::ProgramBuffer *buffer);
+  void execute(Data::ProgramBuffer *buffer,
+               const std::vector<Data::FunctionTableEntry> &funcTable);
 };
 
 }  // namespace Pipeline

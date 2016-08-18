@@ -20,5 +20,14 @@
 namespace VM {
 namespace Pipeline {
 
+/**
+ * Execute previously linked bytecode.
+ *
+ * @param buffer Buffer containing previously linked bytecode
+ */
+void Interpreter::execute(const Data::ProgramBuffer &buffer) {
+
+}
+
 }  // namespace Pipeline
 }  // namespace VM

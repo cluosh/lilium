@@ -30,8 +30,11 @@ namespace Pipeline {
  *
  * @param modules Array of module-filenames to be loaded
  * @param buffer The program buffer to be filled
+ * @param funcTable The linker function table to be filled
  */
-void Loader::execute(const std::vector<std::string> &modules, Data::ProgramBuffer *buffer) {
+void Loader::execute(const std::vector<std::string> &modules,
+                     Data::ProgramBuffer *buffer,
+                     std::vector<Data::FunctionTableEntry> *funcTable) {
   // Create bytecode loader for each module and read header information
   std::vector<ByteCode::Loader> loaders;
   loaders.resize(modules.size());
@@ -61,14 +64,14 @@ void Loader::execute(const std::vector<std::string> &modules, Data::ProgramBuffe
   // Allocate program memory
   buffer->byteCode.resize(numInstructions, {});
   buffer->constantPool.resize(numConstants, 0);
-  buffer->linkerFunctionTable.resize(numFunctions, {});
+  funcTable->resize(numFunctions, {});
 
   // Fill the program buffer and calculate offsets
   uint64_t offsetInstruction = 0;
   uint64_t offsetFunctionTable = 0;
   uint64_t offsetConstantPool = 0;
   for (auto &loader : loaders) {
-    loader.readData(buffer, offsetInstruction, offsetFunctionTable, offsetConstantPool);
+    loader.readData(buffer, funcTable, offsetInstruction, offsetFunctionTable, offsetConstantPool);
     offsetInstruction += loader.getNumInstructions();
     offsetFunctionTable += loader.getNumFunctions();
     offsetConstantPool += loader.getNumInstructions();

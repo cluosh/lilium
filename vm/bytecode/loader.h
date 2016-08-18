@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <vm/data/program_buffer.h>
 
 namespace VM {
 
@@ -47,6 +49,7 @@ class Loader {
   Loader(std::string file);
   void readHeaders();
   void readData(Data::ProgramBuffer *programBuffer,
+                std::vector<Data::FunctionTableEntry> *funcTable,
                 uint64_t offsetInstructions,
                 uint64_t offsetFunctionTable,
                 uint64_t offsetConstants);

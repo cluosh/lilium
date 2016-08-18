@@ -58,13 +58,11 @@ set(LCC_SRC_FILES
         lang/ast/expr/const.cc
         vm/bytecode/generator.h
         vm/bytecode/generator.cc
-        vm/bytecode/func_addr.h
-        vm/bytecode/func_addr.cc
         lang/ast/expr/cond_expr.h
         lang/ast/expr/cond_expr.cc)
 
 # BISON/FLEX Targets
-find_package(BISON REQUIRED)
+find_package(BISON 3.0 REQUIRED)
 find_package(FLEX REQUIRED)
 bison_target(bas_parser bas/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
 flex_target(bas_lexer bas/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)

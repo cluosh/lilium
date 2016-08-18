@@ -63,10 +63,9 @@ struct ProgramBuffer {
   std::vector<Instruction> byteCode;
   std::vector<uint64_t> constantPool;
   std::vector<FunctionEntry> functionTable;
+
   std::vector<uint64_t> functionTableOffset;
   std::vector<uint64_t> constantPoolOffset;
-
-  std::vector<FunctionTableEntry> linkerFunctionTable;
 };
 
 }  // namespace Data

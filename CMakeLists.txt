@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
-project(liliumvm)
+project(lilium)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(CONTROLLER_SRC_FILES
-        controller/common.h controller/main.cc)
-
-set(BAS_SRC_FILES
+set(AS_SRC_FILES
         as/codegen/generator.h
         as/parser/grammar/scanner.l
         as/codegen/generator.h)
@@ -26,7 +23,7 @@ set(VM_SRC_FILES
         vm/bytecode/common.h
         vm/data/common.h)
 
-set(LCC_SRC_FILES
+set(CC_SRC_FILES
         cc/ast/expr/expr.cc
         cc/ast/expr/expr.h
         cc/ast/func/func_def.cc
@@ -61,33 +58,27 @@ set(LCC_SRC_FILES
 
 # BISON/FLEX Targets
 find_package(BISON 3.0 REQUIRED)
-find_package(FLEX REQUIRED)
-bison_target(bas_parser as/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
-flex_target(bas_lexer as/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
-bison_target(lcc_parser cc/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
-flex_target(lcc_lexer cc/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
-add_flex_bison_dependency(lcc_lexer lcc_parser)
-
-# LCC
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lang/parser)
+find_package(FLEX 2.6.1 REQUIRED)
+bison_target(as_parser as/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/as/parser/parser.tab.cc)
+flex_target(as_lexer as/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/as/parser/lex.yy.cc)
+bison_target(cc_parser cc/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/cc/parser/parser.tab.cc)
+flex_target(cc_lexer cc/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/cc/parser/lex.yy.cc)
+add_flex_bison_dependency(cc_lexer cc_parser)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cc/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
-add_library(lcc STATIC
-        ${LCC_SRC_FILES}
-        ${BISON_lcc_parser_OUTPUTS}
-        ${FLEX_lcc_lexer_OUTPUTS}
-)
 
-# VM
-add_library(vm STATIC
+# lilium-as
+add_executable(as
+        ${AS_SRC_FILES}
+        ${BISON_as_parser_OUTPUTS}
+        ${FLEX_as_lexer_OUTPUTS})
+
+# lilium-cc
+add_executable(lilium-cc
+        ${CC_SRC_FILES}
+        ${BISON_cc_parser_OUTPUTS}
+        ${FLEX_cc_lexer_OUTPUTS})
+
+# lilium-vm
+add_executable(lilium-vm
         ${VM_SRC_FILES})
-
-# BAS
-add_library(as STATIC
-        ${BAS_SRC_FILES}
-        ${BISON_bas_parser_OUTPUTS}
-        ${FLEX_bas_lexer_OUTPUTS})
-
-# Main controller
-add_executable(lilium
-        ${CONTROLLER_SRC_FILES})
-target_link_libraries(lilium vm lcc)

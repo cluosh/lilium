@@ -15,40 +15,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef LANG_AST_FUNC_CALL_EXPR_H_
+#define LANG_AST_FUNC_CALL_EXPR_H_
 
-#include <ostream>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include "vm/data/program_buffer.h"
+#include "cc/ast/expr/expr.h"
 
-namespace VM {
-namespace ByteCode {
+namespace AST {
 
 /**
- * Class for storing methods allowing to generate bytecode.
+ * A function call expression, has a variety of arguments.
  */
-class Generator {
+class CallExpr : public Expr {
  private:
-  std::ostream out;
-  bool disabled;
+  Expr *expr_list;
+  std::string name;
+  uint8_t num_param;
 
  public:
-  explicit Generator(const std::ostream &output);
-  void setDisabled(bool disabled);
+  CallExpr(std::string name, Expr *expr_list, Expr *next);
 
-  // Code generation functions
-  void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
-  void constantPool(const std::vector<uint64_t> &constantPool);
-  void instruction(const Data::Instruction &instruction);
+  void attribute(AttribInfo *attrib_info) override;
+  void generate_code(VM::Generator *generator,
+                     AttribInfo *attrib_info) override;
+  void set_symbols(SymbolTables *symbol_tables) override;
 };
 
-}  // namespace ByteCode
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // LANG_AST_FUNC_CALL_EXPR_H_

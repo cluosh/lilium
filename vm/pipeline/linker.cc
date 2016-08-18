@@ -35,7 +35,6 @@ void Linker::execute(Data::ProgramBuffer *buffer,
   std::unordered_map<std::string, Data::FunctionEntry> functions;
   std::unordered_map<uint64_t, uint64_t> functionIndex;
   const auto &funcOffsets = buffer->functionTableOffset;
-  const auto &funcTable = buffer->linkerFunctionTable;
 
   // Store defined functions in map
   for (uint64_t index = 0; index < funcOffsets.size(); index++) {
@@ -68,12 +67,11 @@ void Linker::execute(Data::ProgramBuffer *buffer,
     if (function == functions.end())
       throw std::runtime_error("Could not resolve function '" + funcTable[i].name + "'");
 
+    // TODO(cluosh): Typecheck
+
     // Store function reference in actual function table
     buffer->functionTable[i] = function->second;
   }
-
-  // Clear temporary function table
-  buffer->linkerFunctionTable.clear();
 }
 
 }  // namespace Pipeline

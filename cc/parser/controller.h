@@ -15,40 +15,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef LANG_PARSER_CONTROLLER_H_
+#define LANG_PARSER_CONTROLLER_H_
 
-#include <ostream>
+#include <istream>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include "vm/data/program_buffer.h"
+#include "cc/ast/program.h"
+#include "cc/parser/scanner.h"
+#include "cc/parser/parser.tab.hh"
 
-namespace VM {
-namespace ByteCode {
+namespace Parser {
 
-/**
- * Class for storing methods allowing to generate bytecode.
- */
-class Generator {
+class Controller {
  private:
-  std::ostream out;
-  bool disabled;
+  Parser *parser = nullptr;
+  Scanner *scanner = nullptr;
+  AST::Program *ast = nullptr;
 
  public:
-  explicit Generator(const std::ostream &output);
-  void setDisabled(bool disabled);
+  ~Controller();
 
-  // Code generation functions
-  void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
-  void constantPool(const std::vector<uint64_t> &constantPool);
-  void instruction(const Data::Instruction &instruction);
+  bool parse(std::string filename);
+  bool parse(const std::istream &is);
 };
 
-}  // namespace ByteCode
-}  // namespace VM
+}  // namespace Parser
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // LANG_PARSER_CONTROLLER_H_

@@ -7,9 +7,9 @@ set(CONTROLLER_SRC_FILES
         controller/common.h controller/main.cc)
 
 set(BAS_SRC_FILES
-        bas/codegen/generator.h
-        bas/parser/grammar/scanner.l
-        bas/codegen/generator.h)
+        as/codegen/generator.h
+        as/parser/grammar/scanner.l
+        as/codegen/generator.h)
 
 set(VM_SRC_FILES
         vm/opcodes.h
@@ -27,45 +27,45 @@ set(VM_SRC_FILES
         vm/data/common.h)
 
 set(LCC_SRC_FILES
-        lang/ast/expr/expr.cc
-        lang/ast/expr/expr.h
-        lang/ast/func/func_def.cc
-        lang/ast/func/func_def.h
-        lang/ast/expr/global_expr.h
-        lang/ast/expr/binary_expr.h
-        lang/ast/program.cc
-        lang/ast/program.h
-        lang/ast/data/var.cc
-        lang/ast/data/var.h
-        lang/parser/controller.cc
-        lang/parser/controller.h
-        lang/parser/grammar/parser.yy
-        lang/parser/scanner.cc
-        lang/parser/scanner.h
-        lang/parser/grammar/scanner.l
-        lang/ast/expr/binary_expr.cc
-        lang/ast/common/operators.h
-        lang/ast/expr/unary_expr.h
-        lang/ast/expr/unary_expr.cc
-        lang/ast/common/symbol.h
-        lang/ast/expr/global_expr.cc
-        lang/ast/func/call_expr.h
-        lang/ast/func/call_expr.cc
-        lang/ast/common/attribute.h
-        lang/ast/expr/const.h
-        lang/ast/expr/const.cc
+        cc/ast/expr/expr.cc
+        cc/ast/expr/expr.h
+        cc/ast/func/func_def.cc
+        cc/ast/func/func_def.h
+        cc/ast/expr/global_expr.h
+        cc/ast/expr/binary_expr.h
+        cc/ast/program.cc
+        cc/ast/program.h
+        cc/ast/data/var.cc
+        cc/ast/data/var.h
+        cc/parser/controller.cc
+        cc/parser/controller.h
+        cc/parser/grammar/parser.yy
+        cc/parser/scanner.cc
+        cc/parser/scanner.h
+        cc/parser/grammar/scanner.l
+        cc/ast/expr/binary_expr.cc
+        cc/ast/common/operators.h
+        cc/ast/expr/unary_expr.h
+        cc/ast/expr/unary_expr.cc
+        cc/ast/common/symbol.h
+        cc/ast/expr/global_expr.cc
+        cc/ast/func/call_expr.h
+        cc/ast/func/call_expr.cc
+        cc/ast/common/attribute.h
+        cc/ast/expr/const.h
+        cc/ast/expr/const.cc
         vm/bytecode/generator.h
         vm/bytecode/generator.cc
-        lang/ast/expr/cond_expr.h
-        lang/ast/expr/cond_expr.cc)
+        cc/ast/expr/cond_expr.h
+        cc/ast/expr/cond_expr.cc)
 
 # BISON/FLEX Targets
 find_package(BISON 3.0 REQUIRED)
 find_package(FLEX REQUIRED)
-bison_target(bas_parser bas/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
-flex_target(bas_lexer bas/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
-bison_target(lcc_parser lang/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
-flex_target(lcc_lexer lang/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
+bison_target(bas_parser as/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/parser.tab.cc)
+flex_target(bas_lexer as/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/bas/parser/lex.yy.cc)
+bison_target(lcc_parser cc/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/parser.tab.cc)
+flex_target(lcc_lexer cc/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/lang/parser/lex.yy.cc)
 add_flex_bison_dependency(lcc_lexer lcc_parser)
 
 # LCC
@@ -82,7 +82,7 @@ add_library(vm STATIC
         ${VM_SRC_FILES})
 
 # BAS
-add_library(bas STATIC
+add_library(as STATIC
         ${BAS_SRC_FILES}
         ${BISON_bas_parser_OUTPUTS}
         ${FLEX_bas_lexer_OUTPUTS})

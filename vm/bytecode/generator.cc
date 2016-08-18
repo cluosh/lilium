@@ -16,110 +16,99 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "vm/bytecode/generator.h"
+#include "vm/data/common.h"
 
 namespace VM {
+namespace ByteCode {
 
 /**
  * Initialize the generator with an output stream.
  *
  * @param output Output stream where the bytecode is written to
  */
-Generator::Generator(const std::ostream &output) : out(output.rdbuf()) { }
+Generator::Generator(const std::ostream &output) : out(output.rdbuf()) {}
 
 /**
  * Disable/Enable code generation.
  *
  * @param disable Disable/Enable code generation
  */
-void Generator::set_disabled(bool disabled) {
+void Generator::setDisabled(bool disabled) {
   this->disabled = disabled;
 }
 
 /**
  * Generate the bytecode header for a module file.
  *
- * @param name Name of the module (limited to 128 bytes)
- * @param num_func Number of function table entries
- * @param num_const Number of constant pool entries
- * @param num_inst Number of instructions (code size)
+ * @param numFunctions Number of function table entries
+ * @param numConstants Number of constant pool entries
+ * @param numInstructions Number of instructions (code size)
  */
-void Generator::module_header(std::string name,
-                              uint32_t num_func,
-                              uint16_t num_const,
-                              uint64_t num_inst) {
+void Generator::moduleHeader(uint16_t numConstants,
+                             uint32_t numFunctions,
+                             uint64_t numInstructions) {
   // Write the magic number
   out.write("\x4C\x49", 2);
 
-  // Print module name (make sure exactly 128 bytes are printed)
-  if (name.length() < 128) {
-    out.write(name.c_str(), name.size());
-    for (uint64_t i = name.length(); i < 128; i++)
-      out.write("\0", 1);
-  } else {
-    out.write(name.c_str(), 128);
-  }
+  // Write number of constants
+  out.write(reinterpret_cast<char *>(Data::buffer_u16(numConstants).data()), 2);
 
   // Write number of function table entries
-  // Only the lower 24 bit are being used
-  out.write(reinterpret_cast<char *>(&num_func), 4);
-
-  // Write number of constants
-  out.write(reinterpret_cast<char *>(&num_const), 2);
+  // Only the lower 24 bit are being used, use 32 bit anyways
+  out.write(reinterpret_cast<char *>(Data::buffer_u32(numFunctions).data()), 4);
 
   // Write number of total instructions
-  out.write(reinterpret_cast<char *>(&num_inst), 8);
+  out.write(reinterpret_cast<char *>(Data::buffer_u64(numInstructions).data()), 8);
 }
 
 /**
  * Write a function table to the file, based on function addresses.
  *
- * @param func_addr The function addresses, types and names
+ * @param functionTable The function addresses, types and names
  */
-void Generator::function_table(FuncAddr *func_addr) {
-  uint32_t func_count = func_addr->get_count();
-  uint64_t addr;
-  uint8_t type;
-  uint8_t len;
-  std::string name;
+void Generator::functionTable(const std::vector<Data::FunctionTableEntry> &functionTable) {
+  uint8_t nameLength;
+  uint8_t parameterCount;
 
   // Write table entries as bytecode
-  for (uint32_t i = 0; i < func_count; i++) {
-    addr = func_addr->get_addr(i) - 1;
-    type = func_addr->get_type(i);
-    name = func_addr->get_name(i);
-    len = (uint8_t) name.length();
+  for (const auto &function : functionTable) {
+    // Write the header of the function (length of name and count of parameters)
+    // NOTE: First parameter is return value!
+    nameLength = static_cast<uint8_t>(function.name.length());
+    parameterCount = static_cast<uint8_t>(function.parameterTypes.size());
+    out.write(reinterpret_cast<char *>(&nameLength), 1);
+    out.write(reinterpret_cast<char *>(&parameterCount), 1);
 
-    // Check if type is undefined
-    if (type == TYPE_COUNT)
-      type = TYPE_INT;
+    // Write function address and name
+    out.write(reinterpret_cast<char *>(Data::buffer_u64(function.address).data()), 8);
+    out.write(function.name.c_str(), nameLength);
 
-    // Write bytecode
-    out.write(reinterpret_cast<char *>(&addr), 8);
-    out.write(reinterpret_cast<char *>(&type), 1);
-    out.write(reinterpret_cast<char *>(&len), 1);
-    out.write(name.c_str(), name.length());
+    // Write function parameter types
+    out.write(reinterpret_cast<char *>(function.parameterTypes.data()), parameterCount);
   }
 }
 
 /**
  * Generate the constant pool of a module.
  *
- * @param const_pool Constants picked up during generation
+ * @param constantPool Constants picked up during generation
  */
-void Generator::constant_pool(ConstPool *const_pool) {
+void Generator::constantPool(const std::vector<uint64_t> &constantPool) {
   // Write constants to module file
-  out.write(reinterpret_cast<char *>(&const_pool->at(0)),
-            8 * const_pool->size());
+  for (const auto &constant : constantPool)
+    out.write(reinterpret_cast<char *>(Data::buffer_u64(constant).data()), 8);
 }
 
 /**
  * Generate bytecode for a bytecode instruction.
  *
- * @param bc Information for the bytecode instruction
+ * @param instruction Information for the bytecode instruction
  */
-void Generator::instruction(const Instruction &bc) {
-  if (!disabled)
-    out.write(reinterpret_cast<char *>(const_cast<VM::Instruction *>(&bc)), 4);
+void Generator::instruction(const Data::Instruction &instruction) {
+  if (disabled)
+    return;
+  out.write(reinterpret_cast<char *>(&instruction), 4);
 }
 
+}  // namespace ByteCode
 }  // namespace VM

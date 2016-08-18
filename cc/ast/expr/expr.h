@@ -15,40 +15,44 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef LANG_AST_EXPR_EXPR_H_
+#define LANG_AST_EXPR_EXPR_H_
 
-#include <ostream>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include "vm/data/program_buffer.h"
+#include "cc/ast/expr/global_expr.h"
+#include "vm/bytecode/generator.h"
+#include "vm/types/types.h"
 
-namespace VM {
-namespace ByteCode {
+namespace AST {
 
 /**
- * Class for storing methods allowing to generate bytecode.
+ * An expression in the AST.
  */
-class Generator {
+class Expr : public GlobalExpr {
  private:
-  std::ostream out;
-  bool disabled;
+  VM::Type type;
+  bool last = false;
 
  public:
-  explicit Generator(const std::ostream &output);
-  void setDisabled(bool disabled);
+  Expr *next = nullptr;
 
-  // Code generation functions
-  void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
-  void constantPool(const std::vector<uint64_t> &constantPool);
-  void instruction(const Data::Instruction &instruction);
+  Expr(VM::Type type, Expr *next);
+  virtual ~Expr() = default;
+
+  virtual void attribute(AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::ByteCode::Generator *generator,
+                             AttribInfo *attrib_info) = 0;
+  virtual void set_symbols(SymbolTables *symbol_tables);
+
+  virtual void set_last(bool last);
+  VM::Type get_type();
+
+ protected:
+  bool is_last();
+  void choose_type(Expr *expr1, Expr *expr2);
 };
 
-}  // namespace ByteCode
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // LANG_AST_EXPR_EXPR_H_

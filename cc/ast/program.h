@@ -15,40 +15,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef LANG_AST_PROGRAM_H_
+#define LANG_AST_PROGRAM_H_
 
+#include <cstdint>
+#include <list>
 #include <ostream>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include "vm/data/program_buffer.h"
+#include "cc/ast/expr/global_expr.h"
+#include "vm/bytecode/generator.h"
 
-namespace VM {
-namespace ByteCode {
+namespace AST {
 
 /**
- * Class for storing methods allowing to generate bytecode.
+ * The root node of a lilium program.
  */
-class Generator {
+class Program {
  private:
-  std::ostream out;
-  bool disabled;
+  std::list<GlobalExpr *> expr_list;
+  AttribInfo attrib_info;
 
  public:
-  explicit Generator(const std::ostream &output);
-  void setDisabled(bool disabled);
+  ~Program();
 
-  // Code generation functions
-  void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
-  void constantPool(const std::vector<uint64_t> &constantPool);
-  void instruction(const Data::Instruction &instruction);
+  void add(GlobalExpr *expr);
+  void attribute_tree();
+  void generate_code(VM::ByteCode::Generator *generator);
 };
 
-}  // namespace ByteCode
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // LANG_AST_PROGRAM_H_

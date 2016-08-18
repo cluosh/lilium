@@ -62,6 +62,44 @@ constexpr uint16_t parse_u16(const std::vector<uint8_t> &buffer) {
       & (buffer[1] << 8);
 }
 
+/**
+ * Convert a 64-bit integer into a buffer with wanted byte order.
+ *
+ * @param number Number to be converted into a buffer
+ */
+constexpr std::vector<uint8_t> buffer_u64(uint64_t number) {
+  return {static_cast<uint8_t>(number),
+          static_cast<uint8_t>(number >> 8),
+          static_cast<uint8_t>(number >> 16),
+          static_cast<uint8_t>(number >> 24),
+          static_cast<uint8_t>(number >> 32),
+          static_cast<uint8_t>(number >> 40),
+          static_cast<uint8_t>(number >> 48),
+          static_cast<uint8_t>(number >> 56)};
+}
+
+/**
+ * Convert a 32-bit integer into a buffer with wanted byte order.
+ *
+ * @param number Number to be converted into a buffer
+ */
+constexpr std::vector<uint8_t> buffer_u32(uint32_t number) {
+  return {static_cast<uint8_t>(number),
+          static_cast<uint8_t>(number >> 8),
+          static_cast<uint8_t>(number >> 16),
+          static_cast<uint8_t>(number >> 24)};
+}
+
+/**
+ * Convert a 16-bit integer into a buffer with wanted byte order.
+ *
+ * @param number Number to be converted into a buffer
+ */
+constexpr std::vector<uint8_t> buffer_u16(uint16_t number) {
+  return {static_cast<uint8_t>(number),
+          static_cast<uint8_t>(number >> 8)};
+}
+
 }  // namespace Data
 }  // namespace VM
 

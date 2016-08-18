@@ -106,11 +106,17 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
   }
 
   // Read constants into global constant pool
-  module.read(reinterpret_cast<char *>(&programBuffer->constantPool[offsetConstants]),
-              numConstants * 8);
-  if (module.fail()) {
-    logError("Could not load constant pool");
-    return;
+  uint64_t *constantPool = programBuffer->constantPool.data();
+  std::vector<uint8_t> constantBuffer(8);
+  for (uint32_t i = 0; i < numConstants; i++) {
+    module.read(reinterpret_cast<char *>(constantBuffer.data()), 8);
+    if (module.fail()) {
+      logError("Could not load constant pool");
+      return;
+    }
+
+    // Convert buffer to 64 bit integer
+    constantPool[offsetConstants + i * 8] = Data::parse_u64(constantBuffer);
   }
 
   // Read function table entries
@@ -127,11 +133,12 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
     // Read function address
     Data::FunctionTableEntry *functionTableEntry =
         &functionTable[offsetFunctionTable + i * sizeof(Data::FunctionTableEntry)];
-    module.read(reinterpret_cast<char *>(&functionTableEntry->address), 8);
+    module.read(reinterpret_cast<char *>(constantBuffer.data()), 8);
     if (module.fail()) {
       logError("Could not read function address");
       return;
     }
+    functionTableEntry->address = Data::parse_u64(constantBuffer);
 
     // Read function name
     std::vector<char> nameBuffer(headerInfo.nameLength);
@@ -143,6 +150,7 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
     functionTableEntry->name = std::string(nameBuffer.begin(), nameBuffer.end());
 
     // Read parameter types
+    // NOTE: First parameter is return value!
     functionTableEntry->parameterTypes.resize(headerInfo.parameterCount);
     module.read(reinterpret_cast<char *>(functionTableEntry->parameterTypes.data()),
                 headerInfo.parameterCount);

@@ -15,40 +15,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_GENERATOR_H_
-#define VM_BYTECODE_GENERATOR_H_
+#ifndef LANG_AST_COMMON_ATTRIBUTE_H_
+#define LANG_AST_COMMON_ATTRIBUTE_H_
 
-#include <ostream>
+#include <cstdint>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include "vm/data/program_buffer.h"
 
-namespace VM {
-namespace ByteCode {
+namespace AST {
 
 /**
- * Class for storing methods allowing to generate bytecode.
+ * Structure for storing information passed down during generation and
+ * attributation.
  */
-class Generator {
- private:
-  std::ostream out;
-  bool disabled;
-
- public:
-  explicit Generator(const std::ostream &output);
-  void setDisabled(bool disabled);
-
-  // Code generation functions
-  void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
-  void constantPool(const std::vector<uint64_t> &constantPool);
-  void instruction(const Data::Instruction &instruction);
+struct AttribInfo {
+  std::unordered_map<std::string, VM::Data::FunctionTableEntry> functionTable;
+  std::vector<uint64_t> constants;
+  uint64_t codeCounter;
+  uint8_t nextReg;
 };
 
-}  // namespace ByteCode
-}  // namespace VM
+}  // namespace AST
 
-#endif  // VM_BYTECODE_GENERATOR_H_
+#endif  // LANG_AST_COMMON_ATTRIBUTE_H_

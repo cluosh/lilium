@@ -17,7 +17,7 @@
  */
 #include <iostream>
 
-#include "lang/parser/controller.h"
+#include "cc/parser/controller.h"
 #include "vm/interpreter.h"
 
 /**

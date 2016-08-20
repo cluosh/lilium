@@ -68,7 +68,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cc/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 
 # lilium-as
-add_executable(as
+add_executable(lilium-as
         ${AS_SRC_FILES}
         ${BISON_as_parser_OUTPUTS}
         ${FLEX_as_lexer_OUTPUTS})

@@ -15,6 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <memory>
 #include <vector>
 #include <vm/data/program_buffer.h>
 
@@ -36,12 +37,10 @@ void Loader::execute(const std::vector<std::string> &modules,
                      Data::ProgramBuffer *buffer,
                      std::vector<Data::FunctionTableEntry> *funcTable) {
   // Create bytecode loader for each module and read header information
-  std::vector<ByteCode::Loader> loaders;
-  loaders.resize(modules.size());
-  for (const auto &module : modules) {
-    ByteCode::Loader loader(module);
-    loader.readHeaders();
-    loaders.push_back(loader);
+  std::vector<std::unique_ptr<ByteCode::Loader>> loaders(modules.size());
+  for (uint64_t i = 0; i < modules.size(); i++) {
+    loaders[i] = std::make_unique<ByteCode::Loader>(modules[i]);
+    loaders[i]->readHeaders();
   }
 
   // Allocate memory for offsets
@@ -56,9 +55,9 @@ void Loader::execute(const std::vector<std::string> &modules,
     buffer->constantPoolOffset[i] = numConstants;
     buffer->functionTableOffset[i] = numFunctions;
 
-    numInstructions += loaders[i].getNumInstructions();
-    numFunctions += loaders[i].getNumFunctions();
-    numConstants += loaders[i].getNumConstants();
+    numInstructions += loaders[i]->getNumInstructions();
+    numFunctions += loaders[i]->getNumFunctions();
+    numConstants += loaders[i]->getNumConstants();
   }
 
   // Allocate program memory
@@ -71,10 +70,11 @@ void Loader::execute(const std::vector<std::string> &modules,
   uint64_t offsetFunctionTable = 0;
   uint64_t offsetConstantPool = 0;
   for (auto &loader : loaders) {
-    loader.readData(buffer, funcTable, offsetInstruction, offsetFunctionTable, offsetConstantPool);
-    offsetInstruction += loader.getNumInstructions();
-    offsetFunctionTable += loader.getNumFunctions();
-    offsetConstantPool += loader.getNumInstructions();
+    loader->readData(buffer, funcTable, offsetInstruction,
+                     offsetFunctionTable, offsetConstantPool);
+    offsetInstruction += loader->getNumInstructions();
+    offsetFunctionTable += loader->getNumFunctions();
+    offsetConstantPool += loader->getNumInstructions();
   }
 }
 

@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include <unordered_map>
+#include <utility>
 
 #include "vm/data/program_buffer.h"
 #include "vm/pipeline/linker.h"
@@ -50,8 +51,7 @@ void Linker::execute(Data::ProgramBuffer *buffer,
         continue;
 
       // Insert a function definition into the temporary table
-      auto function = functions.insert(std::make_pair(
-          funcTable[i].name, {funcTable[i].address + lower, index}));
+      auto function = functions.insert({funcTable[i].name, {funcTable[i].address + lower, index}});
       if (!function.second)
         throw std::runtime_error("Found duplicate function '" + funcTable[i].name + "'");
       else

@@ -18,6 +18,7 @@
 #ifndef VM_DATA_COMMON_H_
 #define VM_DATA_COMMON_H_
 
+#include <array>
 #include <cstdint>
 #include <vector>
 
@@ -30,14 +31,14 @@ namespace Data {
  * @param buffer Buffer to be parsed as 64-bit integer
  */
 constexpr uint64_t parse_u64(const std::vector<uint8_t> &buffer) {
-  return buffer[0]
-      & (buffer[1] << 8)
-      & (buffer[2] << 16)
-      & (buffer[3] << 24)
-      & (buffer[4] << 32)
-      & (buffer[5] << 40)
-      & (buffer[6] << 48)
-      & (buffer[7] << 56);
+  return static_cast<uint64_t>(buffer[0])
+      & (static_cast<uint64_t>(buffer[1]) << 8)
+      & (static_cast<uint64_t>(buffer[2]) << 16)
+      & (static_cast<uint64_t>(buffer[3]) << 24)
+      & (static_cast<uint64_t>(buffer[4]) << 32)
+      & (static_cast<uint64_t>(buffer[5]) << 40)
+      & (static_cast<uint64_t>(buffer[6]) << 48)
+      & (static_cast<uint64_t>(buffer[7]) << 56);
 }
 
 /**
@@ -46,10 +47,10 @@ constexpr uint64_t parse_u64(const std::vector<uint8_t> &buffer) {
  * @param buffer Buffer to be parsed as 32-bit integer
  */
 constexpr uint32_t parse_u32(const std::vector<uint8_t> &buffer) {
-  return buffer[0]
-      & (buffer[1] << 8)
-      & (buffer[2] << 16)
-      & (buffer[3] << 24);
+  return static_cast<uint32_t>(buffer[0])
+      & (static_cast<uint32_t>(buffer[1]) << 8)
+      & (static_cast<uint32_t>(buffer[2]) << 16)
+      & (static_cast<uint32_t>(buffer[3]) << 24);
 }
 
 /**
@@ -58,8 +59,8 @@ constexpr uint32_t parse_u32(const std::vector<uint8_t> &buffer) {
  * @param buffer Buffer to be parsed as 16-bit integer
  */
 constexpr uint16_t parse_u16(const std::vector<uint8_t> &buffer) {
-  return buffer[0]
-      & (buffer[1] << 8);
+  return static_cast<uint16_t>(buffer[0])
+      & (static_cast<uint16_t>(buffer[1]) << 8);
 }
 
 /**
@@ -67,7 +68,7 @@ constexpr uint16_t parse_u16(const std::vector<uint8_t> &buffer) {
  *
  * @param number Number to be converted into a buffer
  */
-constexpr std::vector<uint8_t> buffer_u64(uint64_t number) {
+constexpr const std::array<uint8_t, 8> buffer_u64(uint64_t number) {
   return {static_cast<uint8_t>(number),
           static_cast<uint8_t>(number >> 8),
           static_cast<uint8_t>(number >> 16),
@@ -83,7 +84,7 @@ constexpr std::vector<uint8_t> buffer_u64(uint64_t number) {
  *
  * @param number Number to be converted into a buffer
  */
-constexpr std::vector<uint8_t> buffer_u32(uint32_t number) {
+constexpr const std::array<uint8_t, 4> buffer_u32(uint32_t number) {
   return {static_cast<uint8_t>(number),
           static_cast<uint8_t>(number >> 8),
           static_cast<uint8_t>(number >> 16),
@@ -95,7 +96,7 @@ constexpr std::vector<uint8_t> buffer_u32(uint32_t number) {
  *
  * @param number Number to be converted into a buffer
  */
-constexpr std::vector<uint8_t> buffer_u16(uint16_t number) {
+constexpr const std::array<uint8_t, 2> buffer_u16(uint16_t number) {
   return {static_cast<uint8_t>(number),
           static_cast<uint8_t>(number >> 8)};
 }

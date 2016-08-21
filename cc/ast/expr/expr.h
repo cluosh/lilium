@@ -21,7 +21,6 @@
 #include <string>
 
 #include "cc/ast/expr/global_expr.h"
-#include "vm/bytecode/generator.h"
 #include "vm/types/types.h"
 
 namespace AST {
@@ -41,8 +40,7 @@ class Expr : public GlobalExpr {
   virtual ~Expr() = default;
 
   virtual void attribute(AttribInfo *attrib_info) = 0;
-  virtual void generate_code(VM::ByteCode::Generator *generator,
-                             AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::ByteCode::Generator *generator, AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
 
   virtual void set_last(bool last);

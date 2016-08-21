@@ -23,7 +23,7 @@ namespace VM {
 /**
  * List of opcodes.
  */
-enum OpCode {
+enum OpCode : uint8_t {
   OP_NOP,
   OP_CALLI,
   OP_CALLE,

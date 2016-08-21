@@ -23,7 +23,7 @@ namespace AST {
 /**
  * Enumeration describing all binary operators.
  */
-enum BinaryOperator {
+enum BinaryOperator : uint8_t {
   BINARY_ADD,
   BINARY_SUB,
   BINARY_MUL,
@@ -42,7 +42,7 @@ enum BinaryOperator {
 /**
  * Enumeration describing all unary operators.
  */
-enum UnaryOperator {
+enum UnaryOperator : uint8_t {
   UNARY_NOT,
   UNARY_NEG,
   UNARY_COUNT

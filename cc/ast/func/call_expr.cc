@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "cc/ast/func/call_expr.h"
+#include "vm/data/common.h"
 #include "vm/opcodes.h"
 
 namespace AST {
@@ -50,13 +51,13 @@ void CallExpr::attribute(AttribInfo *attrib_info) {
   uint8_t param_reg = 200;
 
   // Loop over list of expressions
-  result_reg = attrib_info->next_reg;
+  resultReg = attrib_info->nextReg;
   for (Expr *it = expr_list; it != nullptr; it = it->next) {
-    attrib_info->next_reg = result_reg + num_param;
+    attrib_info->nextReg = resultReg + num_param;
     it->attribute(attrib_info);
-    it->result_reg = param_reg++;
+    it->resultReg = param_reg++;
   }
-  attrib_info->next_reg = static_cast<uint8_t>(result_reg + 1);
+  attrib_info->nextReg = static_cast<uint8_t>(resultReg + 1);
 }
 
 /**
@@ -76,16 +77,26 @@ void CallExpr::set_symbols(SymbolTables *symbol_tables) {
  * @param generator The bytecode generator
  * @param attrib_info Info from attribution
  */
-void CallExpr::generate_code(VM::Generator *generator,
+void CallExpr::generate_code(VM::ByteCode::Generator *generator,
                              AttribInfo *attrib_info) {
   // Fill the expressions with parameter registers
   uint8_t param_reg = 200;
 
+  // Make sure function is defined
+  auto functionIndex = attrib_info->functionAddress.find(name);
+  if (functionIndex == attrib_info->functionAddress.end()) {
+    // TODO(cluosh): Print error message
+    return;
+  }
+
   // Get information about the function to be called
-  uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
-  uint64_t addr = attrib_info->func_addr.get_addr(local_addr);
-  VM::Instruction call;
-  call.all = local_addr << 8;
+  uint32_t local_addr = functionIndex->second;
+  uint64_t addr = attrib_info->functionTable[local_addr].address;
+
+  // Assign local index to the call
+  VM::Data::Instruction call;
+  const auto &localIndex = VM::Data::buffer_u32(local_addr);
+  std::copy(localIndex.begin(), localIndex.begin() + 3, std::begin(call.op));
 
   // Check if this call is a tail call
   if (is_last()) {
@@ -102,13 +113,13 @@ void CallExpr::generate_code(VM::Generator *generator,
   }
 
   // Move parameters to safe registers
-  for (uint8_t i = 0; i < num_param; i++) {
+  /*for (uint8_t i = 0; i < num_param; i++) {
     if (symbol_by_reg(param_reg + i) == nullptr)
       break;
-    VM::Instruction bc;
+    VM::Data::Instruction bc;
     bc.op[0] = VM::OP_MOV;
     bc.op[1] =
-  }
+  }*/
 
   // Generate parameter expressions
   for (Expr *it = expr_list; it != nullptr; it = it->next)
@@ -116,7 +127,7 @@ void CallExpr::generate_code(VM::Generator *generator,
 
   // Generate call
   generator->instruction(call);
-  attrib_info->code_counter += 1;
+  attrib_info->codeCounter += 1;
 }
 
 }  // namespace AST

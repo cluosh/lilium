@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "cc/ast/expr/const.h"
+#include "vm/data/common.h"
 #include "vm/opcodes.h"
 
 namespace AST {
@@ -39,8 +40,8 @@ Const::Const(std::int64_t value, VM::Type type, Expr *next)
  */
 void Const::attribute(AttribInfo *attrib_info) {
   // Assign register
-  result_reg = attrib_info->next_reg;
-  attrib_info->next_reg++;
+  resultReg = attrib_info->nextReg;
+  attrib_info->nextReg++;
 
   // Store constant in constant pool
   cp_index = static_cast<uint16_t>(attrib_info->constants.size());
@@ -53,15 +54,15 @@ void Const::attribute(AttribInfo *attrib_info) {
  * @param generator The bytecode generator helper
  * @param attrib_info Attribution information from previous passes
  */
-void Const::generate_code(VM::Generator *generator, AttribInfo *attrib_info) {
+void Const::generate_code(VM::ByteCode::Generator *generator, AttribInfo *attrib_info) {
   // Load constant from pool into result register
-  VM::Instruction bc;
-  bc.op[0] = VM::OP_LOADI;
-  bc.op[1] = result_reg;
-  bc.op[2] = static_cast<uint8_t>(cp_index & 0xFF);
-  bc.op[3] = static_cast<uint8_t>(cp_index >> 8);
+  const auto &constantIndex = VM::Data::buffer_u16(cp_index);
+  VM::Data::Instruction bc;
+  bc.opcode = VM::OP_LOADI;
+  bc.op[0] = resultReg;
+  std::copy(constantIndex.begin(), constantIndex.end(), std::begin(bc.op) + 1);
   generator->instruction(bc);
-  attrib_info->code_counter += 1;
+  attrib_info->codeCounter += 1;
 }
 
 }  // namespace AST

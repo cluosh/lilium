@@ -36,8 +36,7 @@ class UnaryExpr : public Expr {
   ~UnaryExpr();
 
   void attribute(AttribInfo *attrib_info) override { }
-  void generate_code(VM::Generator *generator,
-                     AttribInfo *attrib_info) override { }
+  void generate_code(VM::ByteCode::Generator *generator, AttribInfo *attrib_info) override { }
   void set_symbols(SymbolTables *symbol_tables) override;
 };
 

@@ -37,8 +37,7 @@ class Const : public Expr {
   Const(std::int64_t value, VM::Type type, Expr *next);
 
   void attribute(AttribInfo *attrib_info) override;
-  void generate_code(VM::Generator *generator,
-                     AttribInfo *attrib_info) override;
+  void generate_code(VM::ByteCode::Generator *generator, AttribInfo *attrib_info) override;
 };
 
 }  // namespace AST

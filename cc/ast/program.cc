@@ -72,8 +72,8 @@ void Program::generate_code(VM::ByteCode::Generator *generator) {
       static_cast<uint64_t>(attrib_info.codeCounter));
 
   // Generate function table and constant pool
-  generator->functionTable({ }/* &attrib_info.func_addr */);
   generator->constantPool(attrib_info.constants);
+  generator->functionTable(attrib_info.functionTable);
 
   // Generate code for all expressions
   generator->setDisabled(false);

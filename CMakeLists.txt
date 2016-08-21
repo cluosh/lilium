@@ -8,6 +8,8 @@ set(AS_SRC_FILES
         as/parser/grammar/scanner.l
         as/codegen/generator.h)
 
+set(OBJDUMP_SRC_FILES objdump/main.cc)
+
 set(VM_SRC_FILES
         vm/opcodes.h
         vm/bytecode/loader.cc
@@ -21,7 +23,7 @@ set(VM_SRC_FILES
         vm/pipeline/interpreter.cc
         vm/data/program_buffer.h
         vm/bytecode/common.h
-        vm/data/common.h)
+        vm/data/common.h vm/main.cc)
 
 set(CC_SRC_FILES
         cc/ast/expr/expr.cc
@@ -54,11 +56,11 @@ set(CC_SRC_FILES
         vm/bytecode/generator.h
         vm/bytecode/generator.cc
         cc/ast/expr/cond_expr.h
-        cc/ast/expr/cond_expr.cc)
+        cc/ast/expr/cond_expr.cc cc/main.cc)
 
 # BISON/FLEX Targets
 find_package(BISON 3.0 REQUIRED)
-find_package(FLEX 2.6.1 REQUIRED)
+find_package(FLEX 2.5.37 REQUIRED)
 bison_target(as_parser as/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/as/parser/parser.tab.cc)
 flex_target(as_lexer as/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/as/parser/lex.yy.cc)
 bison_target(cc_parser cc/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/cc/parser/parser.tab.cc)
@@ -78,6 +80,10 @@ add_executable(lilium-cc
         ${CC_SRC_FILES}
         ${BISON_cc_parser_OUTPUTS}
         ${FLEX_cc_lexer_OUTPUTS})
+
+# lilium-objdump
+add_executable(lilium-objdump
+        ${OBJDUMP_SRC_FILES})
 
 # lilium-vm
 add_executable(lilium-vm

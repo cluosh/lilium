@@ -51,14 +51,14 @@ void Generator::moduleHeader(uint16_t numConstants,
   out.write("\x4C\x49", 2);
 
   // Write number of constants
-  out.write(reinterpret_cast<char *>(Data::buffer_u16(numConstants).data()), 2);
+  out.write(reinterpret_cast<const char *>(Data::buffer_u16(numConstants).data()), 2);
 
   // Write number of function table entries
   // Only the lower 24 bit are being used, use 32 bit anyways
-  out.write(reinterpret_cast<char *>(Data::buffer_u32(numFunctions).data()), 4);
+  out.write(reinterpret_cast<const char *>(Data::buffer_u32(numFunctions).data()), 4);
 
   // Write number of total instructions
-  out.write(reinterpret_cast<char *>(Data::buffer_u64(numInstructions).data()), 8);
+  out.write(reinterpret_cast<const char *>(Data::buffer_u64(numInstructions).data()), 8);
 }
 
 /**
@@ -80,11 +80,11 @@ void Generator::functionTable(const std::vector<Data::FunctionTableEntry> &funct
     out.write(reinterpret_cast<char *>(&parameterCount), 1);
 
     // Write function address and name
-    out.write(reinterpret_cast<char *>(Data::buffer_u64(function.address).data()), 8);
+    out.write(reinterpret_cast<const char *>(Data::buffer_u64(function.address).data()), 8);
     out.write(function.name.c_str(), nameLength);
 
     // Write function parameter types
-    out.write(reinterpret_cast<char *>(function.parameterTypes.data()), parameterCount);
+    out.write(reinterpret_cast<const char *>(function.parameterTypes.data()), parameterCount);
   }
 }
 
@@ -96,7 +96,7 @@ void Generator::functionTable(const std::vector<Data::FunctionTableEntry> &funct
 void Generator::constantPool(const std::vector<uint64_t> &constantPool) {
   // Write constants to module file
   for (const auto &constant : constantPool)
-    out.write(reinterpret_cast<char *>(Data::buffer_u64(constant).data()), 8);
+    out.write(reinterpret_cast<const char *>(Data::buffer_u64(constant).data()), 8);
 }
 
 /**
@@ -107,7 +107,7 @@ void Generator::constantPool(const std::vector<uint64_t> &constantPool) {
 void Generator::instruction(const Data::Instruction &instruction) {
   if (disabled)
     return;
-  out.write(reinterpret_cast<char *>(&instruction), 4);
+  out.write(reinterpret_cast<const char *>(&instruction), 4);
 }
 
 }  // namespace ByteCode

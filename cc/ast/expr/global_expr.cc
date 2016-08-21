@@ -113,7 +113,7 @@ std::string GlobalExpr::get_name() {
  * @return Register ID
  */
 uint8_t GlobalExpr::get_result_reg() {
-  return result_reg;
+  return resultReg;
 }
 
 }  // namespace AST

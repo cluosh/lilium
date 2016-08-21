@@ -74,8 +74,8 @@ VM::OpCode BinaryExpr::pick_typed() {
  */
 void BinaryExpr::attribute(AttribInfo *attrib_info) {
   // Set result register and increase register counter
-  result_reg = attrib_info->next_reg;
-  attrib_info->next_reg += 1;
+  resultReg = attrib_info->nextReg;
+  attrib_info->nextReg += 1;
 
   // Attribute the operands
   fst->attribute(attrib_info);
@@ -88,20 +88,20 @@ void BinaryExpr::attribute(AttribInfo *attrib_info) {
  * @param generator Code generator helper class
  * @param attrib_info Attribute information needed for code generation
  */
-void BinaryExpr::generate_code(VM::Generator *generator,
+void BinaryExpr::generate_code(VM::ByteCode::Generator *generator,
                                AttribInfo *attrib_info) {
   // Generate bytecode of child nodes first
   fst->generate_code(generator, attrib_info);
   snd->generate_code(generator, attrib_info);
 
   // Generate the bytecode instruction
-  VM::Instruction bc;
-  bc.op[0] = static_cast<uint8_t>(pick_typed());
-  bc.op[1] = fst->result_reg;
-  bc.op[2] = snd->result_reg;
-  bc.op[3] = result_reg;
+  VM::Data::Instruction bc;
+  bc.opcode = static_cast<uint8_t>(pick_typed());
+  bc.op[0] = fst->resultReg;
+  bc.op[1] = snd->resultReg;
+  bc.op[2] = resultReg;
   generator->instruction(bc);
-  attrib_info->code_counter++;
+  attrib_info->codeCounter++;
 }
 
 /**

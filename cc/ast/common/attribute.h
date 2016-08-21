@@ -32,7 +32,8 @@ namespace AST {
  * attributation.
  */
 struct AttribInfo {
-  std::unordered_map<std::string, VM::Data::FunctionTableEntry> functionTable;
+  std::unordered_map<std::string, uint32_t> functionAddress;
+  std::vector<VM::Data::FunctionTableEntry> functionTable;
   std::vector<uint64_t> constants;
   uint64_t codeCounter;
   uint8_t nextReg;

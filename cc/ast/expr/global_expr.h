@@ -23,6 +23,7 @@
 
 #include "cc/ast/common/attribute.h"
 #include "cc/ast/common/symbol.h"
+#include "vm/bytecode/generator.h"
 
 namespace AST {
 
@@ -35,7 +36,7 @@ class GlobalExpr {
   SymbolTables *symbol_tables = nullptr;
 
  public:
-  uint8_t result_reg;
+  uint8_t resultReg;
 
   virtual ~GlobalExpr() = default;
 
@@ -44,8 +45,7 @@ class GlobalExpr {
 
   // Attribution of the expressions
   virtual void attribute(AttribInfo *attrib_info) = 0;
-  virtual void generate_code(VM::Generator *generator,
-                             AttribInfo *attrib_info) = 0;
+  virtual void generate_code(VM::ByteCode::Generator *generator, AttribInfo *attrib_info) = 0;
   virtual void set_symbols(SymbolTables *symbol_tables);
   void remove_symbols();
   uint8_t get_result_reg();

@@ -25,7 +25,8 @@
 namespace AST {
 
 /**
- * @brief Initialize a function definition
+ * Initialize a function definition.
+ *
  * @param name Function name
  * @param var_list List of function parameters
  * @param expr Function body/root expression
@@ -40,7 +41,7 @@ FuncDef::FuncDef(std::string name, Var *var_list, Expr *expr) {
 }
 
 /**
- * @brief Free child nodes
+ * Free child nodes.
  */
 FuncDef::~FuncDef() {
   delete var_list;
@@ -61,19 +62,16 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
     var_list->register_var(200);
 
   // Check semantics in wrapped expression and set result register
-  result_reg = attrib_info->next_reg;
+  resultReg = attrib_info->nextReg;
   expr->attribute(attrib_info);
 
   // Store function name if it hasn't been stored yet
-  if (!attrib_info->func_addr.func_declared(name)) {
-    attrib_info->func_addr.add_func(name, 0, expr->get_type());
+  const auto &functionAddress = attrib_info->functionAddress.find(name);
+  if (functionAddress == attrib_info->functionAddress.end()) {
+    attrib_info->functionAddress.insert({name, attrib_info->functionTable.size()});
+    attrib_info->functionTable.push_back({0, name, { /* Parameter data */ }});
   } else {
-    uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
-    if (attrib_info->func_addr.get_type(local_addr) != expr->get_type()) {
-      std::cerr << "Two different types for function \"" << name << "\" "
-          << "have been declared, abort.\n";
-      std::exit(EXIT_FAILURE);
-    }
+    // TODO(cluosh): Check parameter types
   }
 
   pop_frame();
@@ -85,9 +83,10 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
  * @param generator Code generator helper class
  * @param attrib_info Attribute information needed for code generation
  */
-void FuncDef::generate_code(VM::Generator *generator,
+void FuncDef::generate_code(VM::ByteCode::Generator *generator,
                             AttribInfo *attrib_info) {
-  if (!attrib_info->func_addr.func_declared(name)) {
+  auto functionIndex = attrib_info->functionAddress.find(name);
+  if (functionIndex == attrib_info->functionAddress.end()) {
     std::cerr << "Could not find function \""
         << name
         << "\" in function name table.\n";
@@ -95,16 +94,15 @@ void FuncDef::generate_code(VM::Generator *generator,
   }
 
   // Store code address in function
-  uint32_t local_addr = attrib_info->func_addr.get_local_addr(name);
-  attrib_info->func_addr.set_addr(local_addr, attrib_info->code_counter);
+  uint32_t local_addr = functionIndex->second;
+  attrib_info->functionTable[local_addr].address = attrib_info->codeCounter;
   expr->generate_code(generator, attrib_info);
 
   // Add return instruction
-  VM::Instruction bc;
-  bc.all = 0;
+  VM::Data::Instruction bc = {};
   bc.op[0] = VM::OP_RETURN;
   generator->instruction(bc);
-  attrib_info->code_counter += 1;
+  attrib_info->codeCounter += 1;
 }
 
 /**

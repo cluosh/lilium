@@ -20,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace VM {
 namespace Data {

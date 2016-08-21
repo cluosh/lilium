@@ -62,7 +62,7 @@ void Var::attribute(AttribInfo *attrib_info) {
     std::exit(EXIT_FAILURE);
   } else {
     // Set the correct register for this variable
-    result_reg = sym->reg;
+    resultReg = sym->reg;
   }
 }
 
@@ -97,7 +97,7 @@ void Var::register_var(uint8_t reg) {
   // Create symbol and add it to the table
   Symbol sym = {reg, get_type()};
   add_symbol(name, sym);
-  result_reg = reg;
+  resultReg = reg;
 
   // TODO(cluosh): Variables on stack if there are no registers left
 

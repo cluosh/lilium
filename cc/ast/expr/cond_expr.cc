@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "cc/ast/expr/cond_expr.h"
+#include "vm/data/common.h"
 #include "vm/opcodes.h"
 
 namespace AST {
@@ -42,7 +43,7 @@ CondExpr::CondExpr(Expr *condition, Expr *fst, Expr *snd)
  */
 void CondExpr::attribute(AttribInfo *attrib_info) {
   // Set result register
-  result_reg = attrib_info->next_reg;
+  resultReg = attrib_info->nextReg;
 
   // Reserve two constants in the constant pool for conditional jump
   fst_cp_index = static_cast<uint16_t>(attrib_info->constants.size());
@@ -52,9 +53,9 @@ void CondExpr::attribute(AttribInfo *attrib_info) {
 
   // Attribute condition and choices
   condition->attribute(attrib_info);
-  attrib_info->next_reg = result_reg;
+  attrib_info->nextReg = resultReg;
   fst->attribute(attrib_info);
-  attrib_info->next_reg = result_reg;
+  attrib_info->nextReg = resultReg;
   snd->attribute(attrib_info);
 }
 
@@ -64,31 +65,31 @@ void CondExpr::attribute(AttribInfo *attrib_info) {
  * @param generator The bytecode generator
  * @param attrib_info Attribution information
  */
-void CondExpr::generate_code(VM::Generator *generator,
+void CondExpr::generate_code(VM::ByteCode::Generator *generator,
                              AttribInfo *attrib_info) {
   // Generate code for the condition check
   condition->generate_code(generator, attrib_info);
 
   // Generate code for conditional jump
-  VM::Instruction bc;
-  bc.op[0] = VM::OP_JMPC;
-  bc.op[1] = condition->result_reg;
-  bc.op[2] = static_cast<uint8_t>(snd_cp_index & 0xFF);
-  bc.op[3] = static_cast<uint8_t>(snd_cp_index >> 8);
+  auto const &secondIndex = VM::Data::buffer_u16(snd_cp_index);
+  VM::Data::Instruction bc;
+  bc.opcode = VM::OP_JMPC;
+  bc.op[0] = condition->resultReg;
+  std::copy(secondIndex.begin(), secondIndex.end(), std::begin(bc.op) + 2);
   generator->instruction(bc);
-  attrib_info->code_counter += 1;
+  attrib_info->codeCounter += 1;
 
   // Generate code for first and second expression
+  auto const &firstIndex = VM::Data::buffer_u16(fst_cp_index);
   fst->generate_code(generator, attrib_info);
-  bc.op[0] = VM::OP_JMP;
-  bc.op[1] = 0;
-  bc.op[2] = static_cast<uint8_t>(fst_cp_index & 0xFF);
-  bc.op[3] = static_cast<uint8_t>(fst_cp_index >> 8);
+  bc.opcode = VM::OP_JMP;
+  bc.op[0] = 0;
+  std::copy(secondIndex.begin(), secondIndex.end(), std::begin(bc.op) + 2);
   generator->instruction(bc);
-  attrib_info->code_counter += 1;
-  attrib_info->constants[snd_cp_index] = attrib_info->code_counter - 1;
+  attrib_info->codeCounter += 1;
+  attrib_info->constants[snd_cp_index] = attrib_info->codeCounter - 1;
   snd->generate_code(generator, attrib_info);
-  attrib_info->constants[fst_cp_index] = attrib_info->code_counter - 1;
+  attrib_info->constants[fst_cp_index] = attrib_info->codeCounter - 1;
 }
 
 /**

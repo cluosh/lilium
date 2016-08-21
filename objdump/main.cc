@@ -18,7 +18,7 @@
 #include <iostream>
 #include <vector>
 
-#include "vm/data/program_buffer.h"
+#include "objdump/pipeline/dump.h"
 #include "vm/pipeline/loader.h"
 
 /**
@@ -32,28 +32,27 @@ int main(int argc, char **argv) {
   // Make sure there is at least one parameter (file to be dumped)
   if (argc == 0) {
     return 1;
-  } else if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " file [file ...] \n";
+  } else if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " file \n";
     return 1;
   }
 
   // Program buffer and pipeline stages
   VM::Data::ProgramBuffer programBuffer;
   VM::Pipeline::Loader loader;
+  OBJDUMP::Pipeline::Dump dump(std::cout);
 
   // PRE-LOADING STAGE
   // Store module files to be executed in vector
   // and create linker function table storage
   std::vector<VM::Data::FunctionTableEntry> linkerFunctionTable;
-  std::vector<std::string> modules(static_cast<size_t>(argc - 1));
-  for (int i = 0; i < argc; i++)
-    modules[i] = std::string(argv[i]);
+  const std::vector<std::string> modules = {std::string(argv[1]) + ".mod"};
 
   // LOADING STAGE
   // Load all specified bytecode modules
   loader.execute(modules, &programBuffer, &linkerFunctionTable);
-  modules.clear();
 
   // DUMPING STAGE
+  dump.execute(std::string(argv[1]), programBuffer, linkerFunctionTable);
   return 0;
 }

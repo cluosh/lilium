@@ -43,7 +43,7 @@ class Generator {
 
   // Code generation functions
   void moduleHeader(uint16_t numConstants, uint32_t numFunctions, uint64_t numInstructions);
-  void functionTable(const std::vector<Data::FunctionTableEntry> &functionTable);
+  void functionTable(std::vector<Data::FunctionTableEntry> functionTable);
   void constantPool(const std::vector<uint64_t> &constantPool);
   void instruction(const Data::Instruction &instruction);
 };

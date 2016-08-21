@@ -15,24 +15,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_BYTECODE_COMMON_H_
-#define VM_BYTECODE_COMMON_H_
-
-#include <cstdint>
+#ifndef VM_OPCODES_H_
+#define VM_OPCODES_H_
 
 namespace VM {
-namespace ByteCode {
 
 /**
- * One 64-bit bytecode instruction, consisting of one opcode and
- * three arguments.
+ * List of opcodes with a short description.
  */
-struct Instruction {
-  uint8_t opcode;
-  uint8_t arg[3];
+enum OpCode : uint8_t {
+  OP_NOP,
+  OP_CALLI,
+  OP_CALLE,
+  OP_LCALLI,
+  OP_LCALLE,
+  OP_RETURN,
+  OP_ADDI,
+  OP_SUBI,
+  OP_MULI,
+  OP_DIVI,
+  OP_GT,
+  OP_LOADI,
+  OP_JMPC,
+  OP_JMP,
+  OP_MOV,
+  OP_HALT
 };
 
-}  // namespace ByteCode
 }  // namespace VM
 
-#endif  // VM_BYTECODE_COMMON_H_
+#endif  // VM_OPCODES_H_

@@ -22,7 +22,7 @@
 
 #include "cc/ast/expr/expr.h"
 #include "cc/ast/common/operators.h"
-#include "vm/opcodes.h"
+#include "vm/constants/opcodes.h"
 
 namespace AST {
 

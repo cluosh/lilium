@@ -61,7 +61,7 @@ void Var::attribute(AttribInfo *attrib_info) {
         << "different types\n";
     std::exit(EXIT_FAILURE);
   } else {
-    // Set the correct register for this variable
+    // Set the correct register and correct type for this variable
     resultReg = sym->reg;
   }
 }

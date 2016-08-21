@@ -18,12 +18,15 @@
 #ifndef VM_TYPES_TYPES_H_
 #define VM_TYPES_TYPES_H_
 
+#include <array>
+#include <string>
+
 namespace VM {
 
 /**
  * Enumeration describing all possible types.
  */
-enum Type {
+enum Type : uint8_t {
   TYPE_INT,
   TYPE_SINGLEP,
   TYPE_DOUBLEP,
@@ -31,6 +34,19 @@ enum Type {
   TYPE_COUNT
 };
 
+namespace Constants {
+
+/**
+ * Constant expression containing lookup table for types.
+ */
+constexpr std::array<const char *, TYPE_COUNT> typeTable {
+    "Integer",
+    "Float, single precision",
+    "Float, double precision",
+    "String"
+};
+
+}  // namespace Constants
 }  // namespace VM
 
 #endif  // VM_TYPES_TYPES_H_

@@ -15,33 +15,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_OPCODES_H_
-#define VM_OPCODES_H_
+#ifndef OBJDUMP_PIPELINE_DUMP_H_
+#define OBJDUMP_PIPELINE_DUMP_H_
 
+#include <ostream>
+#include <string>
+
+#include "vm/data/program_buffer.h"
+
+// Forward declarations
 namespace VM {
-
-/**
- * List of opcodes.
- */
-enum OpCode : uint8_t {
-  OP_NOP,
-  OP_CALLI,
-  OP_CALLE,
-  OP_LCALLI,
-  OP_LCALLE,
-  OP_RETURN,
-  OP_ADDI,
-  OP_SUBI,
-  OP_MULI,
-  OP_DIVI,
-  OP_GT,
-  OP_LOADI,
-  OP_JMPC,
-  OP_JMP,
-  OP_MOV,
-  OP_HALT
-};
-
+namespace Data {
+struct ProgramBuffer;
+}  // namespace Data
 }  // namespace VM
 
-#endif  // VM_OPCODES_H_
+namespace OBJDUMP {
+namespace Pipeline {
+
+/**
+ * A dumping stage of the pipeline.
+ */
+class Dump {
+ private:
+  std::ostream out;
+
+ public:
+  Dump(const std::ostream &output);
+  void execute(const std::string &module,
+               const VM::Data::ProgramBuffer &programBuffer,
+               const std::vector<VM::Data::FunctionTableEntry> &functions);
+};
+
+}  // namespace Pipeline
+}  // namespace OBJDUMP
+
+#endif  // OBJDUMP_PIPELINE_DUMP_H_

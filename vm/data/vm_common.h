@@ -15,8 +15,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef VM_DATA_COMMON_H_
-#define VM_DATA_COMMON_H_
+#ifndef VM_DATA_VM_COMMON_H_
+#define VM_DATA_VM_COMMON_H_
 
 #include <array>
 #include <cstdint>
@@ -30,15 +30,15 @@ namespace Data {
  *
  * @param buffer Buffer to be parsed as 64-bit integer
  */
-constexpr uint64_t parse_u64(const std::vector<uint8_t> &buffer) {
+constexpr uint64_t parse_u64(const std::array<uint8_t, 8> &buffer) {
   return static_cast<uint64_t>(buffer[0])
-      & (static_cast<uint64_t>(buffer[1]) << 8)
-      & (static_cast<uint64_t>(buffer[2]) << 16)
-      & (static_cast<uint64_t>(buffer[3]) << 24)
-      & (static_cast<uint64_t>(buffer[4]) << 32)
-      & (static_cast<uint64_t>(buffer[5]) << 40)
-      & (static_cast<uint64_t>(buffer[6]) << 48)
-      & (static_cast<uint64_t>(buffer[7]) << 56);
+      | (static_cast<uint64_t>(buffer[1]) << 8)
+      | (static_cast<uint64_t>(buffer[2]) << 16)
+      | (static_cast<uint64_t>(buffer[3]) << 24)
+      | (static_cast<uint64_t>(buffer[4]) << 32)
+      | (static_cast<uint64_t>(buffer[5]) << 40)
+      | (static_cast<uint64_t>(buffer[6]) << 48)
+      | (static_cast<uint64_t>(buffer[7]) << 56);
 }
 
 /**
@@ -46,11 +46,11 @@ constexpr uint64_t parse_u64(const std::vector<uint8_t> &buffer) {
  *
  * @param buffer Buffer to be parsed as 32-bit integer
  */
-constexpr uint32_t parse_u32(const std::vector<uint8_t> &buffer) {
+constexpr uint32_t parse_u32(const std::array<uint8_t, 4> &buffer) {
   return static_cast<uint32_t>(buffer[0])
-      & (static_cast<uint32_t>(buffer[1]) << 8)
-      & (static_cast<uint32_t>(buffer[2]) << 16)
-      & (static_cast<uint32_t>(buffer[3]) << 24);
+      | (static_cast<uint32_t>(buffer[1]) << 8)
+      | (static_cast<uint32_t>(buffer[2]) << 16)
+      | (static_cast<uint32_t>(buffer[3]) << 24);
 }
 
 /**
@@ -58,9 +58,9 @@ constexpr uint32_t parse_u32(const std::vector<uint8_t> &buffer) {
  *
  * @param buffer Buffer to be parsed as 16-bit integer
  */
-constexpr uint16_t parse_u16(const std::vector<uint8_t> &buffer) {
+constexpr uint16_t parse_u16(const std::array<uint8_t, 2> &buffer) {
   return static_cast<uint16_t>(buffer[0])
-      & (static_cast<uint16_t>(buffer[1]) << 8);
+      | (static_cast<uint16_t>(buffer[1]) << 8);
 }
 
 /**
@@ -104,4 +104,4 @@ constexpr const std::array<uint8_t, 2> buffer_u16(uint16_t number) {
 }  // namespace Data
 }  // namespace VM
 
-#endif  // VM_DATA_COMMON_H_
+#endif  // VM_DATA_VM_COMMON_H_

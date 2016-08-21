@@ -30,9 +30,9 @@ namespace AST {
 class Var : public Expr {
  private:
   std::string name;
-  Var *next = nullptr;
 
  public:
+  Var *next = nullptr;
   Var(std::string name, Var *next, VM::Type type);
   ~Var();
 

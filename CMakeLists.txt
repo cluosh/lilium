@@ -8,13 +8,13 @@ set(AS_SRC_FILES
         as/parser/grammar/scanner.l
         as/codegen/generator.h)
 
-set(OBJDUMP_SRC_FILES objdump/main.cc)
-
-set(VM_SRC_FILES
-        vm/opcodes.h
+set(LIB_SRC_FILES
+        vm/constants/opcodes.h
         vm/bytecode/loader.cc
         vm/bytecode/loader.h
-        vm/types/types.h
+        vm/bytecode/generator.h
+        vm/bytecode/generator.cc
+        vm/constants/types.h
         vm/pipeline/loader.h
         vm/pipeline/linker.h
         vm/pipeline/interpreter.h
@@ -22,10 +22,7 @@ set(VM_SRC_FILES
         vm/pipeline/linker.cc
         vm/pipeline/interpreter.cc
         vm/data/program_buffer.h
-        vm/bytecode/common.h
-        vm/data/common.h vm/main.cc)
-
-set(CC_SRC_FILES
+        vm/data/vm_common.h
         cc/ast/expr/expr.cc
         cc/ast/expr/expr.h
         cc/ast/func/func_def.cc
@@ -53,10 +50,30 @@ set(CC_SRC_FILES
         cc/ast/common/attribute.h
         cc/ast/expr/const.h
         cc/ast/expr/const.cc
-        vm/bytecode/generator.h
-        vm/bytecode/generator.cc
         cc/ast/expr/cond_expr.h
-        cc/ast/expr/cond_expr.cc cc/main.cc)
+        cc/ast/expr/cond_expr.cc
+        objdump/pipeline/dump.h
+        objdump/pipeline/dump.cc)
+
+set(OBJDUMP_SRC_FILES objdump/main.cc)
+
+set(VM_SRC_FILES
+        vm/constants/opcodes.h
+        vm/bytecode/loader.cc
+        vm/bytecode/loader.h
+        vm/constants/types.h
+        vm/pipeline/loader.h
+        vm/pipeline/linker.h
+        vm/pipeline/interpreter.h
+        vm/pipeline/loader.cc
+        vm/pipeline/linker.cc
+        vm/pipeline/interpreter.cc
+        vm/data/program_buffer.h
+        vm/data/vm_common.h
+        vm/main.cc)
+
+set(CC_SRC_FILES
+        cc/main.cc)
 
 # BISON/FLEX Targets
 find_package(BISON 3.0 REQUIRED)
@@ -69,22 +86,29 @@ add_flex_bison_dependency(cc_lexer cc_parser)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cc/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 
-# lilium-as
-add_executable(lilium-as
-        ${AS_SRC_FILES}
-        ${BISON_as_parser_OUTPUTS}
-        ${FLEX_as_lexer_OUTPUTS})
-
-# lilium-cc
-add_executable(lilium-cc
-        ${CC_SRC_FILES}
+# liblilium
+add_library(lilium
+        ${LIB_SRC_FILES}
         ${BISON_cc_parser_OUTPUTS}
         ${FLEX_cc_lexer_OUTPUTS})
 
+# lilium-as
+# add_executable(lilium-as
+#        ${AS_SRC_FILES}
+#        ${BISON_as_parser_OUTPUTS}
+#        ${FLEX_as_lexer_OUTPUTS})
+
+# lilium-cc
+add_executable(lilium-cc
+        cc/main.cc)
+target_link_libraries(lilium-cc lilium)
+
 # lilium-objdump
 add_executable(lilium-objdump
-        ${OBJDUMP_SRC_FILES})
+        objdump/main.cc)
+target_link_libraries(lilium-objdump lilium)
 
 # lilium-vm
 add_executable(lilium-vm
-        ${VM_SRC_FILES})
+        vm/main.cc)
+target_link_libraries(lilium-vm lilium)

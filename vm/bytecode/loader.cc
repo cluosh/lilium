@@ -20,7 +20,7 @@
 #include <fstream>
 
 #include "vm/bytecode/loader.h"
-#include "vm/data/common.h"
+#include "vm/data/vm_common.h"
 
 namespace VM {
 namespace ByteCode {
@@ -49,36 +49,39 @@ void Loader::readHeaders() {
   }
 
   // Check for magic number
-  std::vector<uint8_t> buffer(256, 0);
-  module.read(reinterpret_cast<char *>(buffer.data()), 2);
-  if (module.fail() || buffer[0] != '\x4C' || buffer[1] != '\x49') {
+  std::array<uint8_t, 2> magic;
+  module.read(reinterpret_cast<char *>(magic.data()), 2);
+  if (module.fail() || magic[0] != '\x4C' || magic[1] != '\x49') {
     logError("Specified module is not valid Lilium bytecode");
     return;
   }
 
   // Load number of constant pool entries
-  module.read(reinterpret_cast<char *>(buffer.data()), 2);
+  std::array<uint8_t, 2> constants;
+  module.read(reinterpret_cast<char *>(constants.data()), 2);
   if (module.fail()) {
     logError("Number of constant pool entries not found");
     return;
   }
-  numConstants = Data::parse_u16(buffer);
+  numConstants = Data::parse_u16(constants);
 
   // Load number of function table entries
-  module.read(reinterpret_cast<char *>(buffer.data()), 4);
+  std::array<uint8_t, 4> functions;
+  module.read(reinterpret_cast<char *>(functions.data()), 4);
   if (module.fail()) {
     logError("Number of function table entries not found");
     return;
   }
-  numFunctions = Data::parse_u32(buffer);
+  numFunctions = Data::parse_u32(functions);
 
   // Load total number of instructions
-  module.read(reinterpret_cast<char *>(buffer.data()), 8);
+  std::array<uint8_t, 8> instructions;
+  module.read(reinterpret_cast<char *>(instructions.data()), 8);
   if (module.fail()) {
     logError("Total number of instructions not found");
     return;
   }
-  numInstructions = Data::parse_u64(buffer);
+  numInstructions = Data::parse_u64(instructions);
   consistent = true;
 }
 
@@ -107,7 +110,7 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
 
   // Read constants into global constant pool
   uint64_t *constantPool = programBuffer->constantPool.data();
-  std::vector<uint8_t> constantBuffer(8);
+  std::array<uint8_t, 8> constantBuffer;
   for (uint32_t i = 0; i < numConstants; i++) {
     module.read(reinterpret_cast<char *>(constantBuffer.data()), 8);
     if (module.fail()) {
@@ -175,7 +178,7 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
  * @param message Message to be logged
  */
 void Loader::logError(const std::string &message) {
-  std::cerr << "Module file \"" << moduleName << "\":" << message << "\n";
+  std::cerr << "Module file \"" << moduleName << "\": " << message << "\n";
   consistent = false;
 }
 

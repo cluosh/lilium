@@ -78,6 +78,9 @@ void Expr::choose_type(Expr *expr1, Expr *expr2) {
     std::cerr << "Type mismatch during expression parsing.\n";
     std::exit(EXIT_FAILURE);
   }
+
+  // Types are equivalent, assign type of first expression
+  type = expr1->type;
 }
 
 /**

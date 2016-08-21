@@ -17,10 +17,9 @@
  */
 #include <cstdlib>
 #include <iostream>
-#include <string>
 
 #include "cc/ast/func/func_def.h"
-#include "vm/opcodes.h"
+#include "vm/constants/opcodes.h"
 
 namespace AST {
 
@@ -69,7 +68,17 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
   const auto &functionAddress = attrib_info->functionAddress.find(name);
   if (functionAddress == attrib_info->functionAddress.end()) {
     attrib_info->functionAddress.insert({name, attrib_info->functionTable.size()});
-    attrib_info->functionTable.push_back({0, name, { /* Parameter data */ }});
+
+    // Create entry in function table
+    VM::Data::FunctionTableEntry entry = {};
+    entry.name = name;
+    entry.address = 0;
+
+    // Create parameter list
+    entry.parameterTypes.push_back(expr->get_type());
+    for (Var *var = var_list; var != nullptr; var = var->next)
+      entry.parameterTypes.push_back(var->get_type());
+    attrib_info->functionTable.push_back(entry);
   } else {
     // TODO(cluosh): Check parameter types
   }
@@ -100,7 +109,7 @@ void FuncDef::generate_code(VM::ByteCode::Generator *generator,
 
   // Add return instruction
   VM::Data::Instruction bc = {};
-  bc.op[0] = VM::OP_RETURN;
+  bc.opcode = VM::OP_RETURN;
   generator->instruction(bc);
   attrib_info->codeCounter += 1;
 }

@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
   std::vector<VM::Data::FunctionTableEntry> linkerFunctionTable;
   std::vector<std::string> modules(static_cast<size_t>(argc - 1));
   for (int i = 0; i < argc; i++)
-    modules[i] = std::string(argv[i]);
+    modules[i] = std::string(argv[i]) + ".mod";
 
   // LOADING STAGE
   // Load all specified bytecode modules

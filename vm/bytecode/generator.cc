@@ -15,8 +15,10 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include <algorithm>
+
 #include "vm/bytecode/generator.h"
-#include "vm/data/common.h"
+#include "vm/data/vm_common.h"
 
 namespace VM {
 namespace ByteCode {
@@ -66,9 +68,16 @@ void Generator::moduleHeader(uint16_t numConstants,
  *
  * @param functionTable The function addresses, types and names
  */
-void Generator::functionTable(const std::vector<Data::FunctionTableEntry> &functionTable) {
+void Generator::functionTable(std::vector<Data::FunctionTableEntry> functionTable) {
   uint8_t nameLength;
   uint8_t parameterCount;
+
+  // Sort the function table by the addresses
+  const auto &func = [](const VM::Data::FunctionTableEntry &a,
+                        const VM::Data::FunctionTableEntry &b) -> bool {
+    return a.address < b.address;
+  };
+  std::sort(functionTable.begin(), functionTable.end(), func);
 
   // Write table entries as bytecode
   for (const auto &function : functionTable) {

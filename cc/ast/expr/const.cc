@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "cc/ast/expr/const.h"
-#include "vm/data/common.h"
-#include "vm/opcodes.h"
+#include "vm/data/vm_common.h"
+#include "vm/constants/opcodes.h"
 
 namespace AST {
 

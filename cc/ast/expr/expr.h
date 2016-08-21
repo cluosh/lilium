@@ -21,7 +21,7 @@
 #include <string>
 
 #include "cc/ast/expr/global_expr.h"
-#include "vm/types/types.h"
+#include "vm/constants/types.h"
 
 namespace AST {
 

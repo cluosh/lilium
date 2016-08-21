@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "cc/ast/expr/binary_expr.h"
-#include "vm/types/types.h"
+#include "vm/constants/types.h"
 
 namespace AST {
 
@@ -29,7 +29,7 @@ namespace AST {
  * @param next Next expression in list
  */
 BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next)
-    : Expr(VM::TYPE_COUNT, next) {
+    : Expr(VM::Type::TYPE_COUNT, next) {
   this->fst = fst;
   this->snd = snd;
   this->op = op;

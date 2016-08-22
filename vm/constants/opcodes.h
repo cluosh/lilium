@@ -18,12 +18,14 @@
 #ifndef VM_OPCODES_H_
 #define VM_OPCODES_H_
 
+#include <array>
+
 namespace VM {
 
 /**
  * List of opcodes with a short description.
  */
-enum OpCode : uint8_t {
+enum OpCode: uint8_t {
   OP_NOP,
   OP_CALLI,
   OP_CALLE,
@@ -39,9 +41,70 @@ enum OpCode : uint8_t {
   OP_JMPC,
   OP_JMP,
   OP_MOV,
-  OP_HALT
+  OP_HALT,
+  OP_COUNT
 };
 
+namespace Constants {
+
+/**
+ * List of operation types.
+ */
+enum OpTypes: uint8_t {
+  OPT_NULLARY,
+  OPT_UNARY,
+  OPT_BINARY,
+  OPT_TERNARY,
+  OPT_CALL,
+  OPT_CONST,
+  OPT_COUNT
+};
+
+/**
+ * Constant expression containing lookup table for operations.
+ */
+constexpr std::array<const char *, OP_COUNT> operationTable{
+    "nop",
+    "calli",
+    "calle",
+    "lcalli",
+    "lcalle",
+    "return",
+    "addi",
+    "subi",
+    "muli",
+    "divi",
+    "gt",
+    "loadi",
+    "jmpc",
+    "jmp",
+    "mov",
+    "halt"
+};
+
+/**
+ * Constant expression containing lookup table for operation types.
+ */
+constexpr std::array<OpTypes, OP_COUNT> opTypeTable{
+    OPT_NULLARY,
+    OPT_CALL,
+    OPT_CALL,
+    OPT_CALL,
+    OPT_CALL,
+    OPT_NULLARY,
+    OPT_TERNARY,
+    OPT_TERNARY,
+    OPT_TERNARY,
+    OPT_TERNARY,
+    OPT_TERNARY,
+    OPT_CONST,
+    OPT_CONST,
+    OPT_CONST,
+    OPT_BINARY,
+    OPT_NULLARY
+};
+
+}  // namespace Constants
 }  // namespace VM
 
 #endif  // VM_OPCODES_H_

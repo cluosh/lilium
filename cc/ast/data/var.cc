@@ -63,6 +63,7 @@ void Var::attribute(AttribInfo *attrib_info) {
   } else {
     // Set the correct register and correct type for this variable
     resultReg = sym->reg;
+    type = sym->type;
   }
 }
 

@@ -30,10 +30,10 @@ namespace AST {
  */
 class Expr : public GlobalExpr {
  private:
-  VM::Type type;
   bool last = false;
 
  public:
+  VM::Type type;
   Expr *next = nullptr;
 
   Expr(VM::Type type, Expr *next);

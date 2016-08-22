@@ -29,10 +29,11 @@ namespace AST {
  * @param snd Expression to be executed if condition is false
  */
 CondExpr::CondExpr(Expr *condition, Expr *fst, Expr *snd)
-    : Expr(VM::TYPE_COUNT, nullptr) {
-  this->condition = condition;
-  this->fst = fst;
-  this->snd = snd;
+    : Expr(VM::TYPE_COUNT, nullptr),
+      condition(condition),
+      fst(fst),
+      snd(snd) {
+  // Update type of expression
   choose_type(fst, snd);
 }
 
@@ -57,6 +58,9 @@ void CondExpr::attribute(AttribInfo *attrib_info) {
   fst->attribute(attrib_info);
   attrib_info->nextReg = resultReg;
   snd->attribute(attrib_info);
+
+  // Update type of expression
+  choose_type(fst, snd);
 }
 
 /**
@@ -84,7 +88,7 @@ void CondExpr::generate_code(VM::ByteCode::Generator *generator,
   fst->generate_code(generator, attrib_info);
   bc.opcode = VM::OP_JMP;
   bc.op[0] = 0;
-  std::copy(secondIndex.begin(), secondIndex.end(), std::begin(bc.op) + 2);
+  std::copy(firstIndex.begin(), firstIndex.end(), std::begin(bc.op) + 2);
   generator->instruction(bc);
   attrib_info->codeCounter += 1;
   attrib_info->constants[snd_cp_index] = attrib_info->codeCounter - 1;

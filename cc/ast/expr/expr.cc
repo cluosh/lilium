@@ -28,10 +28,9 @@ namespace AST {
  * @param type Expression type, use TYPE_COUNT for type inferring
  * @param next Next expression in expression list
  */
-Expr::Expr(VM::Type type, Expr *next) {
-  this->type = type;
-  this->next = next;
-}
+Expr::Expr(VM::Type type, Expr *next)
+    : type(type),
+      next(next) { }
 
 /**
  * Call global symbol setting if symbols are set.

@@ -29,11 +29,10 @@ namespace AST {
  * @param next Next expression in list
  */
 BinaryExpr::BinaryExpr(Expr *fst, Expr *snd, BinaryOperator op, Expr *next)
-    : Expr(VM::Type::TYPE_COUNT, next) {
-  this->fst = fst;
-  this->snd = snd;
-  this->op = op;
-
+    : Expr(VM::Type::TYPE_COUNT, next),
+      fst (fst),
+      snd(snd),
+      op(op) {
   // Update type of expression
   choose_type(fst, snd);
 }
@@ -80,6 +79,9 @@ void BinaryExpr::attribute(AttribInfo *attrib_info) {
   // Attribute the operands
   fst->attribute(attrib_info);
   snd->attribute(attrib_info);
+
+  // Update type of expression
+  choose_type(fst, snd);
 }
 
 /**

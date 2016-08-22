@@ -16,9 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include <algorithm>
+#include <cstdint>
 #include <fstream>
 
 #include "objdump/pipeline/dump.h"
+#include "vm/data/vm_common.h"
 #include "vm/constants/opcodes.h"
 #include "vm/constants/types.h"
 
@@ -71,10 +73,26 @@ void Dump::execute(const std::string &module,
     const uint64_t maxAddress = functionIndex < functions.size() - 1 ?
                                 functions[functionIndex + 1].address : code.size();
     for (uint64_t i = function.address; i < maxAddress; i++) {
-      out << "        " << static_cast<unsigned int>(code[i].opcode) << " "
-          << static_cast<unsigned int>(code[i].op[0]) << " "
-          << static_cast<unsigned int>(code[i].op[1]) << " "
-          << static_cast<unsigned int>(code[i].op[2]) << "\n";
+      // Operation name
+      out << "        " << VM::Constants::operationTable[code[i].opcode] << " ";
+
+      // Print paramters
+      uint16_t index = 0;
+      switch (VM::Constants::opTypeTable[code[i].opcode]) {
+        case VM::Constants::OPT_TERNARY:
+          out << "r" << static_cast<unsigned int>(code[i].op[0]) << ", "
+              << "r" << static_cast<unsigned int>(code[i].op[1]) << ", "
+              << "r" << static_cast<unsigned int>(code[i].op[2]) << "\n";
+          break;
+        case VM::Constants::OPT_CONST:
+          out << "r" << static_cast<unsigned int>(code[i].op[0]) << ", ";
+          index = VM::Data::parse_u16({code[i].op[1], code[i].op[2]});
+          out << std::hex << programBuffer.constantPool[index] << std::dec << "\n";
+          break;
+        default:
+          out << "\n";
+          break;
+      }
     }
   }
 }

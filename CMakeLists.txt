@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(lilium)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set_property(GLOBAL PROPERTY CXX_STANDARD 14)
+set_property(GLOBAL PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(AS_SRC_FILES
         as/codegen/generator.h
@@ -87,7 +88,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cc/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 
 # liblilium
-add_library(lilium
+add_library(liblilium
         ${LIB_SRC_FILES}
         ${BISON_cc_parser_OUTPUTS}
         ${FLEX_cc_lexer_OUTPUTS})
@@ -101,14 +102,14 @@ add_library(lilium
 # lilium-cc
 add_executable(lilium-cc
         cc/main.cc)
-target_link_libraries(lilium-cc lilium)
+target_link_libraries(lilium-cc liblilium)
 
 # lilium-objdump
 add_executable(lilium-objdump
         objdump/main.cc)
-target_link_libraries(lilium-objdump lilium)
+target_link_libraries(lilium-objdump liblilium)
 
 # lilium-vm
 add_executable(lilium-vm
         vm/main.cc)
-target_link_libraries(lilium-vm lilium)
+target_link_libraries(lilium-vm liblilium)

@@ -29,9 +29,8 @@ namespace AST {
  * @param next Next expression in expression list
  */
 Const::Const(std::int64_t value, VM::Type type, Expr *next)
-    : Expr(type, next) {
-  this->value = value;
-}
+    : Expr(type, next),
+      value(value) { }
 
 /**
  * Attribute a constant expression.

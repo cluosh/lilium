@@ -27,11 +27,10 @@ namespace AST {
  * @param next Next expression in list
  */
 UnaryExpr::UnaryExpr(Expr *fst, UnaryOperator op, Expr *next)
-    : Expr(VM::TYPE_COUNT, next) {
-  this->fst = fst;
-  this->op = op;
-
-  // Update type of expression
+    : Expr(VM::TYPE_COUNT, next),
+      fst(fst),
+      op(op) {
+  // Store type of expression
   choose_type(fst, nullptr);
 }
 

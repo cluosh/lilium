@@ -15,7 +15,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include <cstdint>
 #include <iostream>
 #include <fstream>
 
@@ -125,17 +124,19 @@ void Loader::readData(Data::ProgramBuffer *programBuffer,
   // Read function table entries
   Data::FunctionTableEntry *functionTable = funcTable->data();
   for (uint32_t i = 0; i < numFunctions; i++) {
+    Data::FunctionTableEntry *functionTableEntry =
+        &functionTable[offsetFunctionTable + i * sizeof(Data::FunctionTableEntry)];
+
     // Read function table header
     Data::FunctionHeaderInfo headerInfo = {};
-    module.read(reinterpret_cast<char *>(&headerInfo), 2);
+    module.read(reinterpret_cast<char *>(&headerInfo), 3);
     if (module.fail()) {
       logError("Invalid function table header found");
       return;
     }
+    functionTableEntry->reservation = headerInfo.reservation;
 
     // Read function address
-    Data::FunctionTableEntry *functionTableEntry =
-        &functionTable[offsetFunctionTable + i * sizeof(Data::FunctionTableEntry)];
     module.read(reinterpret_cast<char *>(constantBuffer.data()), 8);
     if (module.fail()) {
       logError("Could not read function address");

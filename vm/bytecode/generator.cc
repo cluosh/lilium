@@ -87,6 +87,7 @@ void Generator::functionTable(std::vector<Data::FunctionTableEntry> functionTabl
     parameterCount = static_cast<uint8_t>(function.parameterTypes.size());
     out.write(reinterpret_cast<char *>(&nameLength), 1);
     out.write(reinterpret_cast<char *>(&parameterCount), 1);
+    out.write(reinterpret_cast<const char *>(&function.reservation), 1);
 
     // Write function address and name
     out.write(reinterpret_cast<const char *>(Data::buffer_u64(function.address).data()), 8);

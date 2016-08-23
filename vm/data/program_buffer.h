@@ -39,6 +39,7 @@ struct Instruction {
 struct FunctionHeaderInfo {
   uint8_t nameLength;
   uint8_t parameterCount;
+  uint8_t reservation;
 };
 
 /**
@@ -48,6 +49,7 @@ struct FunctionTableEntry {
   uint64_t address;
   std::string name;
   std::vector<uint8_t> parameterTypes;
+  uint8_t reservation;
 };
 
 /**
@@ -56,6 +58,7 @@ struct FunctionTableEntry {
 struct FunctionEntry {
   uint64_t address;
   uint64_t module;
+  uint8_t reservation;
 };
 
 /**

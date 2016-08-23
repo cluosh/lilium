@@ -67,7 +67,8 @@ void Dump::execute(const std::string &module,
           << VM::Constants::typeTable[function.parameterTypes[i]] << "\n";
     }
     out << "        # Return type:      "
-        << VM::Constants::typeTable[function.parameterTypes[0]] << "\n\n";
+        << VM::Constants::typeTable[function.parameterTypes[0]] << "\n";
+    out << "        .reserve " << static_cast<unsigned int>(function.reservation) << "\n\n";
 
     // Print instructions for this function
     const uint64_t maxAddress = functionIndex < functions.size() - 1 ?

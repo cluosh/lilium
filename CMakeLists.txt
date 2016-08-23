@@ -77,8 +77,8 @@ set(CC_SRC_FILES
         cc/main.cc)
 
 # BISON/FLEX Targets
-find_package(BISON 3.0 REQUIRED)
-find_package(FLEX 2.5.37 REQUIRED)
+find_package(BISON 3.0.4 REQUIRED)
+find_package(FLEX 2.6.1 REQUIRED)
 bison_target(as_parser as/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/as/parser/parser.tab.cc)
 flex_target(as_lexer as/parser/grammar/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/as/parser/lex.yy.cc)
 bison_target(cc_parser cc/parser/grammar/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/cc/parser/parser.tab.cc)

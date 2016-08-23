@@ -51,7 +51,8 @@ void Linker::execute(Data::ProgramBuffer *buffer,
         continue;
 
       // Insert a function definition into the temporary table
-      auto function = functions.insert({funcTable[i].name, {funcTable[i].address + lower, index}});
+      auto function = functions.insert({funcTable[i].name, {funcTable[i].address + lower,
+                                                            index, funcTable[i].reservation}});
       if (!function.second)
         throw std::runtime_error("Found duplicate function '" + funcTable[i].name + "'");
       else

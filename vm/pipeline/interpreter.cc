@@ -16,8 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include <cstdint>
+#include <vector>
 
 #include "vm/data/program_buffer.h"
+#include "vm/data/vm_common.h"
 #include "vm/pipeline/interpreter.h"
 
 // Dispatching macro, increasing program counter and jump
@@ -34,10 +36,16 @@ namespace Pipeline {
 void Interpreter::execute(const Data::ProgramBuffer &buffer) {
   // Rename program buffers
   const Data::Instruction *code = buffer.byteCode.data();
+  const Data::FunctionEntry *functions = buffer.functionTable.data();
+  const uint64_t *functionOffsets = buffer.functionTableOffset.data();
+  const uint64_t *constantOffsets = buffer.constantPoolOffset.data();
 
   // Registers, stack, machine state setup
-  uint64_t registers[256];
+  std::vector<uint64_t> registers(8192);
   uint64_t pc = 0xFFFFFFFFFFFFFFFF;
+  uint64_t fp = 0;
+  uint64_t functionOffset = 0;
+  uint64_t constantOffset = 0;
 
   // Jump table for token threaded code
   const void * const token_table[] = {
@@ -59,6 +67,9 @@ void Interpreter::execute(const Data::ProgramBuffer &buffer) {
       && op_halt
   };
 
+  // Temporary vars
+  uint64_t functionIndex;
+
   // Main dispatch loop
   while(true) {
     DISPATCH();
@@ -66,8 +77,24 @@ void Interpreter::execute(const Data::ProgramBuffer &buffer) {
     op_nop:
       DISPATCH();
     op_calli:
+      functionIndex = Data::parse_u32({code[pc].op[0], code[pc].op[1], code[pc].op[2], 0})
+          + functionOffset;
+
+      // Allocate "stack" frame and set new entry position
+      fp += functions[functionIndex].reservation;
+      pc = functions[functionIndex].address;
       DISPATCH();
     op_calle:
+      functionIndex = Data::parse_u32({code[pc].op[0], code[pc].op[1], code[pc].op[2], 0})
+          + functionOffset;
+
+      // Allocate "stack" frame and set new entry position
+      fp += functions[functionIndex].reservation;
+      pc = functions[functionIndex].address;
+
+      // External call, adjust module offsets
+      functionOffset = functionOffsets[functions[functionIndex].module];
+      constantOffset = constantOffsets[functions[functionIndex].module];
       DISPATCH();
     op_lcalli:
       DISPATCH();

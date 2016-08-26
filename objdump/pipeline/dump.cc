@@ -24,7 +24,7 @@
 #include "vm/constants/opcodes.h"
 #include "vm/constants/types.h"
 
-namespace OBJDUMP {
+namespace ObjDump {
 namespace Pipeline {
 
 /**
@@ -99,4 +99,4 @@ void Dump::execute(const std::string &module,
 }
 
 }  // namespace Pipeline
-}  // namespace OBJDUMP
+}  // namespace ObjDump

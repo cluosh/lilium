@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(lilium)
 
-set_property(GLOBAL PROPERTY CXX_STANDARD 14)
-set_property(GLOBAL PROPERTY CXX_STANDARD_REQUIRED ON)
-
 set(AS_SRC_FILES
         as/codegen/generator.h
         as/parser/grammar/scanner.l
@@ -87,11 +84,12 @@ add_flex_bison_dependency(cc_lexer cc_parser)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cc/parser)
 include_directories(./ ${CMAKE_CURRENT_BINARY_DIR})
 
-# liblilium
-add_library(liblilium
-        ${LIB_SRC_FILES}
-        ${BISON_cc_parser_OUTPUTS}
-        ${FLEX_cc_lexer_OUTPUTS})
+# lilium
+add_library(lilium
+  ${LIB_SRC_FILES}
+  ${BISON_cc_parser_OUTPUTS}
+  ${FLEX_cc_lexer_OUTPUTS})
+target_compile_features(lilium PUBLIC cxx_generic_lambdas)
 
 # lilium-as
 # add_executable(lilium-as
@@ -101,15 +99,18 @@ add_library(liblilium
 
 # lilium-cc
 add_executable(lilium-cc
-        cc/main.cc)
-target_link_libraries(lilium-cc liblilium)
+  cc/main.cc)
+target_link_libraries(lilium-cc lilium)
+target_compile_features(lilium-cc PUBLIC cxx_generic_lambdas)
 
 # lilium-objdump
 add_executable(lilium-objdump
-        objdump/main.cc)
-target_link_libraries(lilium-objdump liblilium)
+  objdump/main.cc)
+target_link_libraries(lilium-objdump lilium)
+target_compile_features(lilium-objdump PUBLIC cxx_generic_lambdas)
 
 # lilium-vm
 add_executable(lilium-vm
-        vm/main.cc)
-target_link_libraries(lilium-vm liblilium)
+  vm/main.cc)
+target_link_libraries(lilium-vm lilium)
+target_compile_features(lilium-vm PUBLIC cxx_generic_lambdas)

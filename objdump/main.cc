@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   // Program buffer and pipeline stages
   VM::Data::ProgramBuffer programBuffer;
   VM::Pipeline::Loader loader;
-  OBJDUMP::Pipeline::Dump dump(std::cout);
+  ObjDump::Pipeline::Dump dump(std::cout);
 
   // PRE-LOADING STAGE
   // Store module files to be executed in vector

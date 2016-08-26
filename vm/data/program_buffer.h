@@ -46,9 +46,10 @@ struct FunctionHeaderInfo {
  * Function table entry, need for linking
  */
 struct FunctionTableEntry {
-  uint64_t address;
-  std::string name;
   std::vector<uint8_t> parameterTypes;
+  std::string name;
+  uint64_t address;
+  bool external;
   uint8_t reservation;
 };
 

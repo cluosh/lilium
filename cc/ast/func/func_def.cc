@@ -50,37 +50,54 @@ FuncDef::~FuncDef() {
 /**
  * Attribute a function definition.
  *
- * @param attrib_info Info needed for attribution and code generation
- *                    later on
+ * @param info Info needed for attribution and code generation later on
  */
-void FuncDef::attribute(AttribInfo *attrib_info) {
+void FuncDef::attribute(AttribInfo *info) {
   push_frame();
 
-  // Register variables
-  if (var_list != nullptr)
-    var_list->register_var(200);
+  // Start with register one, zero is return register
+  resultReg = 0;
+  info->nextReg = 1;
 
-  // Check semantics in wrapped expression and set result register
-  resultReg = attrib_info->nextReg;
-  expr->attribute(attrib_info);
+  // Creaty function table entry
+  VM::Data::FunctionTableEntry entry{};
+  entry.name = name;
+  entry.external = false;
+
+  // Register function arguments
+  if (var_list != nullptr)
+    var_list->register_var(info->nextReg);
+
+  // Check semantics in wrapped expression, set result register and reserve maximum space
+  info->nextReg = entry.parameterTypes.size();
+  info->maxReg = info->nextReg;
+  expr->attribute(info);
+
+  // Fill function table entry with type information
+  entry.parameterTypes.push_back(expr->get_type());
+  for (Var *var = var_list; var != nullptr; var = var->next)
+    entry.parameterTypes.push_back(var->get_type());
+
+  // Use maximum register index as reservation marker
+  entry.reservation = info->maxReg;
 
   // Store function name if it hasn't been stored yet
-  const auto &functionAddress = attrib_info->functionAddress.find(name);
-  if (functionAddress == attrib_info->functionAddress.end()) {
-    attrib_info->functionAddress.insert({name, attrib_info->functionTable.size()});
-
-    // Create entry in function table
-    VM::Data::FunctionTableEntry entry = {};
-    entry.name = name;
-    entry.address = 0;
-
-    // Create parameter list
-    entry.parameterTypes.push_back(expr->get_type());
-    for (Var *var = var_list; var != nullptr; var = var->next)
-      entry.parameterTypes.push_back(var->get_type());
-    attrib_info->functionTable.push_back(entry);
+  const auto &address = info->functionAddress.find(name);
+  if (address == info->functionAddress.end()) {
+    info->functionAddress.insert({name, info->functionTable.size()});
+    info->functionTable.push_back(entry);
   } else {
-    // TODO(cluosh): Check parameter types
+    const auto &function = info->functionTable[address->second];
+
+    // Check if this is a function redefinition (if external is false, it's a legit definition)
+    if (!function.external)
+      throw std::runtime_error("Function \"" + name + "\" has been defined more than once");
+
+    // No redefinition, no check if types are equal
+    if (function.parameterTypes != entry.parameterTypes) {
+      throw std::runtime_error("Function \"" + name + "\" has been used with different "
+                               "parameter types");
+    }
   }
 
   pop_frame();
@@ -92,26 +109,23 @@ void FuncDef::attribute(AttribInfo *attrib_info) {
  * @param generator Code generator helper class
  * @param attrib_info Attribute information needed for code generation
  */
-void FuncDef::generate_code(VM::ByteCode::Generator *generator,
-                            AttribInfo *attrib_info) {
-  auto functionIndex = attrib_info->functionAddress.find(name);
-  if (functionIndex == attrib_info->functionAddress.end()) {
-    std::cerr << "Could not find function \""
-        << name
-        << "\" in function name table.\n";
-    return;
-  }
+void FuncDef::generate_code(VM::ByteCode::Generator *generator, AttribInfo *info) {
+  const auto &index = info->functionAddress.find(name);
+  if (index == info->functionAddress.end())
+    throw std::runtime_error("Could not find function \"" + name + "\" in function name table");
 
   // Store code address in function
-  uint32_t local_addr = functionIndex->second;
-  attrib_info->functionTable[local_addr].address = attrib_info->codeCounter;
-  expr->generate_code(generator, attrib_info);
+  uint32_t functionIndex = index->second;
+  info->functionTable[functionIndex].address = info->codeCounter;
+  expr->generate_code(generator, info);
 
   // Add return instruction
-  VM::Data::Instruction bc = {};
+  VM::Data::Instruction bc{};
   bc.opcode = VM::OP_RETURN;
   generator->instruction(bc);
-  attrib_info->codeCounter += 1;
+
+  // Increase code (instruction) counter
+  info->codeCounter += 1;
 }
 
 /**

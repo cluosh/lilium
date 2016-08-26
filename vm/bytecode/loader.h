@@ -40,10 +40,10 @@ class Loader {
  private:
   std::string moduleName;
   std::ifstream module;
-  uint64_t numInstructions = 0;
-  uint32_t numFunctions = 0;
-  uint16_t numConstants = 0;
-  bool consistent = false;
+  uint64_t numInstructions;
+  uint32_t numFunctions;
+  uint16_t numConstants;
+  bool consistent;
 
  public:
   Loader(std::string file);

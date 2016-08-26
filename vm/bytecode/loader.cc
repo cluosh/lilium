@@ -30,9 +30,12 @@ namespace ByteCode {
  * @param file Name of the module to be loaded
  */
 Loader::Loader(std::string file)
-    : moduleName(file),
-      module(file, std::ifstream::binary),
-      consistent(!module.fail()) { }
+  : numInstructions(0),
+    numFunctions(0),
+    numConstants(0),
+    moduleName(file),
+    module(file, std::ifstream::binary),
+    consistent(!module.fail()) { }
 
 /**
  * Read the headers from the bytecode module, meaning:

@@ -37,6 +37,7 @@ struct AttribInfo {
   std::vector<uint64_t> constants;
   uint64_t codeCounter;
   uint8_t nextReg;
+  uint8_t maxReg;
 };
 
 }  // namespace AST

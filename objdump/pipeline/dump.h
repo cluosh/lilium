@@ -30,7 +30,7 @@ struct ProgramBuffer;
 }  // namespace Data
 }  // namespace VM
 
-namespace OBJDUMP {
+namespace ObjDump {
 namespace Pipeline {
 
 /**
@@ -48,6 +48,6 @@ class Dump {
 };
 
 }  // namespace Pipeline
-}  // namespace OBJDUMP
+}  // namespace ObjDump
 
 #endif  // OBJDUMP_PIPELINE_DUMP_H_

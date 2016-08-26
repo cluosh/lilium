@@ -96,8 +96,7 @@ void Var::register_var(uint8_t reg) {
   }
 
   // Create symbol and add it to the table
-  Symbol sym = {reg, get_type()};
-  add_symbol(name, sym);
+  add_symbol(name, {reg, get_type()});
   resultReg = reg;
 
   // TODO(cluosh): Variables on stack if there are no registers left

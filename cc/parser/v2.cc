@@ -14,7 +14,9 @@ namespace x3 = boost::spirit::x3;
  * LILIUM AST base structure
  */
 namespace AST {
-struct List;
+struct SExpression;
+struct LetExpression;
+struct Lambda;
 
 // Wrapper for an integer type value
 struct TypeInt {
@@ -39,7 +41,9 @@ struct Term : x3::variant< std::string,
                            TypeSingle,
                            TypeDouble,
                            TypeInt,
-                           x3::forward_ast<List> > {
+                           x3::forward_ast<SExpression>,
+                           x3::forward_ast<LetExpression>,
+                           x3::forward_ast<Lambda> > {
   using base_type::base_type;
   using base_type::operator=;
 
@@ -50,8 +54,30 @@ struct Term : x3::variant< std::string,
 };
 
 // List (corresponding to an s-expression)
-struct List {
+struct SExpression {
   std::vector<Term> terms;
+};
+
+// A named expression (can be a constant or a function)
+struct LetExpression {
+  std::string name;
+  Term term;
+};
+
+// Wrapper for parameters, boost fusion edge case
+struct Parameter {
+  std::string value;
+};
+
+// An unnamed function
+struct Lambda {
+  Term term;
+  std::vector<Parameter> params;
+};
+
+// A wrapper for a term
+struct GlobalExpression {
+  Term term;
 };
 }  // namespace AST
 
@@ -59,7 +85,11 @@ struct List {
 BOOST_FUSION_ADAPT_STRUCT(AST::TypeInt, value);
 BOOST_FUSION_ADAPT_STRUCT(AST::TypeSingle, value);
 BOOST_FUSION_ADAPT_STRUCT(AST::TypeDouble, value);
-BOOST_FUSION_ADAPT_STRUCT(AST::List, terms)
+BOOST_FUSION_ADAPT_STRUCT(AST::GlobalExpression, term);
+BOOST_FUSION_ADAPT_STRUCT(AST::SExpression, terms);
+BOOST_FUSION_ADAPT_STRUCT(AST::LetExpression, name, term);
+BOOST_FUSION_ADAPT_STRUCT(AST::Lambda, params, term);
+BOOST_FUSION_ADAPT_STRUCT(AST::Parameter, value);
 
 /*
  * LILIUM Grammar definition
@@ -74,26 +104,37 @@ using x3::lit;
 // Helper rules for special chars and reals
 x3::real_parser<double, x3::strict_real_policies<double> > const double_ = {};
 x3::real_parser<float, x3::strict_real_policies<float> > const float_ = {};
-auto const Special         = lexeme[lit("(") | lit(")") | lit("\"") | blank];
+auto const Special         = lexeme[lit("(") | lit(")") | lit("\"") | lit("let")
+                                    | lit("\\") | blank];
 auto const single_         = lexeme[float_ >> lit("f")];
 
 // Main rules corresponding to AST nodes
-x3::rule<class SExpression, AST::List> const SExpression("SExpression");
 x3::rule<class Term, AST::Term> const Term("Term");
+x3::rule<class GlobalExpression, AST::GlobalExpression> const GlobalExpression("GlobalExpression");
+x3::rule<class SExpression, AST::SExpression> const SExpression("SExpression");
+x3::rule<class LetExpression, AST::LetExpression> const LetExpression("LetExpression");
+x3::rule<class Lambda, AST::Lambda> const Lambda("Lambda");
 x3::rule<class Identifier, std::string> const Identifier("Identifier");
 x3::rule<class TypeInt, AST::TypeInt> const TypeInt("TypeInt");
 x3::rule<class TypeSingle, AST::TypeSingle> const TypeSingle("TypeSingle");
 x3::rule<class TypeDouble, AST::TypeDouble> const TypeDouble("TypeDouble");
+x3::rule<class Parameter, AST::Parameter> const Parameter("Parameter");
 
 // Grammar for AST node rules
-auto const SExpression_def = '(' >> *Term >> ')';
-auto const Identifier_def  = lexeme[(char_ - digit - Special) >> *(char_ - Special)];
-auto const Term_def        = Identifier | TypeSingle | TypeDouble | TypeInt | SExpression;
-auto const TypeInt_def     = x3::long_long;
-auto const TypeSingle_def  = single_;
-auto const TypeDouble_def  = double_;
+auto const GlobalExpression_def = Term;
+auto const Term_def             = LetExpression | Lambda | SExpression | Identifier | TypeSingle
+                                  | TypeDouble | TypeInt;
+auto const SExpression_def      = '(' >> *Term >> ')';
+auto const LetExpression_def    = '(' >> lit("let") >> Identifier >> Term >> ")";
+auto const Lambda_def           = '(' >> lit("\\") >> lit("(") >> *Parameter >> lit(")") >> Term >> ")";
+auto const Identifier_def       = lexeme[(char_ - digit - Special) >> *(char_ - Special)];
+auto const TypeInt_def          = x3::long_long;
+auto const TypeSingle_def       = single_;
+auto const TypeDouble_def       = double_;
+auto const Parameter_def        = Identifier;
 
-BOOST_SPIRIT_DEFINE(SExpression, Term, Identifier, TypeInt, TypeSingle, TypeDouble);
+BOOST_SPIRIT_DEFINE(Term, GlobalExpression, SExpression, LetExpression, Lambda, Identifier,
+                    TypeInt, TypeSingle, TypeDouble, Parameter);
 }  // namespace Grammar
 
 /*
@@ -113,11 +154,22 @@ namespace AST {
     void operator()(TypeDouble const& num) const {
       std::cout << "DOUBLEP: " << num.value << "\n";
     }
-    void operator()(List const& sexpr) const {
+    void operator()(SExpression const& sexpr) const {
       std::cout << "SEXPRESSION: \n";
-      /*for (auto const& term : sExpression.terms)
-        boost::apply_visitor(*this, term);*/
-      std::for_each(sexpr.terms.begin(), sexpr.terms.end(), [this](auto const& term) { boost::apply_visitor(*this, term); });
+      for (auto const& term : sexpr.terms)
+        boost::apply_visitor(*this, term);
+    }
+    void operator()(LetExpression const& named) const {
+      std::cout << "NAMED EXPRESSION: " << named.name << "\n";
+      boost::apply_visitor(*this, named.term);
+    }
+    void operator()(Lambda const& lambda) const {
+      for (auto const& parameter : lambda.params)
+        std::cout << "PARAMETER:" << parameter.value << "\n";
+      boost::apply_visitor(*this, lambda.term);
+    }
+    void operator()(GlobalExpression const& expr) const {
+      boost::apply_visitor(*this, expr.term);
     }
   };
 }  // namespace AST
@@ -131,9 +183,9 @@ int main() {
     if (str.empty() || str[0] == 'q' || str[0] == 'Q')
       break;
 
-    AST::List program;
+    AST::GlobalExpression program;
     AST::printer print;
-    auto &liliumLang = Grammar::SExpression;
+    auto &liliumLang = Grammar::GlobalExpression;
     iterator_type iter = str.begin();
     iterator_type end = str.end();
     x3::ascii::space_type space;
@@ -147,4 +199,5 @@ int main() {
     }
   }
   return 0;
+
 }

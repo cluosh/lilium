@@ -1,2 +1,7 @@
 .idea/
 build/
+
+# Rust 
+target/
+Cargo.lock
+**/*.rs.bk

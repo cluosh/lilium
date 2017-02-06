@@ -1,0 +1,6 @@
+[package]
+name = "lilium-as"
+version = "0.1.0"
+authors = ["Michael Pucher <michael.pucher.main@gmail.com>"]
+
+[dependencies]

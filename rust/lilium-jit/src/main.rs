@@ -49,9 +49,7 @@ impl JitMemory {
             libc::posix_memalign(&mut _contents, PAGE_SIZE, size);
 
             // Enable code execution for the memory
-            libc::mprotect(_contents,
-                           size,
-                           libc::PROT_EXEC | libc::PROT_READ | libc::PROT_WRITE);
+            libc::mprotect(_contents, size, libc::PROT_READ | libc::PROT_WRITE);
 
             // Fill memory with return instructions
             memset(_contents, 0xc3, size);
@@ -76,15 +74,11 @@ impl JitMemory {
 fn main() {
     let mut jit: JitMemory = JitMemory::new(1);
     jit[0] = 0x48;
-    jit[1] = 0xc7;
-    jit[2] = 0xc0;
-    jit[3] = 0x03;
-    jit[4] = 0x00;
-    jit[5] = 0x00;
-    jit[6] = 0x00;
+    jit[1] = 0x89;
+    jit[2] = 0xf8;
     jit.drop_privileges();
 
     // Execute jitted function
-    let fun: fn() -> i64 = unsafe { mem::transmute(jit.contents) };
-    println!("{}", fun());
+    let fun: fn(arg: i64) -> i64 = unsafe { mem::transmute(jit.contents) };
+    println!("{}", fun(5));
 }

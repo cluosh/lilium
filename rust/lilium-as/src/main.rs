@@ -72,6 +72,12 @@ fn process_label(token: &str) {
 fn process_instruction<'a, I>(instruction: &str, arguments: &mut I)
     where I: Iterator<Item = &'a str>
 {
+    // Error messages
+    let missing_args = "Missing arguments for instruction";
+    let invalid_reg = "Invalid register specification";
+    let numeric_arg = "Expected numeric argument";
+
+    // Parse instructions
     match instruction {
         "hlt" => {
             let inst = Instruction {
@@ -88,6 +94,31 @@ fn process_instruction<'a, I>(instruction: &str, arguments: &mut I)
                 a0: 0x00,
                 a1: 0x00,
                 a2: 0x00,
+            };
+            println!("{}", inst);
+        }
+        "add" => {
+            // Load name of destination register
+            let reg_name = arguments.next().expect(missing_args);
+            let dest: String = reg_name.chars().skip(1).collect();
+            let dest: u8 = dest.parse().expect(invalid_reg);
+
+            // Load name of first operand
+            let reg_name = arguments.next().expect(missing_args);
+            let fst: String = reg_name.chars().skip(1).collect();
+            let fst: u8 = fst.parse().expect(invalid_reg);
+
+            // Load name of second operand
+            let reg_name = arguments.next().expect(missing_args);
+            let snd: String = reg_name.chars().skip(1).collect();
+            let snd: u8 = snd.parse().expect(invalid_reg);
+
+            // Create add instruction with three operands
+            let inst = Instruction {
+                opcode: 0x02,
+                a0: dest,
+                a1: fst,
+                a2: snd
             };
             println!("{}", inst);
         }

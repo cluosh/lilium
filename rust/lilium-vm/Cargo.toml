@@ -1,6 +1,9 @@
 [package]
 name = "lilium-vm"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Michael Pucher <michael.pucher.main@gmail.com>"]
 
 [dependencies]
+serde = "0.9.*"
+serde_derive = "0.9.*"
+bincode = "1.0.0-alpha6"

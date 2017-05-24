@@ -8,16 +8,23 @@ pub expressions: Vec<Expression> = {
 };
 
 expression: Expression = {
-    "(" <f:function_name> <v:expressions> ")" => Expression::Function(f, v),
-    integer => Expression::Integer(<>),
+    "(" <o:op_binary> <l:expression> <r:expression> ")" => {
+        Expression::BinaryOp(o, Box::new(l), Box::new(r))
+    },
+    "(" <f:function_name> <v:expressions> ")" => {
+        Expression::Function(f, v)
+    },
+    integer => {
+        Expression::Integer(<>)
+    },
 };
 
 function_name: String = {
     r"[a-zA-Z]+" => <>.to_string(),
-    "+" => <>.to_string(),
-    "-" => <>.to_string(),
-    "*" => <>.to_string(),
-    "/" => <>.to_string(),
+};
+
+op_binary: String = {
+    r"[\+\-\*/]" => <>.to_string(),
 };
 
 integer: i64 = {

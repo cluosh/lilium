@@ -20,6 +20,13 @@ fn print_operations(expression: ast::Expression, base_register: u8) {
 
     match expression {
         Integer(i) => println!("load {} r{}", i, base_register),
+        BinaryOp(name, left, right) => {
+            let reg_left = base + 1;
+            print_operations(*left, reg_left);
+            let reg_right = base + 2;
+            print_operations(*right, reg_right);
+            println!("{} r{} r{}", name, reg_left, reg_right);
+        },
         Function(name, operands) => {
             for operand in operands {
                 base += 1;

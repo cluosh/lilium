@@ -1,7 +1,0 @@
-[package]
-name = "lilium-jit"
-version = "0.1.0"
-authors = ["Michael Pucher <michael.pucher.main@gmail.com>"]
-
-[dependencies]
-libc = "0.2.20"

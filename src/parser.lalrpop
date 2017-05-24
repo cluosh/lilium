@@ -1,0 +1,25 @@
+use std::str::FromStr;
+use ast::Expression;
+
+grammar;
+
+pub expressions: Vec<Expression> = {
+    expression* => <>
+};
+
+expression: Expression = {
+    "(" <f:function_name> <v:expressions> ")" => Expression::Function(f, v),
+    integer => Expression::Integer(<>),
+};
+
+function_name: String = {
+    r"[a-zA-Z]+" => <>.to_string(),
+    "+" => <>.to_string(),
+    "-" => <>.to_string(),
+    "*" => <>.to_string(),
+    "/" => <>.to_string(),
+};
+
+integer: i64 = {
+    r"\d+" => i64::from_str(<>).unwrap(),
+};

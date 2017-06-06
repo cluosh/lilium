@@ -1,12 +1,12 @@
-#[macro_use]
-extern crate serde_derive;
-
 extern crate serde;
 extern crate serde_json;
+extern crate bincode;
 extern crate lalrpop_util;
 
 pub mod parser;
 pub mod ast;
+
+use serde::ser::{Serialize, Serializer, SerializeStruct};
 
 #[test]
 fn syntax_tests() {
@@ -19,26 +19,47 @@ fn syntax_tests() {
     assert!(parser::parse_expressions("(name (+ 1 2) (* 3 4))").is_ok());
 }
 
-#[derive(Serialize,Deserialize)]
-struct Instruction {
-    opcode: u8,
-    target: u8,
-    src1: u8,
-    src2: u8,
+enum Instruction {
+    Op1 { opcode: u8, target: u8, operand: u16 },
+    Op2 { opcode: u8, target: u8, left: u8, right: u8 },
+}
+
+impl Serialize for Instruction {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        match *self {
+            Instruction::Op1 { ref opcode, ref target, ref operand } => {
+                let mut state = serializer.serialize_struct("Instruction", 3)?;
+                state.serialize_field("opcode", opcode)?;
+                state.serialize_field("target", target)?;
+                state.serialize_field("operand", operand)?;
+                state.end()
+            },
+            Instruction::Op2 { ref opcode, ref target, ref left, ref right } => {
+                let mut state = serializer.serialize_struct("Instruction", 4)?;
+                state.serialize_field("opcode", opcode)?;
+                state.serialize_field("target", target)?;
+                state.serialize_field("left", left)?;
+                state.serialize_field("right", right)?;
+                state.end()
+            },
+        }
+    }
 }
 
 fn assemble(expression: &ast::Expression,
             base_register: u8,
             instructions: &mut Vec<Instruction>) {
     use ast::Expression::*;
+    use Instruction::*;
 
     match *expression {
         Integer(_) => {
-            instructions.push(Instruction {
+            instructions.push(Op1 {
                 opcode: 42,
                 target: base_register,
-                src1: 0,
-                src2: 0,
+                operand: 1,
             });
         },
         BinaryOp(_, ref left, ref right) => {
@@ -46,11 +67,11 @@ fn assemble(expression: &ast::Expression,
             assemble(&left, reg_left, instructions);
             let reg_right = base_register + 2;
             assemble(&right, reg_right, instructions);
-            instructions.push(Instruction {
+            instructions.push(Op2 {
                 opcode: 13,
                 target: base_register,
-                src1: 0,
-                src2: 0
+                left: 2,
+                right: 3,
             });
         },
         Function(_, ref operands) => {
@@ -59,14 +80,12 @@ fn assemble(expression: &ast::Expression,
                 base += 1;
                 assemble(&operand, base, instructions);
             }
-            instructions.push(Instruction {
+            instructions.push(Op1 {
                 opcode: 10,
                 target: base_register,
-                src1: 0,
-                src2: 0
+                operand: 4,
             });
         }
-
     }
 }
 
@@ -77,5 +96,10 @@ fn main() {
         assemble(&expression, 0, &mut instructions);
     }
 
-    println!("{}\n", serde_json::to_string_pretty(&instructions).unwrap());
+    println!("{}", serde_json::to_string_pretty(&instructions).unwrap());
+    let encoded = bincode::serialize(&instructions, bincode::Infinite).unwrap();
+    for byte in encoded {
+        print!("{0:02x}", byte);
+    }
+    println!("");
 }

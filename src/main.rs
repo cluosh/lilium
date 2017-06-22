@@ -1,3 +1,4 @@
+#![feature(try_from)]
 extern crate serde;
 extern crate serde_json;
 extern crate bincode;
@@ -7,17 +8,7 @@ pub mod parser;
 pub mod ast;
 
 use serde::ser::{Serialize, Serializer, SerializeStruct};
-
-#[test]
-fn syntax_tests() {
-    assert!(parser::parse_expressions("(+ 1 2)").is_ok());
-    assert!(parser::parse_expressions("(- 1 2)").is_ok());
-    assert!(parser::parse_expressions("(* 1 2)").is_ok());
-    assert!(parser::parse_expressions("(/ 1 2)").is_ok());
-    assert!(parser::parse_expressions("(name 1 2)").is_ok());
-    assert!(parser::parse_expressions("(name (+ 1 2) 2)").is_ok());
-    assert!(parser::parse_expressions("(name (+ 1 2) (* 3 4))").is_ok());
-}
+use std::convert::TryFrom;
 
 enum Instruction {
     Op1 { opcode: u8, target: u8, operand: u16 },
@@ -50,35 +41,74 @@ impl Serialize for Instruction {
 
 fn assemble(expression: &ast::Expression,
             base_register: u8,
+            constants: &mut Vec<i64>,
             instructions: &mut Vec<Instruction>) {
     use ast::Expression::*;
     use Instruction::*;
 
     match *expression {
-        Integer(_) => {
-            instructions.push(Op1 {
-                opcode: 42,
-                target: base_register,
-                operand: 1,
-            });
+        Integer(i) => {
+            match i16::try_from(i) {
+                Ok(value) => {
+                    instructions.push(Op1 {
+                        opcode: 0x10,
+                        target: base_register,
+                        operand: value as u16
+                    });
+                }
+                Err(_) => {
+                    let len = constants.len() + 1;
+                    let len = u16::try_from(len)
+                        .expect("Reached maximum number of constants.");
+                    constants.push(i);
+
+                    instructions.push(Op1 {
+                        opcode: 0x11,
+                        target: base_register,
+                        operand: len
+                    });
+                }
+            }
         },
-        BinaryOp(_, ref left, ref right) => {
+        BinaryOp(ref op, ref left, ref right) => {
             let reg_left = base_register + 1;
-            assemble(&left, reg_left, instructions);
+            assemble(&left, reg_left, constants, instructions);
             let reg_right = base_register + 2;
-            assemble(&right, reg_right, instructions);
-            instructions.push(Op2 {
-                opcode: 13,
-                target: base_register,
-                left: 2,
-                right: 3,
-            });
+            assemble(&right, reg_right, constants, instructions);
+
+            match op.as_ref() {
+                "+" => {
+                    instructions.push(Op2 {
+                        opcode: 0x20,
+                        target: base_register,
+                        left: base_register + 1,
+                        right: base_register + 2,
+                    });
+                },
+                "-" => {
+                    instructions.push(Op2 {
+                        opcode: 0x21,
+                        target: base_register,
+                        left: base_register + 1,
+                        right: base_register + 2,
+                    });
+                },
+                "*" => {
+                    instructions.push(Op2 {
+                        opcode: 0x22,
+                        target: base_register,
+                        left: base_register + 1,
+                        right: base_register + 2,
+                    });
+                }
+                _ => panic!("Invalid operation"),
+            }
         },
         Function(_, ref operands) => {
             let mut base = base_register;
             for operand in operands {
                 base += 1;
-                assemble(&operand, base, instructions);
+                assemble(&operand, base, constants, instructions);
             }
             instructions.push(Op1 {
                 opcode: 10,
@@ -90,10 +120,11 @@ fn assemble(expression: &ast::Expression,
 }
 
 fn main() {
+    let mut constants: Vec<i64> = Vec::new();
     let mut instructions: Vec<Instruction> = Vec::new();
-    let expressions = parser::parse_expressions("(name (+ 1 2) (* 3 4))").unwrap();
+    let expressions = parser::parse_expressions("(- (+ 1 2) (* 3 4))").unwrap();
     for expression in expressions {
-        assemble(&expression, 0, &mut instructions);
+        assemble(&expression, 0, &mut constants, &mut instructions);
     }
 
     println!("{}", serde_json::to_string_pretty(&instructions).unwrap());

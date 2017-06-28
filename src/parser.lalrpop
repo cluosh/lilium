@@ -7,12 +7,22 @@ pub expressions: Vec<Expression> = {
     expression* => <>
 };
 
+pub variables: Vec<String> = {
+    function_name* => <>
+};
+
 expression: Expression = {
+    "(def" <n:function_name> "(" <p:variables> ")" <b:expressions> ")" => {
+        Expression::FunctionDefinition(n, p, b)
+    },
     "(" <o:op_binary> <l:expression> <r:expression> ")" => {
         Expression::BinaryOp(o, Box::new(l), Box::new(r))
     },
     "(" <f:function_name> <v:expressions> ")" => {
         Expression::Function(f, v)
+    },
+    function_name => {
+        Expression::Variable(<>)
     },
     integer => {
         Expression::Integer(<>)

@@ -27,6 +27,7 @@ mod ops {
     pub const DIV: Opcode = 7;
     pub const CAL: Opcode = 8;
     pub const RET: Opcode = 9;
+    pub const RDI: Opcode = 10;
 }
 
 type Register = u8;

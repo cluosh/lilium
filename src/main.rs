@@ -19,16 +19,29 @@ mod ops {
     pub const HLT: Opcode = 0;
     pub const LD:  Opcode = 1;
     pub const LDB: Opcode = 2;
-    pub const ADD: Opcode = 3;
-    pub const SUB: Opcode = 4;
-    pub const MUL: Opcode = 5;
-    pub const DIV: Opcode = 6;
+    pub const LDR: Opcode = 3;
+    pub const ADD: Opcode = 4;
+    pub const SUB: Opcode = 5;
+    pub const MUL: Opcode = 6;
+    pub const DIV: Opcode = 7;
+    pub const CAL: Opcode = 8;
+    pub const RET: Opcode = 9;
+}
+
+type Register = u8;
+mod reg {
+    use super::Register;
+
+    pub const RET: Register = 0;
+    pub const VAL: Register = 1;
 }
 
 struct Thread<'a> {
+    functions: &'a [u64],
     constants: &'a [i64],
     code: &'a [Instruction],
-    registers: &'a mut [i64]
+    registers: &'a mut [i64],
+    base: usize
 }
 
 #[derive(Serialize)]
@@ -177,7 +190,9 @@ fn op_ld(thread: &mut Thread, pc: usize) -> usize {
     unsafe {
         let instruction = code.get_unchecked(pc);
         let number = instruction.left as u16 | (instruction.right as u16) << 8;
-        *registers.get_unchecked_mut(instruction.target as usize) = number as i64;
+
+        let r = instruction.target as usize + thread.base;
+        *registers.get_unchecked_mut(r) = number as i64;
     }
     pc + 1
 }
@@ -191,7 +206,21 @@ fn op_ldb(thread: &mut Thread, pc: usize) -> usize {
         let instruction = code.get_unchecked(pc);
         let index = instruction.left as u16 | (instruction.right as u16) << 8;
         let c = *constants.get_unchecked(index as usize);
-        *registers.get_unchecked_mut(instruction.target as usize) = c;
+
+        let r = instruction.target as usize + thread.base;
+        *registers.get_unchecked_mut(r) = c;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_ldr(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let r = code.get_unchecked(pc).target as usize + thread.base;
+        let rval = *registers.get_unchecked(reg::VAL as usize + thread.base + 256);
+        *registers.get_unchecked_mut(r) = rval;
     }
     pc + 1
 }
@@ -202,9 +231,12 @@ fn op_add(thread: &mut Thread, pc: usize) -> usize {
     let registers = &mut thread.registers;
     unsafe {
         let instruction = code.get_unchecked(pc);
-        let left = *registers.get_unchecked(instruction.left as usize);
-        let right = *registers.get_unchecked(instruction.right as usize);
-        *registers.get_unchecked_mut(instruction.target as usize) = left + right;
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = left + right;
     }
     pc + 1
 }
@@ -215,9 +247,12 @@ fn op_sub(thread: &mut Thread, pc: usize) -> usize {
     let registers = &mut thread.registers;
     unsafe {
         let instruction = code.get_unchecked(pc);
-        let left = *registers.get_unchecked(instruction.left as usize);
-        let right = *registers.get_unchecked(instruction.right as usize);
-        *registers.get_unchecked_mut(instruction.target as usize) = left - right;
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = left - right;
     }
     pc + 1
 }
@@ -228,9 +263,12 @@ fn op_mul(thread: &mut Thread, pc: usize) -> usize {
     let registers = &mut thread.registers;
     unsafe {
         let instruction = code.get_unchecked(pc);
-        let left = *registers.get_unchecked(instruction.left as usize);
-        let right = *registers.get_unchecked(instruction.right as usize);
-        *registers.get_unchecked_mut(instruction.target as usize) = left * right;
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = left * right;
     }
     pc + 1
 }
@@ -241,11 +279,42 @@ fn op_div(thread: &mut Thread, pc: usize) -> usize {
     let registers = &mut thread.registers;
     unsafe {
         let instruction = code.get_unchecked(pc);
-        let left = *registers.get_unchecked(instruction.left as usize);
-        let right = *registers.get_unchecked(instruction.right as usize);
-        *registers.get_unchecked_mut(instruction.target as usize) = left / right;
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = left / right;
     }
     pc + 1
+}
+
+#[inline(always)]
+fn op_cal(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let functions = &thread.functions;
+    let registers = &mut thread.registers;
+    thread.base += 256;
+    unsafe {
+        *registers.get_unchecked_mut(reg::RET as usize + thread.base) = pc as i64;
+
+        let instruction = code.get_unchecked(pc);
+        let b0 = *registers.get_unchecked(instruction.target as usize) as usize;
+        let b1 = *registers.get_unchecked(instruction.left as usize) as usize;
+        let b2 = *registers.get_unchecked(instruction.right as usize) as usize;
+        let function_address = b0 | b1 << 8 | b2 << 16;
+        *functions.get_unchecked(function_address) as usize
+    }
+}
+
+#[inline(always)]
+fn op_ret(thread: &mut Thread, pc: usize) -> usize {
+    let registers = &mut thread.registers;
+    let ret_pc = unsafe {
+        *registers.get_unchecked(reg::RET as usize + thread.base)
+    };
+    thread.base -= 256;
+    ret_pc as usize
 }
 
 #[inline(never)]
@@ -255,10 +324,13 @@ fn run(thread: &mut Thread) {
     ops[ops::HLT as usize] = label_addr!("op_hlt");
     ops[ops::LD  as usize] = label_addr!("op_ld");
     ops[ops::LDB as usize] = label_addr!("op_ldb");
+    ops[ops::LDR as usize] = label_addr!("op_ldr");
     ops[ops::ADD as usize] = label_addr!("op_add");
     ops[ops::SUB as usize] = label_addr!("op_sub");
     ops[ops::MUL as usize] = label_addr!("op_mul");
     ops[ops::DIV as usize] = label_addr!("op_div");
+    ops[ops::CAL as usize] = label_addr!("op_cal");
+    ops[ops::RET as usize] = label_addr!("op_ret");
 
     let mut pc: usize = 0;
 
@@ -270,6 +342,10 @@ fn run(thread: &mut Thread) {
 
     do_and_dispatch!(&thread, ops, "op_ldb", pc, {
         pc = op_ldb(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_ldr", pc, {
+        pc = op_ldr(thread, pc);
     });
 
     do_and_dispatch!(&thread, ops, "op_add", pc, {
@@ -288,16 +364,25 @@ fn run(thread: &mut Thread) {
         pc = op_div(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_cal", pc, {
+        pc = op_cal(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_ret", pc, {
+        pc = op_ret(thread, pc);
+    });
+
     label!("op_hlt");
 }
 
-fn compile(program: &str) -> (Vec<i64>,Vec<Instruction>) {
+fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>) {
     let expressions = parser::parse_expressions(program).unwrap();
+    let mut functions: Vec<u64> = Vec::new();
     let mut constants: Vec<i64> = Vec::new();
     let mut instructions: Vec<Instruction> = Vec::new();
 
     for expression in expressions {
-        assemble(&expression, 0, &mut constants, &mut instructions);
+        assemble(&expression, 1, &mut constants, &mut instructions);
     }
     instructions.push(Instruction {
         opcode: ops::HLT,
@@ -306,16 +391,22 @@ fn compile(program: &str) -> (Vec<i64>,Vec<Instruction>) {
         right: 0
     });
 
-    (constants,instructions)
+    (functions,constants,instructions)
 }
 
 fn main() {
-    let (c, i) = compile("(/ 65536 2)");
+    let (f, c, i) = compile("(/ 65536 2)");
     println!("Instructions:\n{}", serde_json::to_string_pretty(&i).unwrap());
     println!("Constants:\n{}", serde_json::to_string_pretty(&c).unwrap());
 
     let mut registers: [i64; 65536] = [0; 65536];
-    let mut thread = Thread { constants: &c, code: &i, registers: &mut registers };
+    let mut thread = Thread {
+        functions: &f,
+        constants: &c,
+        code: &i,
+        registers: &mut registers,
+        base: 0
+    };
     run(&mut thread);
 }
 
@@ -325,76 +416,86 @@ mod integers {
 
     #[test]
     fn const_add() {
-        let (c, i) = compile("(+ 1 (+ 2 123456))");
+        let (f, c, i) = compile("(+ 1 (+ 2 123456))");
 
         let mut registers: [i64; 256] = [0; 256];
         let mut thread = Thread {
+            functions: &f,
             constants: &c,
             code: &i,
-            registers: &mut registers
+            registers: &mut registers,
+            base: 0
         };
         run(&mut thread);
 
-        assert!(thread.registers[0] == 123459);
+        assert!(thread.registers[reg::VAL as usize] == 123459);
     }
 
     #[test]
     fn const_sub() {
-        let (c, i) = compile("(- 0 (- 123456 3))");
+        let (f, c, i) = compile("(- 0 (- 123456 3))");
 
         let mut registers: [i64; 256] = [0; 256];
         let mut thread = Thread {
+            functions: &f,
             constants: &c,
             code: &i,
-            registers: &mut registers
+            registers: &mut registers,
+            base: 0
         };
         run(&mut thread);
 
-        assert!(thread.registers[0] == -123453);
+        assert!(thread.registers[reg::VAL as usize] == -123453);
     }
 
     #[test]
     fn const_mul() {
-        let (c, i) = compile("(* 36 (* 36 36))");
+        let (f, c, i) = compile("(* 36 (* 36 36))");
 
         let mut registers: [i64; 256] = [0; 256];
         let mut thread = Thread {
+            functions: &f,
             constants: &c,
             code: &i,
-            registers: &mut registers
+            registers: &mut registers,
+            base: 0
         };
         run(&mut thread);
 
-        assert!(thread.registers[0] == 46656);
+        assert!(thread.registers[reg::VAL as usize] == 46656);
     }
 
     #[test]
     fn const_div() {
-        let (c, i) = compile("(/ (/ 65536 2) 2)");
+        let (f, c, i) = compile("(/ (/ 65536 2) 2)");
 
         let mut registers: [i64; 256] = [0; 256];
         let mut thread = Thread {
+            functions: &f,
             constants: &c,
             code: &i,
-            registers: &mut registers
+            registers: &mut registers,
+            base: 0
         };
         run(&mut thread);
 
-        assert!(thread.registers[0] == 16384);
+        assert!(thread.registers[reg::VAL as usize] == 16384);
     }
 
     #[test]
     fn combined() {
-        let (c, i) = compile("(/ (+ (- 1000002 2) (- (* 500000 2) 0)) 2)");
+        let (f, c, i) = compile("(/ (+ (- 1000002 2) (- (* 500000 2) 0)) 2)");
 
         let mut registers: [i64; 256] = [0; 256];
         let mut thread = Thread {
+            functions: &f,
             constants: &c,
             code: &i,
-            registers: &mut registers
+            registers: &mut registers,
+            base: 0
         };
         run(&mut thread);
 
-        assert!(thread.registers[0] == 1000000);
+        assert!(thread.registers[reg::VAL as usize] == 1000000);
     }
 }

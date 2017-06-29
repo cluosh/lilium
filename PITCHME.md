@@ -22,3 +22,56 @@ A LISP-Like Register Machine
 * Token-threaded dispatch (inline assembly)
 
 ---
+
+### Features
+
+---
+
+### Bytecode
+
+---
+
+### LALRPOP Grammar
+
+---
+
+### Token-Threading in Rust
+
+* Rust performs bound checks on...
+   * array access
+   * *match* statements
+   * basically everthing
+* Can we get computed goto C performance?
+
+---
+
+### Unsafe And Inline Assembly
+
+* Array access without bound check -> use **unsafe**
+* Token-Threading -> use **asm**
+* Comparison of dispatchers in Rust:
+  https://pliniker.github.io/post/dispatchers/
+
+---
+
+### Token-Threading in Rust
+
+---
+
+### Dispatch Loop
+
+___
+
+### Generated Code
+
+---
+
+### Performance Comparison
+
+---
+
+### Performance Comparison
+
+---
+
+### Demo

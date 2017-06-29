@@ -2,3 +2,4 @@ theme : moon
 slide-number : true
 transition : none
 highlight : monokai
+logo: res/logo.png

@@ -3,7 +3,6 @@
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
-extern crate serde_json;
 extern crate bincode;
 extern crate lalrpop_util;
 
@@ -17,17 +16,18 @@ type Opcode = u8;
 mod ops {
     use super::Opcode;
 
-    pub const HLT: Opcode = 0;
-    pub const LD:  Opcode = 1;
-    pub const LDB: Opcode = 2;
-    pub const LDR: Opcode = 3;
-    pub const ADD: Opcode = 4;
-    pub const SUB: Opcode = 5;
-    pub const MUL: Opcode = 6;
-    pub const DIV: Opcode = 7;
-    pub const CAL: Opcode = 8;
-    pub const RET: Opcode = 9;
-    pub const RDI: Opcode = 10;
+    pub const HLT: Opcode =  0;
+    pub const LD:  Opcode =  1;
+    pub const LDB: Opcode =  2;
+    pub const LDR: Opcode =  3;
+    pub const ADD: Opcode =  4;
+    pub const SUB: Opcode =  5;
+    pub const MUL: Opcode =  6;
+    pub const DIV: Opcode =  7;
+    pub const CAL: Opcode =  8;
+    pub const RET: Opcode =  9;
+    pub const MOV: Opcode = 10;
+    pub const MVO: Opcode = 11;
 }
 
 type Register = u8;
@@ -36,6 +36,16 @@ mod reg {
 
     pub const RET: Register = 0;
     pub const VAL: Register = 1;
+}
+
+type Type = u8;
+mod types {
+    use super::Type;
+
+    pub const INT: Type = 0;
+    //pub const FLOAT: Type = 0;
+    //pub const INTLIST: Type = 0;
+    //pub const FLOATLIST: Type = 0;
 }
 
 struct Thread<'a> {
@@ -59,7 +69,8 @@ fn assemble(expression: &ast::Expression,
             constants: &mut Vec<i64>,
             functions: &mut Vec<u64>,
             instructions: &mut Vec<Instruction>,
-            function_mapping: &mut HashMap<String, u32>) {
+            function_mapping: &mut HashMap<String, u32>,
+            variables: &HashMap<String, (Type, Register)>) {
     use ast::Expression::*;
 
     match *expression {
@@ -99,14 +110,16 @@ fn assemble(expression: &ast::Expression,
                      constants,
                      functions,
                      instructions,
-                     function_mapping);
+                     function_mapping,
+                     variables);
             let reg_right = base_register + 2;
             assemble(&right,
                      reg_right,
                      constants,
                      functions,
                      instructions,
-                     function_mapping);
+                     function_mapping,
+                     variables);
 
             let mut instruction = Instruction {
                 opcode: ops::HLT,
@@ -132,15 +145,24 @@ fn assemble(expression: &ast::Expression,
                 }
             };
 
-            let mut base = base_register;
+            let base = base_register + 1;
+            let mut param_base = reg::VAL;
             for operand in operands {
-                base += 1;
                 assemble(&operand,
                          base,
                          constants,
                          functions,
                          instructions,
-                         function_mapping);
+                         function_mapping,
+                         variables);
+
+                param_base += 1;
+                instructions.push(Instruction {
+                    opcode: ops::MVO,
+                    target: param_base,
+                    left: base,
+                    right: 0xFF
+                });
             }
 
             instructions.push(Instruction {
@@ -162,15 +184,31 @@ fn assemble(expression: &ast::Expression,
             function_mapping.insert(name.to_string(), index);
             functions.push(address);
 
+            let mut base = base_register;
+            let mut variables = variables.clone();
+            for p in param {
+                variables.insert(p.to_string(), (types::INT, base));
+                base += 1;
+            }
+
+            let base = base;
+            let variables = &variables;
             for expression in body {
                 assemble(&expression,
-                         base_register,
+                         base,
                          constants,
                          functions,
                          instructions,
-                         function_mapping);
+                         function_mapping,
+                         variables);
             }
 
+            instructions.push(Instruction {
+                opcode: ops::MOV,
+                target: reg::VAL,
+                left: base,
+                right: 0
+            });
             instructions.push(Instruction {
                 opcode: ops::RET,
                 target: 0,
@@ -178,7 +216,94 @@ fn assemble(expression: &ast::Expression,
                 right: 0
             });
         },
-        Variable(_) => {
+        Variable(ref name) => {
+            let (_, reg) = match variables.get(name) {
+                Some(index) => *index,
+                _ => panic!("Variable {} is not defined", name)
+            };
+
+            instructions.push(Instruction {
+                opcode: ops::MOV,
+                target: base_register,
+                left: reg,
+                right: 0
+            });
+        }
+    }
+}
+
+fn disassemble(constants: &[i64],
+               functions: &[u64],
+               instructions: &[Instruction]) {
+    let mut pc: usize = 0;
+    for instruction in instructions {
+        print!("0x{:05x}: ", pc);
+        pc += 1;
+
+        match instruction.opcode {
+            ops::HLT => println!("hlt"),
+            ops::LD => {
+                let rl = instruction.left as u16;
+                let rr = instruction.right as u16;
+                let val = rl | rr << 8;
+                let r = instruction.target;
+                println!("ld {} {}", r, val as i16);
+            }
+            ops::LDB => {
+                let rl = instruction.left as u16;
+                let rr = instruction.right as u16;
+                let val = rl | rr << 8;
+                let r = instruction.target;
+                println!("ld {} {}", r, constants[val as usize]);
+            }
+            ops::LDR => {
+                let r = instruction.target;
+                println!("ldr {}", r);
+            }
+            ops::ADD => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("add {} {} {}", r, rl, rr);
+            }
+            ops::SUB => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("sub {} {} {}", r, rl, rr);
+            }
+            ops::MUL => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("mul {} {} {}", r, rl, rr);
+            }
+            ops::DIV => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("div {} {} {}", r, rl, rr);
+            }
+            ops::CAL => {
+                let rl = instruction.left as u32;
+                let rr = instruction.right as u32;
+                let r = instruction.target as u32;
+                let addr = functions[(r | rl << 8 | rr << 16) as usize];
+                println!("call 0x{:x}", addr);
+            }
+            ops::RET => println!("ret"),
+            ops::MOV => {
+                let rl = instruction.left;
+                let r = instruction.target;
+                println!("mov {} {}", r, rl);
+            }
+            ops::MVO => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("mvo {} {} {}", r, rl, rr);
+            }
+            _ => println!("Invalid instruction")
         }
     }
 }
@@ -403,6 +528,33 @@ fn op_ret(thread: &mut Thread) -> usize {
     pc
 }
 
+#[inline(always)]
+fn op_mov(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        *registers.get_unchecked_mut(r) = *registers.get_unchecked(rl);
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_mvo(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let offset = instruction.right as usize;
+        let r = instruction.target as usize + thread.base + offset;
+        *registers.get_unchecked_mut(r) = *registers.get_unchecked(rl);
+    }
+    pc + 1
+}
+
 #[inline(never)]
 fn run(thread: &mut Thread, entry_point: usize) {
     let mut ops: [usize; 32] = [label_addr!("op_hlt"); 32];
@@ -417,6 +569,8 @@ fn run(thread: &mut Thread, entry_point: usize) {
     ops[ops::DIV as usize] = label_addr!("op_div");
     ops[ops::CAL as usize] = label_addr!("op_cal");
     ops[ops::RET as usize] = label_addr!("op_ret");
+    ops[ops::MOV as usize] = label_addr!("op_mov");
+    ops[ops::MVO as usize] = label_addr!("op_mvo");
 
     let mut pc: usize = entry_point;
 
@@ -458,6 +612,14 @@ fn run(thread: &mut Thread, entry_point: usize) {
         op_ret(thread)
     });
 
+    do_and_dispatch!(&thread, ops, "op_mov", pc, {
+        pc = op_mov(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_mvo", pc, {
+        pc = op_mvo(thread, pc);
+    });
+
     label!("op_hlt");
 }
 
@@ -468,6 +630,7 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
     let mut constants: Vec<i64> = Vec::new();
     let mut instructions: Vec<Instruction> = Vec::new();
     let mut function_mapping: HashMap<String, u32> = HashMap::new();
+    let variables: HashMap<String, (Type, Register)> = HashMap::new();
 
     // Process function definitions first
     let filtered = expressions
@@ -482,7 +645,8 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
                  &mut constants,
                  &mut functions,
                  &mut instructions,
-                 &mut function_mapping);
+                 &mut function_mapping,
+                 &variables);
     }
 
     // Now, process other expressions
@@ -499,7 +663,8 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
                  &mut constants,
                  &mut functions,
                  &mut instructions,
-                 &mut function_mapping);
+                 &mut function_mapping,
+                 &variables);
     }
 
     instructions.push(Instruction {
@@ -514,16 +679,16 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
 
 fn main() {
     let program = concat!(
-        "(def div () (/ 100 4))",
-        "(def mul () (* 2 3))",
-        "(def add () (+ 4 5))",
-        "(def sub () (- 1000001 1000000))",
-        "(+ (div) (+ (mul) (+ (add) (sub))))"
+//        "(def div (a b) (/ a b))",
+        "(def mul (a b) (* a b))",
+        "(def add (a b c) (+ a (+ b c)))",
+        "(def neg (a) (- 0 a))",
+        "(neg (add 10 20 (mul 5 6)))"
+//        "(neg (add 10 20 (div 16 (mul 2 2))))"
     );
 
     let (f, c, i, e) = compile(program);
-    println!("Instructions:\n{}", serde_json::to_string_pretty(&i).unwrap());
-    println!("Constants:\n{}", serde_json::to_string_pretty(&c).unwrap());
+    disassemble(&c, &f, &i);
 
     let mut registers: [i64; 65536] = [0; 65536];
     let mut thread = Thread {
@@ -652,5 +817,30 @@ mod integers {
         run(&mut thread, e);
 
         assert!(thread.registers[reg::VAL as usize] == 41);
+    }
+
+    #[test]
+    fn calls_args() {
+        let program = concat!(
+            "(def div (a b) (/ a b))",
+            "(def mul (a b) (* a b))",
+            "(def add (a b c) (+ a (+ b c)))",
+            "(def neg (a) (- 0 a))",
+            "(neg (add 10 20 (div 16 (mul 2 2))))"
+        );
+
+        let (f, c, i, e) = compile(program);
+
+        let mut registers: [i64; 1536] = [0; 1536];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == -34);
     }
 }

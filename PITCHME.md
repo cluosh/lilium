@@ -31,6 +31,8 @@ A LISP-Like Register Machine
 * Function definition: ```(def fun (a b) (+ a b))```
 * Variable assignment: ```(let ((a 3) (b (+ 2 3))) (/ a b))```
 * Conditionals: ```(if (> a 3) (funca a) (funcb b))```
+* Read/print integers: ```(read), (write 123)```
+* Disassembler
 
 ---
 
@@ -44,6 +46,41 @@ A LISP-Like Register Machine
 ---
 
 ### LALRPOP Grammar
+
+```rust
+use std::str::FromStr;
+use ast::Expression;
+
+grammar;
+
+pub expressions: Vec<Expression> = {
+    expression* => <>
+};
+
+expression: Expression = {
+    "(" <o:op_nullary> ")" => {
+        Expression::NullaryOp(o)
+    },
+    "(let" "(" <a:assignments> ")" <b:expressions> ")" => {
+        Expression::VariableAssignment(a,b)
+    },
+    "(" <o:op_binary> <l:expression> <r:expression> ")" => {
+        Expression::BinaryOp(o, Box::new(l), Box::new(r))
+    },
+    "(" <o:op_unary> <l:expression> ")" => {
+        Expression::UnaryOp(o, Box::new(l))
+    },
+    ...
+    "(if" <c:expression> "(" <t:expressions> ")" "(" <f:expressions> ")" ")" => {
+        Expression::Conditional(Box::new(c),t,f)
+    },
+    ...
+};
+
+identifier: String = {
+    r"[a-zA-Z]+" => <>.to_string(),
+};
+```
 
 ---
 
@@ -68,22 +105,61 @@ A LISP-Like Register Machine
 
 ### Token-Threading in Rust
 
+```rust
+#[cfg(target_arch = "x86_64")]
+macro_rules! dispatch {
+    ($vm:expr, $pc:expr, $jumptable:expr) => {
+        unsafe {
+            let opcode = $vm.code.get_unchecked($pc).opcode as usize;
+            let addr = *$jumptable.get_unchecked(opcode);
+            asm!("jmpq *$0"
+                 :
+                 : "r"(addr), "{rdx}"($pc)
+                 :
+                 : "volatile");
+        }
+    }
+}
+```
+
 ---
 
 ### Dispatch Loop
+
+```rust
+dispatch!(&thread, pc, ops);
+
+do_and_dispatch!(&thread, ops, "op_ld", pc, {
+    pc = op_ld(thread, pc);
+});
+
+do_and_dispatch!(&thread, ops, "op_ldb", pc, {
+    pc = op_ldb(thread, pc);
+});
+
+do_and_dispatch!(&thread, ops, "op_ldr", pc, {
+    pc = op_ldr(thread, pc);
+});
+```
 
 ---
 
 ### Generated Code
 
----
-
-### Performance Comparison
-
----
-
-### Performance Comparison
-
----
-
-### Demo
+```asm
+op_add:
+	movzbl	2(%rax,%rdx,4), %edi
+	addq	%rsi, %rdi
+	movzbl	3(%rax,%rdx,4), %ebx
+	addq	%rsi, %rbx
+	movzbl	1(%rax,%rdx,4), %eax
+	addq	%rsi, %rax
+	movq	(%rcx,%rbx,8), %rsi
+	addq	(%rcx,%rdi,8), %rsi
+	movq	%rsi, (%rcx,%rax,8)
+	movq	32(%r15), %rax
+	movzbl	4(%rax,%rdx,4), %eax
+	incq	%rdx
+	movq	112(%rsp,%rax,8), %rax
+	jmpq	*%rax
+```

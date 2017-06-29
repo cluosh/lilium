@@ -11,6 +11,7 @@ pub mod ast;
 
 use std::convert::TryFrom;
 use std::collections::HashMap;
+use bincode::{serialize, deserialize, Infinite};
 
 type Opcode = u8;
 mod ops {
@@ -70,7 +71,21 @@ struct Thread<'a> {
     base: usize
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
+struct Module {
+    functions: Vec<u64>,
+    constants: Vec<i64>,
+    entry_point: u64,
+    code: Vec<Instruction>
+}
+
+struct Tail<'a> {
+    name: &'a str,
+    address: usize,
+    tailing: bool
+}
+
+#[derive(Serialize, Deserialize)]
 struct Instruction {
     opcode: Opcode,
     target: u8,
@@ -84,7 +99,8 @@ fn assemble(expression: &ast::Expression,
             functions: &mut Vec<u64>,
             instructions: &mut Vec<Instruction>,
             function_mapping: &mut HashMap<String, u32>,
-            variables: &HashMap<String, (Type, Register)>) {
+            variables: &HashMap<String, (Type, Register)>,
+            tail: &Tail) {
     use ast::Expression::*;
 
     match *expression {
@@ -125,7 +141,8 @@ fn assemble(expression: &ast::Expression,
                      functions,
                      instructions,
                      function_mapping,
-                     variables);
+                     variables,
+                     tail);
             let reg_right = base_register + 2;
             assemble(&right,
                      reg_right,
@@ -133,7 +150,8 @@ fn assemble(expression: &ast::Expression,
                      functions,
                      instructions,
                      function_mapping,
-                     variables);
+                     variables,
+                     tail);
 
             let mut instruction = Instruction {
                 opcode: ops::HLT,
@@ -167,7 +185,8 @@ fn assemble(expression: &ast::Expression,
                      functions,
                      instructions,
                      function_mapping,
-                     variables);
+                     variables,
+                     tail);
 
             let mut instruction = Instruction {
                 opcode: ops::HLT,
@@ -217,7 +236,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
 
                 temp_instructions.push(Instruction {
                     opcode: ops::MVO,
@@ -263,7 +283,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
             }
 
             instructions.push(Instruction {
@@ -292,7 +313,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
             }
 
             let base = base;
@@ -304,7 +326,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
             }
 
             instructions.push(Instruction {
@@ -334,7 +357,8 @@ fn assemble(expression: &ast::Expression,
                      functions,
                      instructions,
                      function_mapping,
-                     variables);
+                     variables,
+                     tail);
 
             let mut yes_instructions: Vec<Instruction> = Vec::new();
             for expr in yes {
@@ -344,7 +368,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          &mut yes_instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
             }
 
             let mut no_instructions: Vec<Instruction> = Vec::new();
@@ -355,7 +380,8 @@ fn assemble(expression: &ast::Expression,
                          functions,
                          &mut no_instructions,
                          function_mapping,
-                         variables);
+                         variables,
+                         tail);
             }
 
             let condition_jump = no_instructions.len() + 2;
@@ -516,6 +542,15 @@ fn disassemble(constants: &[i64],
                 let r = instruction.target;
                 let addr = rl | rr << 8;
                 println!("jmt {} 0x{:x}", r, addr);
+            }
+            ops::WRI => {
+                let rl = instruction.left;
+                let r = instruction.target;
+                println!("write {} {}", r, rl);
+            }
+            ops::RDI => {
+                let r = instruction.target;
+                println!("read {}", r);
             }
             _ => println!("Invalid instruction")
         }
@@ -1137,6 +1172,7 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
     let mut instructions: Vec<Instruction> = Vec::new();
     let mut function_mapping: HashMap<String, u32> = HashMap::new();
     let variables: HashMap<String, (Type, Register)> = HashMap::new();
+    let tail = Tail { name: "", address: 0, tailing: false };
 
     // Process function definitions first
     let filtered = expressions
@@ -1152,7 +1188,8 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
                  &mut functions,
                  &mut instructions,
                  &mut function_mapping,
-                 &variables);
+                 &variables,
+                 &tail);
     }
 
     // Now, process other expressions
@@ -1170,7 +1207,8 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
                  &mut functions,
                  &mut instructions,
                  &mut function_mapping,
-                 &variables);
+                 &variables,
+                 &tail);
     }
 
     instructions.push(Instruction {
@@ -1184,33 +1222,84 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
 }
 
 fn main() {
-    let program = concat!(
-        //"(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
-        //"(def neg (a) (- 0 a))",
-        //"(neg (fun 10 20))"
-        "(def fun (a b)",
-        "  (if ",
-        "     (> a 0)",
-        "     ((write a) (fun (- a 1) (+ b 1)))",
-        "     ((+ b 1))))",
-        "(fun (read) 2)"
-    );
+    use std::io::Read;
+    use std::io::Write;
 
-    let (f, c, i, e) = compile(program);
-    disassemble(&c, &f, &i);
+    let args: Vec<_> = std::env::args().collect();
+    let mut args = args.iter();
+    //args.next().unwrap();
+    let mode = args.next();
+    if let Some(m) = mode {
+        match m.as_ref() {
+            "c" => {
+                if let Some(fname) = args.next() {
+                    let mut file = std::fs::File::open(&fname)
+                        .expect("Unable to open the file");
+                    let mut contents = String::new();
+                    file.read_to_string(&mut contents)
+                        .expect("Unable to read the file");
 
-    let mut registers: [i64; 65536] = [0; 65536];
-    let mut thread = Thread {
-        functions: &f,
-        constants: &c,
-        code: &i,
-        registers: &mut registers,
-        base: 0
-    };
-    run(&mut thread, e);
+                    let (f, c, i, e) = compile(&contents);
+                    let m = Module {
+                        functions: f,
+                        constants: c,
+                        entry_point: e as u64,
+                        code: i
+                    };
 
-    for regs in thread.registers.iter().take(8) {
-        println!("reg {}", regs);
+                    let bc = std::fs::File::create(fname.to_string() + ".bc")
+                        .expect("Could not create bytecode output file");
+                    let mut writer = std::io::BufWriter::new(bc);
+                    let encoded: Vec<u8> = serialize(&m, Infinite).unwrap();
+                    if let Err(_) = writer.write_all(&encoded) {
+                        println!("Could not create bytecode file");
+                    }
+                } else {
+                    println!("Please specify filename");
+                }
+            }
+            "d" => {
+                if let Some(fname) = args.next() {
+                    let mut file = std::fs::File::open(&fname)
+                        .expect("Unable to open the file");
+                    let mut contents: Vec<u8> = Vec::new();
+                    file.read_to_end(&mut contents)
+                        .expect("Unable to read the file");
+
+                    let m: Module = deserialize(&contents)
+                        .expect("Invalid bytecode module");
+                    disassemble(&m.constants, &m.functions, &m.code);
+                } else {
+                    println!("Please specify filename");
+                }
+            }
+            "r" => {
+                if let Some(fname) = args.next() {
+                    let mut file = std::fs::File::open(fname)
+                        .expect("Unable to open the file");
+                    let mut contents: Vec<u8> = Vec::new();
+                    file.read_to_end(&mut contents)
+                        .expect("Unable to read the file");
+
+                    let m: Module = deserialize(&contents)
+                        .expect("Invalid bytecode module");
+                    let mut registers: [i64; 4194304] = [0; 4194304];
+                    let mut thread = Thread {
+                        functions: &m.functions,
+                        constants: &m.constants,
+                        code: &m.code,
+                        registers: &mut registers,
+                        base: 0
+                    };
+                    run(&mut thread, m.entry_point as usize);
+                }
+            }
+            _ => {
+                println!("Unknown mode");
+            }
+        }
+    } else {
+        println!("Specify mode (c, d) or filename.");
     }
 }
 

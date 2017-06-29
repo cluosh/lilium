@@ -40,6 +40,8 @@ mod ops {
     pub const JMF: Opcode = 21;
     pub const JMB: Opcode = 22;
     pub const JTF: Opcode = 23;
+    pub const WRI: Opcode = 24;
+    pub const RDI: Opcode = 25;
 }
 
 type Register = u8;
@@ -156,7 +158,45 @@ fn assemble(expression: &ast::Expression,
                 _ => panic!("Invalid operation")
             }
             instructions.push(instruction);
-        },
+        }
+        UnaryOp(ref op, ref left) => {
+            let reg_left = base_register + 1;
+            assemble(&left,
+                     reg_left,
+                     constants,
+                     functions,
+                     instructions,
+                     function_mapping,
+                     variables);
+
+            let mut instruction = Instruction {
+                opcode: ops::HLT,
+                target: base_register,
+                left: base_register + 1,
+                right: 0
+            };
+
+            match op.as_ref() {
+                "~" => instruction.opcode = ops::NOT,
+                "write" => instruction.opcode = ops::WRI,
+                _ => panic!("Invalid operation")
+            }
+            instructions.push(instruction);
+        }
+        NullaryOp(ref op) => {
+            let mut instruction = Instruction {
+                opcode: ops::HLT,
+                target: base_register,
+                left: 0,
+                right: 0
+            };
+
+            match op.as_ref() {
+                "read" => instruction.opcode = ops::RDI,
+                _ => panic!("Invalid operation")
+            }
+            instructions.push(instruction);
+        }
         Function(ref name, ref operands) => {
             let index = {
                 match function_mapping.get(name) {
@@ -915,6 +955,42 @@ fn op_jtf(thread: &mut Thread, pc: usize) -> usize {
     }
 }
 
+#[inline(always)]
+fn op_wri(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        *registers.get_unchecked_mut(r) = left;
+
+        println!("{}", left);
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_rdi(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let r = instruction.target as usize + thread.base;
+
+        let mut input_text = String::new();
+        std::io::stdin()
+            .read_line(&mut input_text)
+            .expect("Could not read from stdio");
+        *registers.get_unchecked_mut(r) = match input_text.trim().parse::<i64>() {
+            Ok(i) => i,
+            _ => panic!("Could not read integer")
+        };
+    }
+    pc + 1
+}
+
 #[inline(never)]
 fn run(thread: &mut Thread, entry_point: usize) {
     let mut ops: [usize; 32] = [label_addr!("op_hlt"); 32];
@@ -943,6 +1019,8 @@ fn run(thread: &mut Thread, entry_point: usize) {
     ops[ops::JMF as usize] = label_addr!("op_jmf");
     ops[ops::JMB as usize] = label_addr!("op_jmb");
     ops[ops::JTF as usize] = label_addr!("op_jtf");
+    ops[ops::WRI as usize] = label_addr!("op_wri");
+    ops[ops::RDI as usize] = label_addr!("op_rdi");
 
     let mut pc: usize = entry_point;
 
@@ -1040,6 +1118,14 @@ fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_jtf(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_wri", pc, {
+        pc = op_wri(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_rdi", pc, {
+        pc = op_rdi(thread, pc);
+    });
+
     label!("op_hlt");
 }
 
@@ -1105,9 +1191,9 @@ fn main() {
         "(def fun (a b)",
         "  (if ",
         "     (> a 0)",
-        "     ((fun (- a 1) (+ b 1)))",
+        "     ((write a) (fun (- a 1) (+ b 1)))",
         "     ((+ b 1))))",
-        "(fun 20 2)"
+        "(fun (read) 2)"
     );
 
     let (f, c, i, e) = compile(program);

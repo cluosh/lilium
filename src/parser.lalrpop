@@ -8,6 +8,9 @@ pub expressions: Vec<Expression> = {
 };
 
 expression: Expression = {
+    "(" <o:op_nullary> ")" => {
+        Expression::NullaryOp(o)
+    },
     "(def" <n:identifier> "(" <p:variables> ")" <b:expressions> ")" => {
         Expression::FunctionDefinition(n, p, b)
     },
@@ -16,6 +19,9 @@ expression: Expression = {
     },
     "(" <o:op_binary> <l:expression> <r:expression> ")" => {
         Expression::BinaryOp(o, Box::new(l), Box::new(r))
+    },
+    "(" <o:op_unary> <l:expression> ")" => {
+        Expression::UnaryOp(o, Box::new(l))
     },
     "(" <f:identifier> <v:expressions> ")" => {
         Expression::Function(f, v)
@@ -55,6 +61,15 @@ op_binary: String = {
     ">=" => <>.to_string(),
     "<" => <>.to_string(),
     ">" => <>.to_string()
+};
+
+op_unary: String = {
+    "~" => <>.to_string(),
+    "write" => <>.to_string()
+};
+
+op_nullary: String = {
+    "read" => <>.to_string()
 };
 
 integer: i64 = {

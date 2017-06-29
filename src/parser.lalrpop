@@ -20,7 +20,7 @@ expression: Expression = {
     "(" <f:identifier> <v:expressions> ")" => {
         Expression::Function(f, v)
     },
-    "(if" "(" <c:expression> ")" "(" <t:expressions> ")" "(" <f:expressions> ")" ")" => {
+    "(if" <c:expression> "(" <t:expressions> ")" "(" <f:expressions> ")" ")" => {
         Expression::Conditional(Box::new(c),t,f)
     },
     identifier => {

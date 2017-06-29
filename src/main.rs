@@ -296,22 +296,44 @@ fn assemble(expression: &ast::Expression,
                      variables);
 
             let mut yes_instructions: Vec<Instruction> = Vec::new();
-            assemble(condition,
-                     base_register,
-                     constants,
-                     functions,
-                     &mut yes_instructions,
-                     function_mapping,
-                     variables);
+            for expr in yes {
+                assemble(expr,
+                         base_register,
+                         constants,
+                         functions,
+                         &mut yes_instructions,
+                         function_mapping,
+                         variables);
+            }
 
             let mut no_instructions: Vec<Instruction> = Vec::new();
-            assemble(condition,
-                     base_register,
-                     constants,
-                     functions,
-                     &mut no_instructions,
-                     function_mapping,
-                     variables);
+            for expr in no {
+                assemble(expr,
+                         base_register,
+                         constants,
+                         functions,
+                         &mut no_instructions,
+                         function_mapping,
+                         variables);
+            }
+
+            let condition_jump = yes_instructions.len() + no_instructions.len() + 1;
+            instructions.push(Instruction {
+                opcode: ops::JTF,
+                target: base_register,
+                left: condition_jump as u8,
+                right: (condition_jump >> 8) as u8
+            });
+            instructions.extend(no_instructions);
+
+            let forward_jump = yes_instructions.len() + 1;
+            instructions.push(Instruction {
+                opcode: ops::JMF,
+                target: forward_jump as u8,
+                left: (forward_jump >> 8) as u8,
+                right: (forward_jump >> 16) as u8
+            });
+            instructions.extend(yes_instructions);
         }
     }
 }
@@ -874,7 +896,7 @@ fn op_jtf(thread: &mut Thread, pc: usize) -> usize {
         if *registers.get_unchecked(r) != 0 {
             pc + offset
         } else {
-            pc
+            pc + 1
         }
     }
 }
@@ -1061,7 +1083,7 @@ fn main() {
         //"(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
         //"(def neg (a) (- 0 a))",
         //"(neg (fun 10 20))"
-        "(let ((c 1) (d 0)) (| c d))"
+        "(if 1 (2) (3))"
     );
 
     let (f, c, i, e) = compile(program);
@@ -1242,6 +1264,47 @@ mod integers {
         run(&mut thread, e);
 
         assert!(thread.registers[reg::VAL as usize] == -6170);
+    }
+
+    #[test]
+    fn conditional_const() {
+        let program = concat!(
+            "(def asub (a b) (if (> a b) ((- a b)) ((- b a))))",
+            "(asub 100 200)"
+        );
+
+        let (f, c, i, e) = compile(program);
+
+        let mut registers: [i64; 1536] = [0; 1536];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == 100);
+
+        let program = concat!(
+            "(def asub (a b) (if (> a b) ((- a b)) ((- b a))))",
+            "(asub 200 100)"
+        );
+
+        let (f, c, i, e) = compile(program);
+
+        let mut registers: [i64; 1536] = [0; 1536];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == 100);
     }
 }
 

@@ -38,7 +38,8 @@ mod ops {
     pub const MOV: Opcode = 19;
     pub const MVO: Opcode = 20;
     pub const JMF: Opcode = 21;
-    pub const JTF: Opcode = 22;
+    pub const JMB: Opcode = 22;
+    pub const JTF: Opcode = 23;
 }
 
 type Register = u8;
@@ -317,7 +318,7 @@ fn assemble(expression: &ast::Expression,
                          variables);
             }
 
-            let condition_jump = yes_instructions.len() + no_instructions.len() + 1;
+            let condition_jump = no_instructions.len() + 2;
             instructions.push(Instruction {
                 opcode: ops::JTF,
                 target: base_register,
@@ -884,6 +885,19 @@ fn op_jmf(thread: &mut Thread, pc: usize) -> usize {
 }
 
 #[inline(always)]
+fn op_jmb(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let b0 = instruction.target as usize;
+        let b1 = instruction.left as usize;
+        let b2 = instruction.right as usize;
+        let offset = b0 | b1 << 8 | b2 << 16;
+        pc - offset
+    }
+}
+
+#[inline(always)]
 fn op_jtf(thread: &mut Thread, pc: usize) -> usize {
     let code = &thread.code;
     let registers = &mut thread.registers;
@@ -927,6 +941,7 @@ fn run(thread: &mut Thread, entry_point: usize) {
     ops[ops::MOV as usize] = label_addr!("op_mov");
     ops[ops::MVO as usize] = label_addr!("op_mvo");
     ops[ops::JMF as usize] = label_addr!("op_jmf");
+    ops[ops::JMB as usize] = label_addr!("op_jmb");
     ops[ops::JTF as usize] = label_addr!("op_jtf");
 
     let mut pc: usize = entry_point;
@@ -1017,6 +1032,10 @@ fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_jmf(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_jmb", pc, {
+        pc = op_jmb(thread, pc);
+    });
+
     do_and_dispatch!(&thread, ops, "op_jtf", pc, {
         pc = op_jtf(thread, pc);
     });
@@ -1083,7 +1102,12 @@ fn main() {
         //"(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
         //"(def neg (a) (- 0 a))",
         //"(neg (fun 10 20))"
-        "(if 1 (2) (3))"
+        "(def fun (a b)",
+        "  (if ",
+        "     (> a 0)",
+        "     ((fun (- a 1) (+ b 1)))",
+        "     ((+ b 1))))",
+        "(fun 20 2)"
     );
 
     let (f, c, i, e) = compile(program);
@@ -1344,5 +1368,31 @@ mod logic {
         run(&mut thread, e);
 
         assert!(thread.registers[reg::VAL as usize] == 1);
+    }
+
+    #[test]
+    fn conditional() {
+        let program = concat!(
+            "(def fun (a b)",
+            "  (if ",
+            "     (> a 0)",
+            "     ((fun (- a 1) (+ b 1)))",
+            "     ((+ b 1))))",
+            "(fun 20 2)"
+        );
+
+        let (f, c, i, e) = compile(program);
+
+        let mut registers: [i64; 6144] = [0; 6144];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == 23);
     }
 }

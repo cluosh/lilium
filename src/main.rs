@@ -145,9 +145,12 @@ fn assemble(expression: &ast::Expression,
                 }
             };
 
-            let base = base_register + 1;
+            let mut base = base_register;
             let mut param_base = reg::VAL;
+            let mut temp_instructions: Vec<Instruction> = Vec::new();
             for operand in operands {
+                base += 1;
+                param_base += 1;
                 assemble(&operand,
                          base,
                          constants,
@@ -156,8 +159,7 @@ fn assemble(expression: &ast::Expression,
                          function_mapping,
                          variables);
 
-                param_base += 1;
-                instructions.push(Instruction {
+                temp_instructions.push(Instruction {
                     opcode: ops::MVO,
                     target: param_base,
                     left: base,
@@ -165,6 +167,7 @@ fn assemble(expression: &ast::Expression,
                 });
             }
 
+            instructions.extend(temp_instructions);
             instructions.push(Instruction {
                 opcode: ops::CAL,
                 target: index as u8,

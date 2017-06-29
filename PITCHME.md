@@ -25,9 +25,21 @@ A LISP-Like Register Machine
 
 ### Features
 
+* Basic arithmetics: ```(+ 1 2), (* 1 2), (/ 1 2), (- 1 2)```
+* Basic logic: ```(& 0 1), (| 0 1), (~ 0)```
+* Basic comparison: ```(== 1 1), (> 1 0), (< 1 0), ...```
+* Function definition: ```(def fun (a b) (+ a b))```
+* Variable assignment: ```(let ((a 3) (b (+ 2 3))) (/ a b))```
+* Conditionals: ```(if (> a 3) (funca a) (funcb b))```
+
 ---
 
 ### Bytecode
+
+* 4-byte instructions
+* 1-byte opcode
+* Usually one byte target register
+* Rest for operands
 
 ---
 

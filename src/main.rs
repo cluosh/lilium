@@ -24,10 +24,21 @@ mod ops {
     pub const SUB: Opcode =  5;
     pub const MUL: Opcode =  6;
     pub const DIV: Opcode =  7;
-    pub const CAL: Opcode =  8;
-    pub const RET: Opcode =  9;
-    pub const MOV: Opcode = 10;
-    pub const MVO: Opcode = 11;
+    pub const AND: Opcode =  8;
+    pub const OR:  Opcode =  9;
+    pub const NOT: Opcode = 10;
+    pub const EQ:  Opcode = 11;
+    pub const LT:  Opcode = 12;
+    pub const LE:  Opcode = 13;
+    pub const GT:  Opcode = 14;
+    pub const GE:  Opcode = 15;
+    pub const NEQ: Opcode = 16;
+    pub const CAL: Opcode = 17;
+    pub const RET: Opcode = 18;
+    pub const MOV: Opcode = 19;
+    pub const MVO: Opcode = 20;
+    pub const JMF: Opcode = 21;
+    pub const JTF: Opcode = 22;
 }
 
 type Register = u8;
@@ -133,6 +144,14 @@ fn assemble(expression: &ast::Expression,
                 "-" => instruction.opcode = ops::SUB,
                 "*" => instruction.opcode = ops::MUL,
                 "/" => instruction.opcode = ops::DIV,
+                "&" => instruction.opcode = ops::AND,
+                "|" => instruction.opcode = ops::OR,
+                "==" => instruction.opcode = ops::EQ,
+                "<" => instruction.opcode = ops::LT,
+                "<=" => instruction.opcode = ops::LE,
+                ">" => instruction.opcode = ops::GT,
+                ">=" => instruction.opcode = ops::GE,
+                "!=" => instruction.opcode = ops::NEQ,
                 _ => panic!("Invalid operation")
             }
             instructions.push(instruction);
@@ -267,6 +286,33 @@ fn assemble(expression: &ast::Expression,
                 right: 0
             });
         }
+        Conditional(ref condition, ref yes, ref no) => {
+            assemble(condition,
+                     base_register,
+                     constants,
+                     functions,
+                     instructions,
+                     function_mapping,
+                     variables);
+
+            let mut yes_instructions: Vec<Instruction> = Vec::new();
+            assemble(condition,
+                     base_register,
+                     constants,
+                     functions,
+                     &mut yes_instructions,
+                     function_mapping,
+                     variables);
+
+            let mut no_instructions: Vec<Instruction> = Vec::new();
+            assemble(condition,
+                     base_register,
+                     constants,
+                     functions,
+                     &mut no_instructions,
+                     function_mapping,
+                     variables);
+        }
     }
 }
 
@@ -322,6 +368,59 @@ fn disassemble(constants: &[i64],
                 let r = instruction.target;
                 println!("div {} {} {}", r, rl, rr);
             }
+            ops::AND => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("and {} {} {}", r, rl, rr);
+            }
+            ops::OR => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("or {} {} {}", r, rl, rr);
+            }
+            ops::NOT => {
+                let rl = instruction.left;
+                let r = instruction.target;
+                println!("not {} {}", r, rl);
+            }
+            ops::EQ => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("eq {} {} {}", r, rl, rr);
+            }
+            ops::LT => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("lt {} {} {}", r, rl, rr);
+            }
+            ops::LE => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("le {} {} {}", r, rl, rr);
+            }
+            ops::GT => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("gt {} {} {}", r, rl, rr);
+            }
+            ops::GE => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("ge {} {} {}", r, rl, rr);
+            }
+            ops::NEQ => {
+                let rl = instruction.left;
+                let rr = instruction.right;
+                let r = instruction.target;
+                println!("neq {} {} {}", r, rl, rr);
+            }
             ops::CAL => {
                 let rl = instruction.left as u32;
                 let rr = instruction.right as u32;
@@ -340,6 +439,20 @@ fn disassemble(constants: &[i64],
                 let rr = instruction.right;
                 let r = instruction.target;
                 println!("mvo {} {} {}", r, rl, rr);
+            }
+            ops::JMF => {
+                let rl = instruction.left as u32;
+                let rr = instruction.right as u32;
+                let r = instruction.target as u32;
+                let addr = r | rl << 8 | rr << 16;
+                println!("jmp 0x{:x}", addr);
+            }
+            ops::JTF => {
+                let rl = instruction.left as u32;
+                let rr = instruction.right as u32;
+                let r = instruction.target;
+                let addr = rl | rr << 8;
+                println!("jmt {} 0x{:x}", r, addr);
             }
             _ => println!("Invalid instruction")
         }
@@ -537,6 +650,148 @@ fn op_div(thread: &mut Thread, pc: usize) -> usize {
 }
 
 #[inline(always)]
+fn op_and(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left != 0 && right != 0) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_or(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left != 0 || right != 0) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_not(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        *registers.get_unchecked_mut(r) = (left == 0) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_eq(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left == right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_lt(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left < right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_le(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left <= right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_gt(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left > right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_ge(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left >= right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
+fn op_neq(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize + thread.base;
+        let rr = instruction.right as usize + thread.base;
+        let r = instruction.target as usize + thread.base;
+        let left = *registers.get_unchecked(rl);
+        let right = *registers.get_unchecked(rr);
+        *registers.get_unchecked_mut(r) = (left != right) as i64;
+    }
+    pc + 1
+}
+
+#[inline(always)]
 fn op_cal(thread: &mut Thread, pc: usize) -> usize {
     let code = &thread.code;
     let functions = &thread.functions;
@@ -593,6 +848,37 @@ fn op_mvo(thread: &mut Thread, pc: usize) -> usize {
     pc + 1
 }
 
+#[inline(always)]
+fn op_jmf(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let b0 = instruction.target as usize;
+        let b1 = instruction.left as usize;
+        let b2 = instruction.right as usize;
+        let offset = b0 | b1 << 8 | b2 << 16;
+        pc + offset
+    }
+}
+
+#[inline(always)]
+fn op_jtf(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let registers = &mut thread.registers;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let rl = instruction.left as usize;
+        let rr = instruction.right as usize;
+        let r = instruction.target as usize + thread.base;
+        let offset = rl | rr << 8;
+        if *registers.get_unchecked(r) != 0 {
+            pc + offset
+        } else {
+            pc
+        }
+    }
+}
+
 #[inline(never)]
 fn run(thread: &mut Thread, entry_point: usize) {
     let mut ops: [usize; 32] = [label_addr!("op_hlt"); 32];
@@ -605,10 +891,21 @@ fn run(thread: &mut Thread, entry_point: usize) {
     ops[ops::SUB as usize] = label_addr!("op_sub");
     ops[ops::MUL as usize] = label_addr!("op_mul");
     ops[ops::DIV as usize] = label_addr!("op_div");
+    ops[ops::AND as usize] = label_addr!("op_and");
+    ops[ops::OR  as usize] = label_addr!("op_or");
+    ops[ops::NOT as usize] = label_addr!("op_not");
+    ops[ops::EQ  as usize] = label_addr!("op_eq");
+    ops[ops::LT  as usize] = label_addr!("op_lt");
+    ops[ops::LE  as usize] = label_addr!("op_le");
+    ops[ops::GT  as usize] = label_addr!("op_gt");
+    ops[ops::GE  as usize] = label_addr!("op_ge");
+    ops[ops::NEQ as usize] = label_addr!("op_neq");
     ops[ops::CAL as usize] = label_addr!("op_cal");
     ops[ops::RET as usize] = label_addr!("op_ret");
     ops[ops::MOV as usize] = label_addr!("op_mov");
     ops[ops::MVO as usize] = label_addr!("op_mvo");
+    ops[ops::JMF as usize] = label_addr!("op_jmf");
+    ops[ops::JTF as usize] = label_addr!("op_jtf");
 
     let mut pc: usize = entry_point;
 
@@ -642,6 +939,42 @@ fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_div(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_and", pc, {
+        pc = op_and(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_or", pc, {
+        pc = op_or(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_not", pc, {
+        pc = op_not(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_eq", pc, {
+        pc = op_eq(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_lt", pc, {
+        pc = op_lt(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_le", pc, {
+        pc = op_le(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_gt", pc, {
+        pc = op_gt(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_ge", pc, {
+        pc = op_ge(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_neq", pc, {
+        pc = op_neq(thread, pc);
+    });
+
     do_and_dispatch!(&thread, ops, "op_cal", pc, {
         pc = op_cal(thread, pc);
     });
@@ -656,6 +989,14 @@ fn run(thread: &mut Thread, entry_point: usize) {
 
     do_and_dispatch!(&thread, ops, "op_mvo", pc, {
         pc = op_mvo(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_jmf", pc, {
+        pc = op_jmf(thread, pc);
+    });
+
+    do_and_dispatch!(&thread, ops, "op_jtf", pc, {
+        pc = op_jtf(thread, pc);
     });
 
     label!("op_hlt");
@@ -720,7 +1061,7 @@ fn main() {
         //"(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
         //"(def neg (a) (- 0 a))",
         //"(neg (fun 10 20))"
-        "(let ((c 2) (d 3)) (+ (- c d) (* d c)))"
+        "(let ((c 1) (d 0)) (| c d))"
     );
 
     let (f, c, i, e) = compile(program);
@@ -901,5 +1242,44 @@ mod integers {
         run(&mut thread, e);
 
         assert!(thread.registers[reg::VAL as usize] == -6170);
+    }
+}
+
+#[cfg(test)]
+mod logic {
+    use super::*;
+
+    #[test]
+    fn const_and() {
+        let (f, c, i, e) = compile("(& 1 0)");
+
+        let mut registers: [i64; 256] = [0; 256];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == 0);
+    }
+
+    #[test]
+    fn const_or() {
+        let (f, c, i, e) = compile("(| 1 0)");
+
+        let mut registers: [i64; 256] = [0; 256];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == 1);
     }
 }

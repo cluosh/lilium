@@ -27,12 +27,12 @@ Michael Pucher, 1425215
 
 ### Features
 
-* Basic arithmetics: ```(+ 1 2), (* 1 2), (/ 1 2), (- 1 2)```
+* Basic arithmetics: ```(+ 1 2), (* 1 2)```
 * Basic logic: ```(& 0 1), (| 0 1), (~ 0)```
 * Basic comparison: ```(== 1 1), (> 1 0)```
 * Function definition: ```(def fun (a b) (+ a b))```
-* Variable assignment: ```(let ((a 3) (b 2) (/ a b)))```
-* Conditionals: ```(if (> a 3) (funca a) (funcb b))```
+* Variable assignment: ```(let ((a 3)) (+ a 4))```
+* Conditionals: ```(if (> a 3) (fa a) (fb b))```
 * Read/print integers: ```(read), (write 123)```
 
 ---
@@ -49,27 +49,12 @@ Michael Pucher, 1425215
 ### LALRPOP Grammar
 
 ```rust
-use std::str::FromStr;
-use ast::Expression;
-
-grammar;
-
-pub expressions: Vec<Expression> = {
-    expression* => <>
-};
-
 expression: Expression = {
-    "(" <o:op_nullary> ")" => {
-        Expression::NullaryOp(o)
-    },
     "(let" "(" <a:assignments> ")" <b:expressions> ")" => {
         Expression::VariableAssignment(a,b)
     },
     "(" <o:op_binary> <l:expression> <r:expression> ")" => {
         Expression::BinaryOp(o, Box::new(l), Box::new(r))
-    },
-    "(" <o:op_unary> <l:expression> ")" => {
-        Expression::UnaryOp(o, Box::new(l))
     },
     ...
 };
@@ -107,12 +92,10 @@ identifier: String = {
 macro_rules! dispatch {
     ($vm:expr, $pc:expr, $jumptable:expr) => {
         unsafe {
-            let opcode = $vm
-                .code
-                .get_unchecked($pc)
-                .opcode as usize;
+            let opcode = $vm.code
+                .get_unchecked($pc).opcode;
             let addr = *$jumptable
-                .get_unchecked(opcode);
+                .get_unchecked(opcode as usize);
             asm!("jmpq *$0"
                  :
                  : "r"(addr), "{rdx}"($pc)

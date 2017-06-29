@@ -1,6 +1,8 @@
 # Lilium
 
-A LISP-Like Register Machine
+###  A LISP-Like Register Machine
+
+Michael Pucher, 1425215
 
 ---
 
@@ -27,12 +29,11 @@ A LISP-Like Register Machine
 
 * Basic arithmetics: ```(+ 1 2), (* 1 2), (/ 1 2), (- 1 2)```
 * Basic logic: ```(& 0 1), (| 0 1), (~ 0)```
-* Basic comparison: ```(== 1 1), (> 1 0), (< 1 0), ...```
+* Basic comparison: ```(== 1 1), (> 1 0)```
 * Function definition: ```(def fun (a b) (+ a b))```
-* Variable assignment: ```(let ((a 3) (b (+ 2 3))) (/ a b))```
+* Variable assignment: ```(let ((a 3) (b 2) (/ a b)))```
 * Conditionals: ```(if (> a 3) (funca a) (funcb b))```
 * Read/print integers: ```(read), (write 123)```
-* Disassembler
 
 ---
 
@@ -71,10 +72,6 @@ expression: Expression = {
         Expression::UnaryOp(o, Box::new(l))
     },
     ...
-    "(if" <c:expression> "(" <t:expressions> ")" "(" <f:expressions> ")" ")" => {
-        Expression::Conditional(Box::new(c),t,f)
-    },
-    ...
 };
 
 identifier: String = {
@@ -110,8 +107,12 @@ identifier: String = {
 macro_rules! dispatch {
     ($vm:expr, $pc:expr, $jumptable:expr) => {
         unsafe {
-            let opcode = $vm.code.get_unchecked($pc).opcode as usize;
-            let addr = *$jumptable.get_unchecked(opcode);
+            let opcode = $vm
+                .code
+                .get_unchecked($pc)
+                .opcode as usize;
+            let addr = *$jumptable
+                .get_unchecked(opcode);
             asm!("jmpq *$0"
                  :
                  : "r"(addr), "{rdx}"($pc)

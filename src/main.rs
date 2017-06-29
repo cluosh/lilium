@@ -1222,12 +1222,36 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
 }
 
 fn main() {
+    /*let (f, c, i, e) = compile(
+    "
+(def fiba (a b n)
+  (if (> n 0)
+      ((fiba b (+ a b) (- n 1)))
+      (a)))
+
+(def fib (n)
+  (fiba (0 1 n)))
+
+(let ((a (read)))
+  (write (fib a)))
+");
+
+    let mut registers: [i64; 65536] = [0; 65536];
+    let mut thread = Thread {
+        functions: &f,
+        constants: &c,
+        code: &i,
+        registers: &mut registers,
+        base: 0
+    };
+    run(&mut thread, e);*/
+
     use std::io::Read;
     use std::io::Write;
 
     let args: Vec<_> = std::env::args().collect();
     let mut args = args.iter();
-    //args.next().unwrap();
+    args.next().unwrap();
     let mode = args.next();
     if let Some(m) = mode {
         match m.as_ref() {
@@ -1283,7 +1307,7 @@ fn main() {
 
                     let m: Module = deserialize(&contents)
                         .expect("Invalid bytecode module");
-                    let mut registers: [i64; 4194304] = [0; 4194304];
+                    let mut registers: [i64; 65536] = [0; 65536];
                     let mut thread = Thread {
                         functions: &m.functions,
                         constants: &m.constants,

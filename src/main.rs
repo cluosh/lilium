@@ -218,7 +218,42 @@ fn assemble(expression: &ast::Expression,
                 left: 0,
                 right: 0
             });
-        },
+        }
+        VariableAssignment(ref assignments, ref body) => {
+            let mut base = base_register;
+            let mut vars = variables.clone();
+            for &(ref var, ref expr) in assignments {
+                base += 1;
+                vars.insert(var.to_string(), (types::INT, base));
+
+                assemble(expr,
+                         base,
+                         constants,
+                         functions,
+                         instructions,
+                         function_mapping,
+                         variables);
+            }
+
+            let base = base;
+            let variables = &vars;
+            for expression in body {
+                assemble(&expression,
+                         base,
+                         constants,
+                         functions,
+                         instructions,
+                         function_mapping,
+                         variables);
+            }
+
+            instructions.push(Instruction {
+                opcode: ops::MOV,
+                target: base_register,
+                left: base,
+                right: 0
+            });
+        }
         Variable(ref name) => {
             let (_, reg) = match variables.get(name) {
                 Some(index) => *index,
@@ -682,12 +717,10 @@ fn compile(program: &str) -> (Vec<u64>,Vec<i64>,Vec<Instruction>,usize) {
 
 fn main() {
     let program = concat!(
-//        "(def div (a b) (/ a b))",
-        "(def mul (a b) (* a b))",
-        "(def add (a b c) (+ a (+ b c)))",
-        "(def neg (a) (- 0 a))",
-        "(neg (add 10 20 (mul 5 6)))"
-//        "(neg (add 10 20 (div 16 (mul 2 2))))"
+        //"(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
+        //"(def neg (a) (- 0 a))",
+        //"(neg (fun 10 20))"
+        "(let ((c 2) (d 3)) (+ (- c d) (* d c)))"
     );
 
     let (f, c, i, e) = compile(program);
@@ -845,5 +878,28 @@ mod integers {
         run(&mut thread, e);
 
         assert!(thread.registers[reg::VAL as usize] == -34);
+    }
+
+    #[test]
+    fn calls_vars() {
+        let program = concat!(
+            "(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
+            "(def neg (a) (- 0 a))",
+            "(neg (fun 10 20))"
+        );
+
+        let (f, c, i, e) = compile(program);
+
+        let mut registers: [i64; 1536] = [0; 1536];
+        let mut thread = Thread {
+            functions: &f,
+            constants: &c,
+            code: &i,
+            registers: &mut registers,
+            base: 0
+        };
+        run(&mut thread, e);
+
+        assert!(thread.registers[reg::VAL as usize] == -6170);
     }
 }

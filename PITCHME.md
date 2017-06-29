@@ -60,7 +60,7 @@ A LISP-Like Register Machine
 
 ### Dispatch Loop
 
-___
+---
 
 ### Generated Code
 

@@ -7,29 +7,40 @@ pub expressions: Vec<Expression> = {
     expression* => <>
 };
 
-pub variables: Vec<String> = {
-    function_name* => <>
-};
-
 expression: Expression = {
-    "(def" <n:function_name> "(" <p:variables> ")" <b:expressions> ")" => {
+    "(def" <n:identifier> "(" <p:variables> ")" <b:expressions> ")" => {
         Expression::FunctionDefinition(n, p, b)
+    },
+    "(let" "(" <a:assignments> ")" <b:expressions> ")" => {
+        Expression::VariableAssignment(a,b)
     },
     "(" <o:op_binary> <l:expression> <r:expression> ")" => {
         Expression::BinaryOp(o, Box::new(l), Box::new(r))
     },
-    "(" <f:function_name> <v:expressions> ")" => {
+    "(" <f:identifier> <v:expressions> ")" => {
         Expression::Function(f, v)
     },
-    function_name => {
+    identifier => {
         Expression::Variable(<>)
     },
     integer => {
         Expression::Integer(<>)
-    },
+    }
 };
 
-function_name: String = {
+variables: Vec<String> = {
+    identifier* => <>
+};
+
+assignments: Vec<(String,Expression)> = {
+    var_assign* => <>
+};
+
+var_assign: (String, Expression) = {
+    "(" <i:identifier> <e:expression> ")" => (i,e)
+};
+
+identifier: String = {
     r"[a-zA-Z]+" => <>.to_string(),
 };
 

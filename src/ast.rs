@@ -3,5 +3,6 @@ pub enum Expression {
     Variable(String),
     BinaryOp(String, Box<Expression>, Box<Expression>),
     Function(String, Vec<Expression>),
-    FunctionDefinition(String, Vec<String>, Vec<Expression>)
+    FunctionDefinition(String, Vec<String>, Vec<Expression>),
+    VariableAssignment(Vec<(String, Expression)>, Vec<Expression>)
 }

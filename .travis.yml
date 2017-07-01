@@ -1,18 +1,16 @@
-# Set up the Rust toolchain.
 language: rust
 rust:
-    - nightly
-
-# Allow for occasional compiler breakage on Nightly.
-#matrix:
-#    allow_failures:
-#        - rust: nightly
-
+- nightly
 cache: cargo
 before_script:
-    - export PATH=$PATH:/home/travis/.cargo/bin
-    - (cargo install cargo-local-pkgs || true)
-
+- export PATH=$PATH:/home/travis/.cargo/bin
+- "(cargo install cargo-local-pkgs || true)"
 script: |
-      cargo local-pkgs build -v &&
-      cargo test --all -v
+  cargo local-pkgs build -v &&
+  cargo test --all -v
+notifications:
+  pushover:
+    api_key:
+      secure: bMPkNtctU86GHjJ3IzP6sYlWaO7n1yRfNXwaSZhsozi+/izgTDnX6i57dIk79shsp8f85Go9IbGz/nMQ0R2yV+0j49mXBhC+6jFNogYyJWsu58XMgQyaLsUUInjqreplWVkBfzF/cGjTad19VanaG2rIB2ABgxG7ECstlDyKefFvuZNj1InutAOOkia/azZn/2H4YSZqAtM8hdj2edvwirtrF5EDWyrNZ2BNSKNPCIOI2BpJsNLGo+KYw7bgmRY7flY6DsoSAHt3j9wTVlR8eA6ZVshpm+vR0lK/V8qBuskCJ19KLQty/ESoksnUqsD9y1eErxWHrrvxEC4L9yoAiQkWoy8luoFZ0EeU4K+7ISH8j4bn9VjkijjDVQVHnRSob9whcEpdo4OsCcJbjQ/aHzbtLLaui02RuqnCwsmpnpwE6L0E+eqXPxrssOC+CSnuEvB1tDxG8MVfl2kSGHHaRmAiE4gYZSl9TKlW+zRkwE7LIKfseUBpGFaNFbiAYWmu+L4nVWBfDrTRzhzr3pT07FqnxSR0Krs/oWNeX3aqPmMOwIJft/ZYPF70ZleYA2h5SPLBlbVlYm1TMchTvJ5UpdzThNOmrXPE/ZQan8P/GTnslD0vkBRfCCgqDuB7ZUmPyfxh5grSwEcO28nFDpE8o91Ph7lFn5qNo53swdl9ios=
+    users:
+      secure: bJZXjBHub5fFblM98Qna/N0/OGFFU2eVUTR1l+gD+xRCSI6tgsnbpYSE5gJB3cx80EvPgwBKPoSLvCbVBeFkYne4OXGJZlTfcZSzvUEflj+39Se0joH6vLULHhTv5Oq2poiSZLkFtYxsYUxzlTqnQx/7f5PYO1FokgPmgOZbkzLRbRvrfh3qLytvKRF8eLD2zxwT9GlTh6uoALSPMiCC1+0UCCc/Z01AJhBiPq8sU72kO6tZCJo6NSq2YuuE1aw19Txoe4nvpcheup5QeMDuYPpuKBsfWPMcmuN6jIG9OpvMVeEcJYWyIdL3zh3gW6v5Z3iOlv5gBix/NTe/F3RhAdAdHMT9JG8ux3iB8iFBhZcvH5TEXtonCYjtH90mmdXG4wnNr8htRRwDbUXg+qCq0JjMxpuCu+AQHCQBAl776Jb2vJYOBrN4PrboQv53N/3Z8VKVi1zGowPhLUPSAz7bHdDEabC0T9zKxdeDMuMP22zDT3DGG36LB877UhqG+cB9NSADruDd5S5r/Wp0K5RqKDvVxFOW/1Oe4FPb+IY/IsoTqZcLeGyZx0zK5FHCejEnsKrHmaxJmgnFumIvQonXbLZO4rd5oSQv9cMQxiLapwQmFv5D/BWZebHYRfb8u44j/NaV2fFbqacsI3Bfu93v+jssWF9XifvU+1YXD3l5QAw=

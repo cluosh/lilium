@@ -1,4 +1,4 @@
 # Rust 
 target/
 **/*.rs.bk
-src/parser.rs
+src/compiler/parser.rs

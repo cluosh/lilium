@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use compiler::ast::*;
 use compiler::ast::Expression::*;
-use vm::{Module, Instruction, ops, reg, types};
+use vm::{Module, Instruction};
+use vm::atoms::*;
 
 /// Generate a module from the abstract syntax tree.
 ///
@@ -21,7 +22,7 @@ use vm::{Module, Instruction, ops, reg, types};
 /// points to the first top level expression being evaluated.
 pub fn generate(expressions: &[Expression]) -> Module {
     let mut func: HashMap<String, u32> = HashMap::new();
-    let vars: HashMap<String, (types::Type, reg::Register)> = HashMap::new();
+    let vars: HashMap<String, (Type, Register)> = HashMap::new();
     let mut module = Module {
         functions: Vec::new(),
         constants: Vec::new(),
@@ -35,7 +36,7 @@ pub fn generate(expressions: &[Expression]) -> Module {
         _ => false
     });
     for expr in filtered {
-        generate_expression(&expr, reg::VAL, &mut func, &vars, &mut module);
+        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module);
     }
 
     // Process top-level expressions to be evaluated
@@ -45,7 +46,7 @@ pub fn generate(expressions: &[Expression]) -> Module {
         _ => true
     });
     for expr in filtered {
-        generate_expression(&expr, reg::VAL, &mut func, &vars, &mut module);
+        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module);
     }
 
     // Always end with halt instruction
@@ -71,7 +72,7 @@ pub fn generate(expressions: &[Expression]) -> Module {
 fn generate_expression(expr: &Expression,
                        base: u8,
                        func: &mut HashMap<String, u32>,
-                       vars: &HashMap<String, (types::Type, reg::Register)>,
+                       vars: &HashMap<String, (Type, Register)>,
                        module: &mut Module) {
     match *expr {
         Integer(i) => {
@@ -167,7 +168,7 @@ fn expr_binary(op: &str,
                right: &Expression,
                base: u8,
                func: &mut HashMap<String, u32>,
-               vars: &HashMap<String, (types::Type, reg::Register)>,
+               vars: &HashMap<String, (Type, Register)>,
                module: &mut Module) {
     let reg_left = base + 1;
     generate_expression(left, reg_left, func, vars, module);
@@ -215,7 +216,7 @@ fn expr_unary(op: &str,
               left: &Expression,
               base: u8,
               func: &mut HashMap<String, u32>,
-              vars: &HashMap<String, (types::Type, reg::Register)>,
+              vars: &HashMap<String, (Type, Register)>,
               module: &mut Module) {
     let reg_left = base + 1;
     generate_expression(left, reg_left, func, vars, module);
@@ -278,7 +279,7 @@ fn expr_call(name: &str,
              param: &[Expression],
              base: u8,
              func: &mut HashMap<String, u32>,
-             vars: &HashMap<String, (types::Type, reg::Register)>,
+             vars: &HashMap<String, (Type, Register)>,
              module: &mut Module) {
     let index = {
         match func.get(name) {
@@ -294,7 +295,7 @@ fn expr_call(name: &str,
     for p in param {
         tmp_base += 1;
         tmp_param += 1;
-        generate_expression(&p, tmp_base, func, vars, module);
+        generate_expression(p, tmp_base, func, vars, module);
 
         // Pass results to callee parameter registers
         tmp_instructions.push(Instruction {
@@ -338,7 +339,7 @@ fn expr_fundef(name: &str,
                body: &[Expression],
                base: u8,
                func: &mut HashMap<String, u32>,
-               vars: &HashMap<String, (types::Type, reg::Register)>,
+               vars: &HashMap<String, (Type, Register)>,
                module: &mut Module) {
     let index = func.len() as u32;
     let address = module.code.len() as u64;
@@ -355,7 +356,7 @@ fn expr_fundef(name: &str,
     let base = base;
     let vars = &vars;
     for expr in body {
-        generate_expression(&expr, base, func, vars, module);
+        generate_expression(expr, base, func, vars, module);
     }
 
     module.code.push(Instruction {
@@ -393,7 +394,7 @@ fn expr_varass(assignment: &[(String, Expression)],
                body: &[Expression],
                base: u8,
                func: &mut HashMap<String, u32>,
-               vars: &HashMap<String, (types::Type, reg::Register)>,
+               vars: &HashMap<String, (Type, Register)>,
                module: &mut Module) {
     let mut tmp_base = base;
     let mut vars = vars.clone();
@@ -406,7 +407,7 @@ fn expr_varass(assignment: &[(String, Expression)],
     let tmp_base = tmp_base;
     let vars = &vars;
     for expr in body {
-        generate_expression(&expr, tmp_base, func, vars, module);
+        generate_expression(expr, tmp_base, func, vars, module);
     }
 
     module.code.push(Instruction {
@@ -428,7 +429,7 @@ fn expr_varass(assignment: &[(String, Expression)],
 #[inline(always)]
 fn expr_variable(name: &str,
                  base: u8,
-                 vars: &HashMap<String, (types::Type, reg::Register)>,
+                 vars: &HashMap<String, (Type, Register)>,
                  module: &mut Module) {
     let (_, reg) = match vars.get(name) {
         Some(index) => *index,
@@ -460,7 +461,7 @@ fn expr_conditional(cond: &Expression,
                     no: &[Expression],
                     base: u8,
                     func: &mut HashMap<String, u32>,
-                    vars: &HashMap<String, (types::Type, reg::Register)>,
+                    vars: &HashMap<String, (Type, Register)>,
                     module: &mut Module) {
     generate_expression(cond, base, func, vars, module);
 

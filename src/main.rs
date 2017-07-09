@@ -1,5 +1,19 @@
 #![feature(try_from)]
 #![feature(asm)]
+
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+#![deny(clippy)]
+#![allow(inline_always)]
+#![allow(unused_assignments)]
+// #![deny(clippy_pedantic)]
+// #![allow(print_stdout)]
+// #![allow(mut_mut)]
+// #![allow(cast_possible_truncation)]
+// #![allow(cast_possible_wrap)]
+// #![allow(cast_sign_loss)]
+// #![allow(missing_docs_in_private_items)]
+
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
@@ -11,15 +25,14 @@ mod vm;
 
 use bincode::{serialize, deserialize, Infinite};
 use vm::*;
+use vm::atoms::*;
 use compiler::compile;
 
 fn disassemble(constants: &[i64],
                functions: &[u64],
                instructions: &[Instruction]) {
-    let mut pc: usize = 0;
-    for instruction in instructions {
+    for (pc, instruction) in instructions.iter().enumerate() {
         print!("0x{:05x}: ", pc);
-        pc += 1;
 
         match instruction.opcode {
             ops::HLT => println!("hlt"),
@@ -225,27 +238,6 @@ macro_rules! do_and_dispatch {
         }
 
         dispatch!($vm, $pc, $jmptable);
-    }
-}
-
-#[cfg(target_arch = "x86_64")]
-macro_rules! do_and_replace_pc {
-    ($vm:expr, $jmptable:expr, $name:expr, $action:expr) => {
-        unsafe {
-            asm!(concat!($name, ":")
-                 :
-                 :
-                 :
-                 : "volatile");
-        }
-
-        let pc: usize;
-
-        {
-            pc = $action
-        }
-
-        dispatch!($vm, pc, $jmptable);
     }
 }
 
@@ -590,10 +582,10 @@ fn op_jtf(thread: &mut Thread, pc: usize) -> usize {
         let rr = instruction.right as usize;
         let r = instruction.target as usize + thread.base;
         let offset = rl | rr << 8;
-        if *registers.get_unchecked(r) != 0 {
-            pc + offset
-        } else {
+        if *registers.get_unchecked(r) == 0 {
             pc + 1
+        } else {
+            pc + offset
         }
     }
 }
@@ -737,8 +729,8 @@ fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_cal(thread, pc);
     });
 
-    do_and_replace_pc!(&thread, ops, "op_ret", {
-        op_ret(thread)
+    do_and_dispatch!(&thread, ops, "op_ret", pc, {
+        pc = op_ret(thread)
     });
 
     do_and_dispatch!(&thread, ops, "op_mov", pc, {
@@ -778,7 +770,8 @@ fn main() {
 
     let args: Vec<_> = std::env::args().collect();
     let mut args = args.iter();
-    args.next().unwrap();
+    args.next().expect("Program name has been altered");
+
     let mode = args.next();
     if let Some(m) = mode {
         match m.as_ref() {
@@ -791,11 +784,14 @@ fn main() {
                         .expect("Unable to read the file");
 
                     let m = compile(&contents);
-                    let bc = std::fs::File::create(fname.to_string() + ".bc")
+                    let mut bc_name = fname.to_string();
+                    bc_name.push_str(".bc");
+                    let bc = std::fs::File::create(bc_name)
                         .expect("Could not create bytecode output file");
                     let mut writer = std::io::BufWriter::new(bc);
-                    let encoded: Vec<u8> = serialize(&m, Infinite).unwrap();
-                    if let Err(_) = writer.write_all(&encoded) {
+                    let encoded: Vec<u8> = serialize(&m, Infinite)
+                        .expect("Could not serialize module into bytecode");
+                    if writer.write_all(&encoded).is_err() {
                         println!("Could not create bytecode file");
                     }
                 } else {

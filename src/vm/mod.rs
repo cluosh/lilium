@@ -1,14 +1,12 @@
 /// Type definitions and serializations of types used in the actual VM
-pub mod ops;
-pub mod reg;
-pub mod types;
+pub mod atoms;
 
 #[derive(Serialize, Deserialize)]
 pub struct Instruction {
-    pub opcode: ops::Opcode,
-    pub target: reg::Register,
-    pub left: reg::Register,
-    pub right: reg::Register
+    pub opcode: atoms::Opcode,
+    pub target: atoms::Register,
+    pub left: atoms::Register,
+    pub right: atoms::Register
 }
 
 #[derive(Serialize, Deserialize)]

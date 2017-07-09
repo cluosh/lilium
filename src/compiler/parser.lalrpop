@@ -1,3 +1,6 @@
+#![allow(clippy)]
+#![allow(clippy_pedantic)]
+
 use std::str::FromStr;
 use compiler::ast::Expression;
 

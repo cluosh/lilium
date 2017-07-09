@@ -9,16 +9,9 @@ extern crate lalrpop_util;
 mod compiler;
 mod vm;
 
-use std::convert::TryFrom;
-use std::collections::HashMap;
 use bincode::{serialize, deserialize, Infinite};
 use vm::*;
-
-struct Tail<'a> {
-    name: &'a str,
-    address: usize,
-    tailing: bool
-}
+use compiler::compile;
 
 fn disassemble(constants: &[i64],
                functions: &[u64],
@@ -797,14 +790,7 @@ fn main() {
                     file.read_to_string(&mut contents)
                         .expect("Unable to read the file");
 
-                    let (f, c, i, e) = compile(&contents);
-                    let m = Module {
-                        functions: f,
-                        constants: c,
-                        entry_point: e as u64,
-                        code: i
-                    };
-
+                    let m = compile(&contents);
                     let bc = std::fs::File::create(fname.to_string() + ".bc")
                         .expect("Could not create bytecode output file");
                     let mut writer = std::io::BufWriter::new(bc);
@@ -862,206 +848,112 @@ fn main() {
 }
 
 #[cfg(test)]
+macro_rules! run_program {
+    ($program:expr, $registers:expr) => {
+        {
+            let vm::Module {
+                functions: f,
+                constants: c,
+                entry_point: e,
+                code: i
+            } = compile($program);
+
+            let mut registers: [i64; $registers] = [0; $registers];
+            let mut thread = Thread {
+                functions: &f,
+                constants: &c,
+                code: &i,
+                registers: &mut registers,
+                base: 0
+            };
+            run(&mut thread, e as usize);
+
+            thread.registers[reg::VAL as usize]
+        }
+    }
+}
+
+#[cfg(test)]
 mod integers {
     use super::*;
 
     #[test]
     fn const_add() {
-        let (f, c, i, e) = compile("(+ 1 (+ 2 123456))");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 123459);
+        let result = run_program!("(+ 1 (+ 2 123456))", 256);
+        assert_eq!(result, 123459);
     }
 
     #[test]
     fn const_sub() {
-        let (f, c, i, e) = compile("(- 0 (- 123456 3))");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == -123453);
+        let result = run_program!("(- 0 (- 123456 3))", 256);
+        assert_eq!(result, -123453);
     }
 
     #[test]
     fn const_mul() {
-        let (f, c, i, e) = compile("(* 36 (* 36 36))");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 46656);
+        let result = run_program!("(* 36 (* 36 36))", 256);
+        assert_eq!(result, 46656);
     }
 
     #[test]
     fn const_div() {
-        let (f, c, i, e) = compile("(/ (/ 65536 2) 2)");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 16384);
+        let result = run_program!("(/ (/ 65536 2) 2)", 256);
+        assert_eq!(result, 16384);
     }
 
     #[test]
     fn combined() {
-        let (f, c, i, e) = compile("(/ (+ (- 1000002 2) (- (* 500000 2) 0)) 2)");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 1000000);
+        let result = run_program!("(/ (+ (- 1000002 2) (- (* 500000 2) 0)) 2)", 256);
+        assert_eq!(result, 1000000);
     }
 
     #[test]
     fn calls_noargs() {
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def div () (/ 100 4))",
             "(def mul () (* 2 3))",
             "(def add () (+ 4 5))",
             "(def sub () (- 1000001 1000000))",
             "(+ (div) (+ (mul) (+ (add) (sub))))"
-        );
-
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 1536] = [0; 1536];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 41);
+        ), 1536);
+        assert_eq!(result, 41);
     }
 
     #[test]
     fn calls_args() {
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def div (a b) (/ a b))",
             "(def mul (a b) (* a b))",
             "(def add (a b c) (+ a (+ b c)))",
             "(def neg (a) (- 0 a))",
             "(neg (add 10 20 (div 16 (mul 2 2))))"
-        );
-
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 1536] = [0; 1536];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == -34);
+        ), 1536);
+        assert_eq!(result, -34);
     }
 
     #[test]
     fn calls_vars() {
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def fun (a b) (let ((c (* a b)) (d (+ a b))) (+ (- c d) (* d c))))",
             "(def neg (a) (- 0 a))",
             "(neg (fun 10 20))"
-        );
-
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 1536] = [0; 1536];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == -6170);
+        ), 1536);
+        assert_eq!(result, -6170);
     }
 
     #[test]
     fn conditional_const() {
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def asub (a b) (if (> a b) ((- a b)) ((- b a))))",
             "(asub 100 200)"
-        );
+        ), 1536);
+        assert_eq!(result, 100);
 
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 1536] = [0; 1536];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 100);
-
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def asub (a b) (if (> a b) ((- a b)) ((- b a))))",
             "(asub 200 100)"
-        );
-
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 1536] = [0; 1536];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 100);
+        ), 1536);
+        assert_eq!(result, 100);
     }
 }
 
@@ -1071,61 +963,26 @@ mod logic {
 
     #[test]
     fn const_and() {
-        let (f, c, i, e) = compile("(& 1 0)");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 0);
+        let result = run_program!("(& 1 0)", 256);
+        assert_eq!(result, 0);
     }
 
     #[test]
     fn const_or() {
-        let (f, c, i, e) = compile("(| 1 0)");
-
-        let mut registers: [i64; 256] = [0; 256];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 1);
+        let result = run_program!("(| 1 0)", 256);
+        assert_eq!(result, 1);
     }
 
     #[test]
     fn conditional() {
-        let program = concat!(
+        let result = run_program!(concat!(
             "(def fun (a b)",
             "  (if ",
             "     (> a 0)",
             "     ((fun (- a 1) (+ b 1)))",
             "     ((+ b 1))))",
             "(fun 20 2)"
-        );
-
-        let (f, c, i, e) = compile(program);
-
-        let mut registers: [i64; 6144] = [0; 6144];
-        let mut thread = Thread {
-            functions: &f,
-            constants: &c,
-            code: &i,
-            registers: &mut registers,
-            base: 0
-        };
-        run(&mut thread, e);
-
-        assert!(thread.registers[reg::VAL as usize] == 23);
+        ), 6144);
+        assert_eq!(result, 23);
     }
 }

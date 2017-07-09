@@ -464,32 +464,42 @@ fn expr_conditional(cond: &Expression,
                     module: &mut Module) {
     generate_expression(cond, base, func, vars, module);
 
-    // TODO: Instruction passing? 
-    let mut yes_instructions: Vec<Instruction> = Vec::new();
-    for expr in yes {
-        generate_expression(expr, base, func, vars, module);
-    }
+    let jmp_index = module.code.len();
+    module.code.push(Instruction {
+        opcode: ops::JTF,
+        target: base,
+        left: 0,
+        right: 0
+    });
 
-    let mut no_instructions: Vec<Instruction> = Vec::new();
     for expr in no {
         generate_expression(expr, base, func, vars, module);
     }
 
-    let condition_jump = no_instructions.len() + 2;
-    module.code.push(Instruction {
-        opcode: ops::JTF,
-        target: base,
-        left: condition_jump as u8,
-        right: (condition_jump >> 8) as u8
-    });
-    module.code.extend(no_instructions);
+    let offset = module.code.len() - jmp_index + 1;
+    {
+        let jmp = &mut module.code[jmp_index];
+        jmp.left = offset as u8;
+        jmp.right = (offset >> 8) as u8;
+    }
 
-    let forward_jump = yes_instructions.len() + 1;
+    let jmp_index = module.code.len();
     module.code.push(Instruction {
         opcode: ops::JMF,
-        target: forward_jump as u8,
-        left: (forward_jump >> 8) as u8,
-        right: (forward_jump >> 16) as u8
+        target: 0,
+        left: 0,
+        right: 0
     });
-    module.code.extend(yes_instructions);
+
+    for expr in yes {
+        generate_expression(expr, base, func, vars, module);
+    }
+
+    let offset = module.code.len() - jmp_index;
+    {
+        let jmp = &mut module.code[jmp_index];
+        jmp.target = offset as u8;
+        jmp.left = (offset >> 8) as u8;
+        jmp.right = (offset >> 16) as u8;
+    }
 }

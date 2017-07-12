@@ -1,5 +1,8 @@
 /// Type definitions and serializations of types used in the actual VM
+#[macro_use]
+mod asm;
 pub mod atoms;
+pub mod dispatch;
 
 #[derive(Serialize, Deserialize)]
 pub struct Instruction {

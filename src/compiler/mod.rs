@@ -1,5 +1,6 @@
 /// Compiler module exports
 pub mod ast;
+pub mod bytecode;
 mod codegen;
 mod parser;
 

@@ -8,6 +8,7 @@ build = "build.rs"
 lalrpop = "0.13.1"
 
 [dependencies]
+clippy = {version = "*", optional = true}
 lalrpop-util = "0.13.1"
 regex = "0.2.2"
 serde = "1.0.8"

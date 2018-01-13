@@ -1,18 +1,8 @@
 #![feature(try_from)]
 #![feature(asm)]
 
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-#![deny(clippy)]
 #![allow(inline_always)]
 #![allow(unused_assignments)]
-// #![deny(clippy_pedantic)]
-// #![allow(print_stdout)]
-// #![allow(mut_mut)]
-// #![allow(cast_possible_truncation)]
-// #![allow(cast_possible_wrap)]
-// #![allow(cast_sign_loss)]
-// #![allow(missing_docs_in_private_items)]
 
 #[macro_use]
 extern crate serde_derive;

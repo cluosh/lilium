@@ -2,3 +2,7 @@
 target/
 **/*.rs.bk
 src/compiler/parser.rs
+
+# Intellij
+*.iml
+.idea

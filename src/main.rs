@@ -1,7 +1,6 @@
 #![feature(try_from)]
 #![feature(asm)]
 
-#![allow(inline_always)]
 #![allow(unused_assignments)]
 
 #[macro_use]

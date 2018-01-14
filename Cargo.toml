@@ -2,7 +2,7 @@
 name = "lilium"
 version = "0.1.0"
 authors = ["Michael Pucher <michael.pucher.main@gmail.com>"]
-build = "build.rs"
+build = "src/compiler/parser/build.rs"
 
 [build-dependencies]
 lalrpop = "0.13.1"
@@ -10,7 +10,7 @@ lalrpop = "0.13.1"
 [dependencies]
 lalrpop-util = "0.13.1"
 regex = "0.2.2"
-serde = "1.0.8"
-serde_derive = "1.0.8"
-serde_json = "1.0.2"
-bincode = "0.8.0"
+serde = "1.0.27"
+serde_derive = "1.0.27"
+serde_json = "1.0.9"
+bincode = "0.9.2"

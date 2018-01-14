@@ -1,5 +1,4 @@
-use vm::*;
-use vm::atoms::*;
+use common::*;
 
 pub fn disassemble(constants: &[i64],
                    functions: &[u64],

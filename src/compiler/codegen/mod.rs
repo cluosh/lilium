@@ -4,10 +4,8 @@
 /// packing code into modules.
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use compiler::ast::*;
-use compiler::ast::Expression::*;
-use vm::{Module, Instruction};
-use vm::atoms::*;
+use common::*;
+use compiler::parser::{Expression, Expression::*};
 
 /// Generate a module from the abstract syntax tree.
 ///
@@ -129,8 +127,8 @@ fn expr_integer(value: i64,
             module.code.push(Instruction {
                 opcode: ops::LD,
                 target: base,
-                left: left,
-                right: right
+                left,
+                right
             });
         }
         Err(_) => {
@@ -144,8 +142,8 @@ fn expr_integer(value: i64,
             module.code.push(Instruction {
                 opcode: ops::LDB,
                 target: base,
-                left: left,
-                right: right
+                left,
+                right
             });
         }
     }

@@ -1,3 +1,29 @@
+/// Type definitions and serializations of types used in the VM and in other modules
+
+#[derive(Serialize, Deserialize)]
+pub struct Instruction {
+    pub opcode: Opcode,
+    pub target: Register,
+    pub left: Register,
+    pub right: Register
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Module {
+    pub functions: Vec<u64>,
+    pub constants: Vec<i64>,
+    pub entry_point: u64,
+    pub code: Vec<Instruction>
+}
+
+pub struct Thread<'a> {
+    pub functions: &'a [u64],
+    pub constants: &'a [i64],
+    pub code: &'a [Instruction],
+    pub registers: &'a mut [i64],
+    pub base: usize
+}
+
 /// Definition of the register type and a list of special registers
 pub type Register = u8;
 pub mod reg {

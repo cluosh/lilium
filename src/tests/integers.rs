@@ -1,7 +1,6 @@
+use common::*;
+use vm::run;
 use compiler::compile;
-use vm::*;
-use vm::atoms::*;
-use vm::dispatch::run;
 
 #[test]
 fn const_add() {

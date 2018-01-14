@@ -1,6 +1,5 @@
 use std;
-use vm::*;
-use vm::atoms::*;
+use common::*;
 
 #[inline(never)]
 pub fn run(thread: &mut Thread, entry_point: usize) {

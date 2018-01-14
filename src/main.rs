@@ -1,5 +1,6 @@
 #![feature(try_from)]
 #![feature(asm)]
+#![feature(use_nested_groups)]
 
 #![allow(unused_assignments)]
 
@@ -9,17 +10,19 @@ extern crate serde;
 extern crate bincode;
 extern crate lalrpop_util;
 
+mod common;
 mod compiler;
+mod disassembler;
 mod vm;
 
 #[cfg(test)]
 mod tests;
 
 use bincode::{serialize, deserialize, Infinite};
-use vm::*;
-use vm::dispatch::run;
+use common::*;
+use vm::run;
 use compiler::compile;
-use compiler::bytecode::disassemble;
+use disassembler::disassemble;
 
 fn main() {
     use std::io::Read;

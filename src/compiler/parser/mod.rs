@@ -1,3 +1,7 @@
+mod parser;
+
+pub use self::parser::parse_expressions;
+
 pub enum Expression {
     Integer(i64),
     Variable(String),

@@ -4,13 +4,15 @@ version = "0.1.0"
 authors = ["Michael Pucher <michael.pucher.main@gmail.com>"]
 build = "src/compiler/parser/build.rs"
 
+[lib]
+name = "lilium"
+
 [build-dependencies]
 lalrpop = "0.13.1"
 
 [dependencies]
 lalrpop-util = "0.13.1"
 regex = "0.2.2"
-serde = "1.0.27"
 serde_derive = "1.0.27"
-serde_json = "1.0.9"
+serde = "1.0.27"
 bincode = "0.9.2"

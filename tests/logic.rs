@@ -1,6 +1,8 @@
-use common::*;
-use vm::run;
-use compiler::compile;
+#[macro_use]
+mod common;
+
+extern crate lilium;
+use lilium::*;
 
 #[test]
 fn const_and() {

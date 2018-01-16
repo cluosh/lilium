@@ -124,6 +124,10 @@ pub fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_jmb(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_jmp", pc, {
+        pc = op_jmp(thread, pc);
+    });
+
     do_and_dispatch!(&thread, ops, "op_jtf", pc, {
         pc = op_jtf(thread, pc);
     });
@@ -467,6 +471,22 @@ fn op_jmb(thread: &mut Thread, pc: usize) -> usize {
         let b2 = instruction.right as usize;
         let offset = b0 | b1 << 8 | b2 << 16;
         pc - offset
+    }
+}
+
+#[inline(always)]
+fn op_jmp(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let functions = &thread.functions;
+    let registers = &mut thread.registers;
+    thread.base += 256;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let b0 = instruction.target as usize;
+        let b1 = instruction.left as usize;
+        let b2 = instruction.right as usize;
+
+        b0 | b1 << 8 | b2 << 16
     }
 }
 

@@ -1,6 +1,6 @@
 /// Type definitions and serializations of types used in the VM and in other modules
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Instruction {
     pub opcode: Opcode,
     pub target: Register,
@@ -59,9 +59,10 @@ pub mod ops {
     pub const MVO: Opcode = 20;
     pub const JMF: Opcode = 21;
     pub const JMB: Opcode = 22;
-    pub const JTF: Opcode = 23;
-    pub const WRI: Opcode = 24;
-    pub const RDI: Opcode = 25;
+    pub const JMP: Opcode = 23;
+    pub const JTF: Opcode = 24;
+    pub const WRI: Opcode = 25;
+    pub const RDI: Opcode = 26;
 }
 
 /// A listing of possible types

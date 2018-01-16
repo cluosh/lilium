@@ -7,6 +7,12 @@ use std::convert::TryFrom;
 use common::*;
 use compiler::parser::{Expression, Expression::*};
 
+/// Structure for performing optimizations
+struct OptimizationInfo<'a> {
+    func_name: &'a str,
+    tail: bool,
+}
+
 /// Generate a module from the abstract syntax tree.
 ///
 /// # Arguments
@@ -28,13 +34,19 @@ pub fn generate(expressions: &[Expression]) -> Module {
         code: Vec::new()
     };
 
+    // Initial optimization info structure
+    let oinfo = OptimizationInfo {
+        func_name: "NONE",
+        tail: false
+    };
+
     // Process function definitions first
     let filtered = expressions.iter().filter(|&x| match *x {
         FunctionDefinition(_,_,_) => true,
         _ => false
     });
     for expr in filtered {
-        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module);
+        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module, &oinfo);
     }
 
     // Process top-level expressions to be evaluated
@@ -44,7 +56,7 @@ pub fn generate(expressions: &[Expression]) -> Module {
         _ => true
     });
     for expr in filtered {
-        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module);
+        generate_expression(expr, reg::VAL, &mut func, &vars, &mut module, &oinfo);
     }
 
     // Always end with halt instruction
@@ -67,38 +79,56 @@ pub fn generate(expressions: &[Expression]) -> Module {
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information used for optimization
 fn generate_expression(expr: &Expression,
                        base: u8,
                        func: &mut HashMap<String, u32>,
                        vars: &HashMap<String, (Type, Register)>,
-                       module: &mut Module) {
+                       module: &mut Module,
+                       oinfo: &OptimizationInfo) {
     match *expr {
         Integer(i) => {
             expr_integer(i, base, module);
         }
         BinaryOp(ref op, ref left, ref right) => {
-            expr_binary(op, left, right, base, func, vars, module);
+            let optimizations = OptimizationInfo {
+                func_name: oinfo.func_name,
+                tail: false
+            };
+            expr_binary(op, left, right, base, func, vars, module, &optimizations);
         }
         UnaryOp(ref op, ref left) => {
-            expr_unary(op, left, base, func, vars, module);
+            let optimizations = OptimizationInfo {
+                func_name: oinfo.func_name,
+                tail: false
+            };
+            expr_unary(op, left, base, func, vars, module, &optimizations);
         }
         NullaryOp(ref op) => {
             expr_nullary(op, base, module);
         }
         Function(ref name, ref param) => {
-            expr_call(name, param, base, func, vars, module);
+            expr_call(name, param, base, func, vars, module, oinfo);
         }
         FunctionDefinition(ref name, ref param, ref body) => {
-            expr_fundef(name, param, body, base, func, vars, module);
+            let optimizations = OptimizationInfo {
+                func_name: name,
+                tail: true
+            };
+            expr_fundef(name, param, body, base, func, vars, module, &optimizations);
         }
         VariableAssignment(ref assignments, ref body) => {
-            expr_varass(assignments, body, base, func, vars, module);
+            let optimizations = OptimizationInfo {
+                func_name: oinfo.func_name,
+                tail: false
+            };
+            expr_varass(assignments, body, base, func, vars, module, &optimizations);
         }
         Variable(ref name) => {
             expr_variable(name, base, vars, module);
         }
         Conditional(ref condition, ref yes, ref no) => {
-            expr_conditional(condition, yes, no, base, func, vars, module);
+            expr_conditional(condition, yes, no, base, func, vars, module, &oinfo);
         }
     }
 }
@@ -160,6 +190,7 @@ fn expr_integer(value: i64,
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimizations
 #[inline(always)]
 fn expr_binary(op: &str,
                left: &Expression,
@@ -167,11 +198,12 @@ fn expr_binary(op: &str,
                base: u8,
                func: &mut HashMap<String, u32>,
                vars: &HashMap<String, (Type, Register)>,
-               module: &mut Module) {
+               module: &mut Module,
+               oinfo: &OptimizationInfo) {
     let reg_left = base + 1;
-    generate_expression(left, reg_left, func, vars, module);
+    generate_expression(left, reg_left, func, vars, module, oinfo);
     let reg_right = base + 2;
-    generate_expression(right, reg_right, func, vars, module);
+    generate_expression(right, reg_right, func, vars, module, oinfo);
 
     let mut instruction = Instruction {
         opcode: ops::HLT,
@@ -209,15 +241,17 @@ fn expr_binary(op: &str,
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimizations
 #[inline(always)]
 fn expr_unary(op: &str,
               left: &Expression,
               base: u8,
               func: &mut HashMap<String, u32>,
               vars: &HashMap<String, (Type, Register)>,
-              module: &mut Module) {
+              module: &mut Module,
+              oinfo: &OptimizationInfo) {
     let reg_left = base + 1;
-    generate_expression(left, reg_left, func, vars, module);
+    generate_expression(left, reg_left, func, vars, module, oinfo);
 
     let mut instruction = Instruction {
         opcode: ops::HLT,
@@ -272,13 +306,15 @@ fn expr_nullary(op: &str,
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimization
 #[inline(always)]
 fn expr_call(name: &str,
              param: &[Expression],
              base: u8,
              func: &mut HashMap<String, u32>,
              vars: &HashMap<String, (Type, Register)>,
-             module: &mut Module) {
+             module: &mut Module,
+             oinfo: &OptimizationInfo) {
     let index = {
         match func.get(name) {
             Some(index) => *index,
@@ -290,34 +326,60 @@ fn expr_call(name: &str,
     let mut tmp_base = base;
     let mut tmp_param = reg::VAL;
     let mut tmp_instructions: Vec<Instruction> = Vec::new();
-    for p in param {
-        tmp_base += 1;
-        tmp_param += 1;
-        generate_expression(p, tmp_base, func, vars, module);
-
-        // Pass results to callee parameter registers
-        tmp_instructions.push(Instruction {
+    let mut mov_instruction = if oinfo.tail {
+        Instruction {
+            opcode: ops::MOV,
+            target: tmp_param,
+            left: tmp_base,
+            right: 0
+        }
+    } else {
+        Instruction {
             opcode: ops::MVO,
             target: tmp_param,
             left: tmp_base,
             right: 0xFF
-        });
+        }
+    };
+    let param_oinfo = OptimizationInfo {
+        func_name: oinfo.func_name,
+        tail: false
+    };
+
+    for p in param {
+        tmp_base += 1;
+        tmp_param += 1;
+        generate_expression(p, tmp_base, func, vars, module, &param_oinfo);
+
+        // Pass results to callee parameter registers
+        mov_instruction.target = tmp_param;
+        mov_instruction.left = tmp_base;
+        tmp_instructions.push(mov_instruction.clone());
     }
 
     // Load results of parameter evaluation and make the call
     module.code.extend(tmp_instructions);
-    module.code.push(Instruction {
-        opcode: ops::CAL,
-        target: index as u8,
-        left: (index >> 8) as u8,
-        right: (index >> 16) as u8
-    });
-    module.code.push(Instruction {
-        opcode: ops::LDR,
-        target: base,
-        left: 0,
-        right: 0
-    });
+    if oinfo.tail {
+        module.code.push(Instruction {
+            opcode: ops::JMP,
+            target: index as u8,
+            left: (index >> 8) as u8,
+            right: (index >> 16) as u8
+        });
+    } else {
+        module.code.push(Instruction {
+            opcode: ops::CAL,
+            target: index as u8,
+            left: (index >> 8) as u8,
+            right: (index >> 16) as u8
+        });
+        module.code.push(Instruction {
+            opcode: ops::LDR,
+            target: base,
+            left: 0,
+            right: 0
+        });
+    }
 }
 
 /// Generate instructions for a function definition.
@@ -331,6 +393,7 @@ fn expr_call(name: &str,
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimization
 #[inline(always)]
 fn expr_fundef(name: &str,
                param: &[String],
@@ -338,7 +401,8 @@ fn expr_fundef(name: &str,
                base: u8,
                func: &mut HashMap<String, u32>,
                vars: &HashMap<String, (Type, Register)>,
-               module: &mut Module) {
+               module: &mut Module,
+               oinfo: &OptimizationInfo) {
     let index = func.len() as u32;
     let address = module.code.len() as u64;
     func.insert(name.to_string(), index);
@@ -354,7 +418,7 @@ fn expr_fundef(name: &str,
     let base = base;
     let vars = &vars;
     for expr in body {
-        generate_expression(expr, base, func, vars, module);
+        generate_expression(expr, base, func, vars, module, oinfo);
     }
 
     module.code.push(Instruction {
@@ -382,6 +446,7 @@ fn expr_fundef(name: &str,
 /// * `func` - Lookup table for function table entries
 /// * `vars` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimization
 ///
 /// # Remarks
 ///
@@ -393,19 +458,20 @@ fn expr_varass(assignment: &[(String, Expression)],
                base: u8,
                func: &mut HashMap<String, u32>,
                vars: &HashMap<String, (Type, Register)>,
-               module: &mut Module) {
+               module: &mut Module,
+               oinfo: &OptimizationInfo) {
     let mut tmp_base = base;
     let mut vars = vars.clone();
     for &(ref var, ref expr) in assignment {
         tmp_base += 1;
-        generate_expression(expr, tmp_base, func, &vars, module);
+        generate_expression(expr, tmp_base, func, &vars, module, oinfo);
         vars.insert(var.to_string(), (types::INT, tmp_base));
     }
 
     let tmp_base = tmp_base;
     let vars = &vars;
     for expr in body {
-        generate_expression(expr, tmp_base, func, vars, module);
+        generate_expression(expr, tmp_base, func, vars, module, oinfo);
     }
 
     module.code.push(Instruction {
@@ -453,6 +519,7 @@ fn expr_variable(name: &str,
 /// * `func` - Lookup table for function table entries
 /// * `vaprs` - A variable assignment for all child expressions
 /// * `module` - Module to be filled with constant/function/code storage
+/// * `oinfo` - Information needed for optimization
 #[inline(always)]
 fn expr_conditional(cond: &Expression,
                     yes: &[Expression],
@@ -460,8 +527,13 @@ fn expr_conditional(cond: &Expression,
                     base: u8,
                     func: &mut HashMap<String, u32>,
                     vars: &HashMap<String, (Type, Register)>,
-                    module: &mut Module) {
-    generate_expression(cond, base, func, vars, module);
+                    module: &mut Module,
+                    oinfo: &OptimizationInfo) {
+    let condition_opti = OptimizationInfo {
+        func_name: oinfo.func_name,
+        tail: false
+    };
+    generate_expression(cond, base, func, vars, module, &condition_opti);
 
     let jmp_index = module.code.len();
     module.code.push(Instruction {
@@ -471,9 +543,13 @@ fn expr_conditional(cond: &Expression,
         right: 0
     });
 
-    for expr in no {
-        generate_expression(expr, base, func, vars, module);
+    // Generate every expression except tail
+    for expr in &no[..no.len()] {
+        generate_expression(expr, base, func, vars, module, &condition_opti);
     }
+
+    // Generate tail expression
+    generate_expression(&no[no.len() - 1], base, func, vars, module, oinfo);
 
     let offset = module.code.len() - jmp_index + 1;
     {
@@ -490,9 +566,13 @@ fn expr_conditional(cond: &Expression,
         right: 0
     });
 
-    for expr in yes {
-        generate_expression(expr, base, func, vars, module);
+    // Generate every expression except tail
+    for expr in &yes[..yes.len()] {
+        generate_expression(expr, base, func, vars, module, &condition_opti);
     }
+
+    // Generate tail expression
+    generate_expression(&yes[yes.len() - 1], base, func, vars, module, oinfo);
 
     let offset = module.code.len() - jmp_index;
     {

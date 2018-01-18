@@ -398,6 +398,12 @@ fn op_cal(thread: &mut Thread, pc: usize) -> usize {
     let functions = &thread.functions;
     let registers = &mut thread.registers;
     thread.base += 256;
+
+    // Check for stack overflow
+    if thread.base >= registers.len() {
+        panic!("stackoverflow");
+    }
+
     unsafe {
         let return_reg = reg::RET as usize + thread.base;
         *registers.get_unchecked_mut(return_reg) = (pc + 1) as i64;

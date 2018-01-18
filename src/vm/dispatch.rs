@@ -23,6 +23,7 @@ pub fn run(thread: &mut Thread, entry_point: usize) {
     ops[ops::GE  as usize] = label_addr!("op_ge");
     ops[ops::NEQ as usize] = label_addr!("op_neq");
     ops[ops::CAL as usize] = label_addr!("op_cal");
+    ops[ops::TLC as usize] = label_addr!("op_tlc");
     ops[ops::RET as usize] = label_addr!("op_ret");
     ops[ops::MOV as usize] = label_addr!("op_mov");
     ops[ops::MVO as usize] = label_addr!("op_mvo");
@@ -104,6 +105,10 @@ pub fn run(thread: &mut Thread, entry_point: usize) {
         pc = op_cal(thread, pc);
     });
 
+    do_and_dispatch!(&thread, ops, "op_tlc", pc, {
+        pc = op_tlc(thread, pc);
+    });
+
     do_and_dispatch!(&thread, ops, "op_ret", pc, {
         pc = op_ret(thread)
     });
@@ -122,10 +127,6 @@ pub fn run(thread: &mut Thread, entry_point: usize) {
 
     do_and_dispatch!(&thread, ops, "op_jmb", pc, {
         pc = op_jmb(thread, pc);
-    });
-
-    do_and_dispatch!(&thread, ops, "op_jmp", pc, {
-        pc = op_jmp(thread, pc);
     });
 
     do_and_dispatch!(&thread, ops, "op_jtf", pc, {
@@ -412,6 +413,21 @@ fn op_cal(thread: &mut Thread, pc: usize) -> usize {
 }
 
 #[inline(always)]
+fn op_tlc(thread: &mut Thread, pc: usize) -> usize {
+    let code = &thread.code;
+    let functions = &thread.functions;
+    unsafe {
+        let instruction = code.get_unchecked(pc);
+        let b0 = instruction.target as usize;
+        let b1 = instruction.left as usize;
+        let b2 = instruction.right as usize;
+
+        let function_index = b0 | b1 << 8 | b2 << 16;
+        *functions.get_unchecked(function_index) as usize
+    }
+}
+
+#[inline(always)]
 fn op_ret(thread: &mut Thread) -> usize {
     let registers = &mut thread.registers;
     let pc = unsafe {
@@ -471,22 +487,6 @@ fn op_jmb(thread: &mut Thread, pc: usize) -> usize {
         let b2 = instruction.right as usize;
         let offset = b0 | b1 << 8 | b2 << 16;
         pc - offset
-    }
-}
-
-#[inline(always)]
-fn op_jmp(thread: &mut Thread, pc: usize) -> usize {
-    let code = &thread.code;
-    let functions = &thread.functions;
-    let registers = &mut thread.registers;
-    thread.base += 256;
-    unsafe {
-        let instruction = code.get_unchecked(pc);
-        let b0 = instruction.target as usize;
-        let b1 = instruction.left as usize;
-        let b2 = instruction.right as usize;
-
-        b0 | b1 << 8 | b2 << 16
     }
 }
 

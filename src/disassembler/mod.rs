@@ -110,6 +110,13 @@ pub fn disassemble(constants: &[i64],
                 let addr = functions[(r | rl << 8 | rr << 16) as usize];
                 println!("call 0x{:x}", addr);
             }
+            ops::TLC => {
+                let rl = instruction.left as u32;
+                let rr = instruction.right as u32;
+                let r = instruction.target as u32;
+                let addr = functions[(r | rl << 8 | rr << 16) as usize];
+                println!("tlc 0x{:x}", addr);
+            }
             ops::RET => println!("ret"),
             ops::MOV => {
                 let rl = instruction.left;
@@ -127,14 +134,21 @@ pub fn disassemble(constants: &[i64],
                 let rr = instruction.right as u32;
                 let r = instruction.target as u32;
                 let addr = r | rl << 8 | rr << 16;
-                println!("jmp 0x{:x}", addr);
+                println!("jmf 0x{:x}", addr);
+            }
+            ops::JMB => {
+                let rl = instruction.left as u32;
+                let rr = instruction.right as u32;
+                let r = instruction.target as u32;
+                let addr = r | rl << 8 | rr << 16;
+                println!("jmb 0x{:x}", addr);
             }
             ops::JTF => {
                 let rl = instruction.left as u32;
                 let rr = instruction.right as u32;
                 let r = instruction.target;
                 let addr = rl | rr << 8;
-                println!("jmt {} 0x{:x}", r, addr);
+                println!("jtf {} 0x{:x}", r, addr);
             }
             ops::WRI => {
                 let rl = instruction.left;

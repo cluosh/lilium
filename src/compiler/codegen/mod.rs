@@ -327,9 +327,11 @@ fn expr_call(name: &str,
     let mut tmp_param = reg::VAL;
     let mut tmp_instructions: Vec<Instruction> = Vec::new();
     let mut mov_instruction = if oinfo.tail {
+        tmp_param -= 1;
+
         Instruction {
             opcode: ops::MOV,
-            target: tmp_param,
+            target: tmp_param - 1,
             left: tmp_base,
             right: 0
         }
@@ -360,12 +362,22 @@ fn expr_call(name: &str,
     // Load results of parameter evaluation and make the call
     module.code.extend(tmp_instructions);
     if oinfo.tail {
-        module.code.push(Instruction {
-            opcode: ops::JMP,
-            target: index as u8,
-            left: (index >> 8) as u8,
-            right: (index >> 16) as u8
-        });
+        let func_off = module.code.len() as u64 - module.functions[index as usize];
+        if func_off < (2 << 23) {
+            module.code.push(Instruction {
+                opcode: ops::JMB,
+                target: func_off as u8,
+                left: (func_off >> 8) as u8,
+                right: (func_off >> 16) as u8
+            });
+        } else {
+            module.code.push(Instruction {
+                opcode: ops::TLC,
+                target: index as u8,
+                left: (index >> 8) as u8,
+                right: (index >> 16) as u8
+            });
+        }
     } else {
         module.code.push(Instruction {
             opcode: ops::CAL,
@@ -544,7 +556,7 @@ fn expr_conditional(cond: &Expression,
     });
 
     // Generate every expression except tail
-    for expr in &no[..no.len()] {
+    for expr in &no[..no.len() - 1] {
         generate_expression(expr, base, func, vars, module, &condition_opti);
     }
 
@@ -567,7 +579,7 @@ fn expr_conditional(cond: &Expression,
     });
 
     // Generate every expression except tail
-    for expr in &yes[..yes.len()] {
+    for expr in &yes[..yes.len() - 1] {
         generate_expression(expr, base, func, vars, module, &condition_opti);
     }
 

@@ -331,7 +331,7 @@ fn expr_call(name: &str,
 
         Instruction {
             opcode: ops::MOV,
-            target: tmp_param - 1,
+            target: tmp_param,
             left: tmp_base,
             right: 0
         }

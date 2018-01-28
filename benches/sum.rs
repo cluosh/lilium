@@ -12,13 +12,14 @@ fn sum(b: &mut Bencher) {
         constants: c,
         entry_point: e,
         code: i
-    } = compile(concat!("(def sum (a)",
-        "  (if",
-        "    (> a 0)",
-        "    ((+ a (sum (- a 1))))",
-        "    (1)))",
-        "(sum 900)"
-        ));
+    } = compile(concat!(
+        "(def sum (a b)",
+        "  (if ",
+        "     (> a 0)",
+        "     ((+ (sum (- a 1) (+ b 1)) 0))",
+        "     ((+ b 1))))",
+        "(sum 900 0)"
+    ));
 
     let mut registers = vec![0; 256 * 902];
     let mut thread = Thread {

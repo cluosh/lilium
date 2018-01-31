@@ -51,6 +51,29 @@ Michael Pucher, 01425215
 
 ### Bytecode Disassembly
 
+```
+0x00000: mov 4 1
+0x00001: ld 5 0
+0x00002: gt 3 4 5
+0x00003: jtf 3 0x3
+0x00004: mov 3 2
+0x00005: jmf 0xd
+0x00006: mov 6 1
+0x00007: ld 7 1
+0x00008: sub 5 6 7
+0x00009: mov 7 2
+0x0000a: mov 8 1
+0x0000b: mul 6 7 8
+0x0000c: mvo 2 5 255
+0x0000d: mvo 3 6 255
+0x0000e: call 0x0
+0x0000f: ldr 4
+0x00010: ld 5 0
+0x00011: add 3 4 5
+0x00012: mov 1 3
+0x00013: ret
+```
+
 ---
 
 ### Features

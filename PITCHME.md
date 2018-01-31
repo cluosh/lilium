@@ -2,7 +2,7 @@
 
 ###  A LISP-Like Register Machine
 
-Michael Pucher, 1425215
+Michael Pucher, 01425215
 
 ---
 
@@ -17,11 +17,39 @@ Michael Pucher, 1425215
 
 ### Architecture
 
-* Rust (nightly)
-* lalrpop as LR(1) parser generator
+* Register machine
 * LISP-like language
 * Translated to bytecode
-* Token-threaded dispatch (inline assembly)
+* Token-threaded dispatch
+
+---
+
+### Architecture (cont'd)
+
+* Only call stack
+* 256 registers for each stack frame
+
+---
+
+### Calling conventions
+
+* r0 has return address
+* r1 has return value
+* r2 etc. for arguments
+* Special mov instruction for arguments
+
+---
+
+### Bytecode
+
+* 4-byte instructions
+* 1-byte opcode
+* Usually one byte target register
+* Rest for operands
+
+---
+
+### Bytecode Disassembly
 
 ---
 
@@ -37,12 +65,10 @@ Michael Pucher, 1425215
 
 ---
 
-### Bytecode
+### Implementation
 
-* 4-byte instructions
-* 1-byte opcode
-* Usually one byte target register
-* Rest for operands
+* Rust (nightly)
+* lalrpop as LR(1) parser generator
 
 ---
 
@@ -147,3 +173,40 @@ op_add:
 	movq	112(%rsp,%rax,8), %rax
 	jmpq	*%rax
 ```
+
+---
+
+### Tail Call Optimization
+
+* Stack depth is limited
+* Therefore tail calls needed for loops
+* Easy to implement
+* Performance win!
+
+---
+
+### Tail Call Runtime
+
+---
+
+### Performance Comparison
+
+* Fibonacci in Lilium, SBCL and Java
+* Modified for SBCL (because of BigNums)
+* Java version iterative (tail call equivalent)
+
+---
+
+### Fibonacci(1000000) Runtime
+
+Lilium - 0.021585 sec
+SBCL   - 0.015494 sec
+Java   - 0.003832 sec
+
+---
+
+### Reasons for Bad Performance
+
+* Register allocation very basic -> lots of moves
+* OP machine code with lots of memory access
+* Token-threading alone is no silver bullet

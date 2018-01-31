@@ -187,6 +187,8 @@ op_add:
 
 ### Tail Call Runtime
 
+![Tail Call Runtime](presentation/tail_calls.png)
+
 ---
 
 ### Performance Comparison
@@ -195,13 +197,18 @@ op_add:
 * Modified for SBCL (because of BigNums)
 * Java version iterative (tail call equivalent)
 
+--
+
+### Versions
+
+* OpenJDK 64-Bit Server VM (build 9+181, mixed mode)
+* SBCL 1.4.0
+
 ---
 
 ### Fibonacci(1000000) Runtime
 
-Lilium - 0.021585 sec
-SBCL   - 0.015494 sec
-Java   - 0.003832 sec
+![Fibonacci Runtime](presentation/performance.png)
 
 ---
 
